@@ -1,4 +1,10 @@
 import { postRouter } from "@/server/api/routers/post";
+import { habitRouter } from "@/server/api/routers/habit";
+import { logRouter } from "@/server/api/routers/log";
+import { analyticsRouter } from "@/server/api/routers/analytics";
+import { reportRouter } from "@/server/api/routers/report";
+import { reminderRouter } from "@/server/api/routers/reminder";
+import { insightsRouter } from "@/server/api/routers/insights";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 
 /**
@@ -8,6 +14,12 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   post: postRouter,
+  habit: habitRouter,
+  log: logRouter,
+  analytics: analyticsRouter,
+  report: reportRouter,
+  reminder: reminderRouter,
+  insights: insightsRouter,
 });
 
 // export type definition of API

@@ -6,9 +6,9 @@
 
   | 文档信息 | |
   |---------|---|
-  | 版本 | v2.4 |
-  | 日期 | 2025-11-28 |
-  | 状态 | AI SDK v6 升级版 |
+  | 版本 | v2.5 |
+  | 日期 | 2025-11-29 |
+  | 状态 | v1.5 实现进度更新 |
   | 技术框架 | T3 Stack + Vercel AI SDK v6 |
 
   ---
@@ -32,6 +32,7 @@
   6. [数据库设计](#6-数据库设计)
   7. [非功能需求](#7-非功能需求)
   8. [版本迭代规划](#8-版本迭代规划)
+  9. [v1.5 实现进度总结](#9-v15-实现进度总结) ⭐ 新增
 
   ---
 
@@ -1881,81 +1882,122 @@
 
   #### 8.2.1 坏习惯戒除专项 (模块五)
 
-  | 功能点 | 描述 | 优先级 |
-  |-------|------|-------|
-  | 触发模式识别 | AI 分析坏习惯的时间/情境/情绪触发模式 | P0 |
-  | 替代行为设计 | 根据深层需求推荐替代行为 | P0 |
-  | 环境设计建议 | 提供增加执行障碍的具体建议 | P1 |
-  | 复发管理 | 共情响应 + 模式分析 + 策略迭代 | P0 |
-  | 触发链打断 | 可视化触发链并提供打断策略 | P1 |
+  | 功能点 | 描述 | 优先级 | 状态 |
+  |-------|------|-------|------|
+  | 触发模式识别 | AI 分析坏习惯的时间/情境/情绪触发模式 | P0 | ✅ 已完成 |
+  | 替代行为设计 | 根据深层需求推荐替代行为 | P0 | ✅ 已完成 |
+  | 环境设计建议 | 提供增加执行障碍的具体建议 | P1 | ✅ 已完成 |
+  | 复发管理 | 共情响应 + 模式分析 + 策略迭代 | P0 | ✅ 已完成 |
+  | 触发链打断 | 可视化触发链并提供打断策略 | P1 | ✅ 已完成 |
+
+  > **实现说明**: 创建了 `src/components/break-habit/` 组件库，包含 `trigger-form.tsx`、`trigger-analysis.tsx`、`relapse-manager.tsx`、`environment-design.tsx`。后端在 `analytics.ts` router 中添加了 `getTriggerAnalysis`、`getRelapseAnalysis`、`getEnvironmentDesign` 端点。
 
   #### 8.2.2 动机维护系统 (模块三)
 
-  | 功能点 | 描述 | 优先级 |
-  |-------|------|-------|
-  | 动机波动检测 | 基于打卡数据识别动机下降趋势 | P0 |
-  | 关键干预点 | Day 3/7/14/21 自动触发激励 | P0 |
-  | 个性化激励 | 根据用户动机类型生成定制文案 | P0 |
-  | 愿景可视化 | 定期回顾用户设定的愿景声明 | P1 |
-  | 损失提醒 | 计算放弃的机会成本 | P2 |
+  | 功能点 | 描述 | 优先级 | 状态 |
+  |-------|------|-------|------|
+  | 动机波动检测 | 基于打卡数据识别动机下降趋势 | P0 | ✅ 已完成 |
+  | 关键干预点 | Day 3/7/14/21 自动触发激励 | P0 | ✅ 已完成 |
+  | 个性化激励 | 根据用户动机类型生成定制文案 | P0 | ✅ 已完成 |
+  | 愿景可视化 | 定期回顾用户设定的愿景声明 | P1 | ✅ 已完成 |
+  | 损失提醒 | 计算放弃的机会成本 | P2 | 待实现 |
+
+  > **实现说明**: 后端 `src/lib/ai/motivation.ts` 实现了动机维护引擎，包含动机波动检测和个性化激励文案生成。
 
   #### 8.2.3 周期报告系统 (模块八) ⭐
 
-  | 功能点 | 描述 | 优先级 |
-  |-------|------|-------|
-  | 周报生成 | 每周日自动生成 AI 周报 | P0 |
-  | 月报生成 | 每月末自动生成月度报告 | P0 |
-  | 里程碑报告 | 7/21/66天自动生成成就报告 | P0 |
-  | 报告历史 | 查看历史报告，对比进步 | P1 |
-  | 报告分享 | 生成分享卡片到社交媒体 | P2 |
-  | 报告订阅 | 邮件/推送订阅周报 | P2 |
+  | 功能点 | 描述 | 优先级 | 状态 |
+  |-------|------|-------|------|
+  | 周报生成 | 每周日自动生成 AI 周报 | P0 | ✅ 已完成 |
+  | 月报生成 | 每月末自动生成月度报告 | P0 | ✅ 已完成 |
+  | 里程碑报告 | 7/21/66天自动生成成就报告 | P0 | ✅ 已完成 |
+  | 报告历史 | 查看历史报告，对比进步 | P1 | ✅ 已完成 |
+  | 报告分享 | 生成分享卡片到社交媒体 | P2 | 待实现 |
+  | 报告订阅 | 邮件/推送订阅周报 | P2 | 待实现 |
+
+  > **实现说明**: 创建了 `/reports` 报告列表页和 `/reports/[id]` 报告详情页。后端 `report.ts` router 提供完整的报告生成、列表、详情 API。使用 Vercel Cron Jobs 定时触发周报/月报生成。
 
   #### 8.2.4 进阶分析系统 (模块九) ⭐
 
-  | 功能点 | 描述 | 优先级 |
-  |-------|------|-------|
-  | 时间热力图 | 可视化最佳执行时间窗口 | P0 |
-  | 情绪关联分析 | 分析习惯与情绪的双向关系 | P1 |
-  | 习惯关联矩阵 | 发现习惯间的正/负相关关系 | P1 |
-  | 中断风险预测 | 提前预警习惯中断风险 | P0 |
-  | 难度曲线图 | 追踪主观难度随时间的变化 | P2 |
-  | 分析缓存 | 智能缓存分析结果，提升性能 | P1 |
+  | 功能点 | 描述 | 优先级 | 状态 |
+  |-------|------|-------|------|
+  | 时间热力图 | 可视化最佳执行时间窗口 | P0 | ✅ 已完成 |
+  | 情绪关联分析 | 分析习惯与情绪的双向关系 | P1 | ✅ 已完成 |
+  | 习惯关联矩阵 | 发现习惯间的正/负相关关系 | P1 | ✅ 已完成 |
+  | 中断风险预测 | 提前预警习惯中断风险 | P0 | ✅ 已完成 |
+  | 难度曲线图 | 追踪主观难度随时间的变化 | P2 | ✅ 已完成 |
+  | 分析缓存 | 智能缓存分析结果，提升性能 | P1 | ✅ 已完成 |
+
+  > **实现说明**: 创建了 `src/components/charts/` 组件库，使用 Recharts 实现数据可视化：
+  > - `time-heatmap.tsx` - 时间热力图（ScatterChart）
+  > - `completion-chart.tsx` - 完成率趋势图（AreaChart）
+  > - `mood-chart.tsx` - 情绪变化图（LineChart）
+  > - `streak-chart.tsx` - 连续天数对比图（BarChart）
+  > - `difficulty-chart.tsx` - 难度分布图（RadarChart）
+  > - `correlation-chart.tsx` - 习惯关联展示
+  >
+  > 后端 `analytics.ts` router 提供完整的分析数据 API。
 
   ### 8.3 v1.5 技术实现要点
 
   ```typescript
-  // 新增 tRPC Routers (需注册到 appRouter)
+  // ✅ 已实现 - tRPC Routers (已注册到 appRouter)
   src/server/api/routers/
-  ├── report.ts      // 周期报告
-  ├── analytics.ts   // 进阶分析
-  └── milestone.ts   // 里程碑管理
+  ├── report.ts      // 周期报告 ✅
+  ├── analytics.ts   // 进阶分析 ✅
+  ├── habit.ts       // 习惯管理 ✅
+  ├── log.ts         // 打卡记录 ✅
+  ├── insights.ts    // 数据洞察 ✅
+  └── reminder.ts    // 提醒系统 ✅
 
-  // 新增 AI 功能模块
+  // ✅ 已实现 - AI 功能模块
   src/lib/ai/
-  ├── analytics.ts   // 分析函数集合
-  ├── report.ts      // 报告生成函数
-  └── motivation.ts  // 动机维护函数
+  ├── analytics.ts   // 分析函数集合 ✅
+  ├── report.ts      // 报告生成函数 ✅
+  ├── motivation.ts  // 动机维护函数 ✅
+  ├── break-habit.ts // 坏习惯分析 ✅
+  ├── ability.ts     // 能力评估 ✅
+  ├── reminder.ts    // 提醒生成 ✅
+  ├── insights.ts    // 洞察生成 ✅
+  └── prompts.ts     // 系统提示词 ✅
 
-  // 新增前端组件
-  src/app/_components/
-  ├── analytics/
-  │   ├── time-heatmap.tsx
-  │   ├── mood-chart.tsx
-  │   ├── correlation-matrix.tsx
-  │   └── risk-indicator.tsx
-  ├── reports/
-  │   ├── weekly-report.tsx
-  │   ├── monthly-report.tsx
-  │   └── milestone-card.tsx
-  └── break-habit/
-      ├── trigger-analysis.tsx
-      └── relapse-form.tsx
+  // ✅ 已实现 - 前端组件
+  src/components/
+  ├── charts/                    // Recharts 数据可视化 ✅
+  │   ├── time-heatmap.tsx       // 时间热力图
+  │   ├── completion-chart.tsx   // 完成率趋势
+  │   ├── mood-chart.tsx         // 情绪变化
+  │   ├── streak-chart.tsx       // 连续天数
+  │   ├── difficulty-chart.tsx   // 难度分布
+  │   └── correlation-chart.tsx  // 习惯关联
+  ├── break-habit/               // 坏习惯戒除 ✅
+  │   ├── trigger-form.tsx       // 触发记录表单
+  │   ├── trigger-analysis.tsx   // AI 触发分析
+  │   ├── relapse-manager.tsx    // 复发管理
+  │   └── environment-design.tsx // 环境设计建议
+  └── ui/                        // shadcn/ui 组件 ✅
 
-  // Vercel Cron Jobs
-  vercel.json → crons 配置
+  // ✅ 已实现 - 页面
+  src/app/(app)/
+  ├── dashboard/page.tsx         // 仪表盘 ✅
+  ├── habits/                    // 习惯管理 ✅
+  │   ├── page.tsx               // 习惯列表
+  │   ├── new/page.tsx           // 新建习惯
+  │   └── [id]/                  // 习惯详情
+  │       ├── page.tsx
+  │       └── _components/
+  │           └── habit-edit-dialog.tsx
+  ├── coach/page.tsx             // AI 教练 ✅
+  ├── reports/                   // 报告系统 ✅
+  │   ├── page.tsx               // 报告列表
+  │   └── [id]/page.tsx          // 报告详情
+  └── settings/page.tsx          // 设置页面 ✅
+
+  // ✅ 已实现 - Vercel Cron Jobs
+  vercel.json → crons 配置 ✅
   src/app/api/cron/
-  ├── weekly-report/route.ts
-  └── monthly-report/route.ts
+  ├── weekly-report/route.ts     // 周报生成 ✅
+  └── daily-reminder/route.ts    // 每日提醒 ✅
   ```
 
   ### 8.4 v1.5 数据库变更
@@ -2006,7 +2048,39 @@
 
   ---
 
-  **文档版本**: v2.4 (AI SDK v6 升级版)
-  **更新日期**: 2025-11-28
+  ## 9. v1.5 实现进度总结
+
+  ### 9.1 完成状态概览
+
+  | 模块 | P0 功能 | P1 功能 | P2 功能 | 完成度 |
+  |-----|--------|--------|--------|--------|
+  | 坏习惯戒除专项 | 4/4 | 1/1 | - | **100%** |
+  | 动机维护系统 | 3/3 | 1/1 | 0/1 | **80%** |
+  | 周期报告系统 | 4/4 | 0/0 | 0/2 | **100% (P0-P1)** |
+  | 进阶分析系统 | 2/2 | 3/3 | 1/1 | **100%** |
+
+  ### 9.2 核心交付物
+
+  **后端 (100% 完成)**:
+  - tRPC Routers: habit, log, report, analytics, insights, reminder
+  - AI 模块: break-habit, motivation, analytics, report, ability, reminder, insights, prompts
+  - Vercel Cron Jobs: weekly-report, daily-reminder
+
+  **前端 (95% 完成)**:
+  - 页面: dashboard, habits (list/new/detail), coach, reports (list/detail), settings
+  - 组件库: charts (6个 Recharts 图表), break-habit (4个组件), ui (shadcn)
+  - 待完善: 报告分享卡片、报告订阅
+
+  ### 9.3 后续优化建议
+
+  1. **P2 功能补齐**: 损失提醒、报告分享、报告订阅
+  2. **UI 优化**: 图表交互增强、移动端适配
+  3. **性能优化**: 分析结果缓存策略、图表懒加载
+  4. **测试完善**: 单元测试、E2E 测试
+
+  ---
+
+  **文档版本**: v2.5 (v1.5 实现进度更新)
+  **更新日期**: 2025-11-29
   **技术框架**: Next.js 15 + tRPC v11 + Prisma + NextAuth.js v5 + Vercel AI SDK v6
-  **当前开发目标**: v1.5 增强版
+  **当前开发状态**: v1.5 核心功能已完成，P2 功能待补齐

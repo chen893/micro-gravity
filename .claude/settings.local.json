@@ -1,0 +1,23 @@
+{
+  "env-": {
+    "ANTHROPIC_AUTH_TOKEN": "88_34771c6e4181f46ebd78b8c36055180f9ce9406c37ca70b57bb2c8c9a24a018f",
+    "ANTHROPIC_BASE_URL": "https://www.88code.org/api"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm dev)",
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(npx shadcn@latest add button card dialog input label textarea select tabs avatar badge progress skeleton toast sonner separator scroll-area dropdown-menu sheet -y)",
+      "Bash(npx shadcn@latest add button card dialog input label textarea select tabs avatar badge progress skeleton sonner separator scroll-area dropdown-menu sheet -y)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm add:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(npx shadcn@latest add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "defaultMode": "acceptEdits"
+}

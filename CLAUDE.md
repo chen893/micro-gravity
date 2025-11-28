@@ -65,23 +65,47 @@ Infrastructure
 ```
 src/
 ├── app/                          # Next.js App Router
-│   ├── _components/              # 页面组件
-│   │   ├── analytics/            # 分析组件（热力图、情绪图表等）
-│   │   ├── reports/              # 报告组件（周报、月报、里程碑）
-│   │   └── break-habit/          # 坏习惯戒除组件
+│   ├── (app)/                    # 认证后的应用页面
+│   │   ├── dashboard/            # 仪表盘
+│   │   ├── habits/               # 习惯管理
+│   │   │   ├── page.tsx          # 习惯列表
+│   │   │   └── [id]/             # 习惯详情页
+│   │   │       ├── page.tsx
+│   │   │       └── _components/  # 详情页组件 (10个)
+│   │   ├── analytics/            # 数据分析页
+│   │   ├── coach/                # AI 教练页
+│   │   ├── reports/              # 报告中心
+│   │   │   ├── page.tsx          # 报告列表
+│   │   │   └── [id]/page.tsx     # 报告详情
+│   │   └── settings/page.tsx     # 设置页面
+│   ├── (auth)/                   # 认证相关页面
 │   ├── api/
 │   │   ├── chat/route.ts         # AI 对话流式端点
 │   │   └── cron/                 # Vercel Cron Jobs
 │   └── ...
+├── components/                   # 可复用组件
+│   ├── ui/                       # shadcn/ui 基础组件
+│   ├── layout/                   # 布局组件 (sidebar 等)
+│   ├── charts/                   # 数据可视化组件 (6个 Recharts)
+│   │   ├── time-heatmap.tsx      # 时间热力图
+│   │   ├── completion-chart.tsx  # 完成率趋势图
+│   │   ├── mood-chart.tsx        # 情绪变化图
+│   │   ├── streak-chart.tsx      # 连续天数图
+│   │   ├── difficulty-chart.tsx  # 难度分布图
+│   │   └── correlation-chart.tsx # 习惯相关性图
+│   └── break-habit/              # 坏习惯戒除组件 (4个)
+│       ├── trigger-form.tsx      # 触发记录表单
+│       ├── trigger-analysis.tsx  # AI 触发分析
+│       ├── relapse-manager.tsx   # 复发管理
+│       └── environment-design.tsx # 环境设计建议
 ├── server/
 │   └── api/
 │       ├── routers/              # tRPC 路由
-│       │   ├── chat.ts           # AI 对话
-│       │   ├── habit.ts          # 习惯 CRUD
-│       │   ├── log.ts            # 打卡记录
+│       │   ├── habit.ts          # 习惯 CRUD (11个端点)
+│       │   ├── log.ts            # 打卡记录 (9个端点)
 │       │   ├── report.ts         # 周期报告
-│       │   ├── analytics.ts      # 进阶分析
-│       │   └── milestone.ts      # 里程碑管理
+│       │   ├── analytics.ts      # 进阶分析 (含触发分析3个新端点)
+│       │   └── insights.ts       # 数据洞察
 │       ├── root.ts               # 路由注册
 │       └── trpc.ts               # tRPC 上下文和过程
 ├── lib/

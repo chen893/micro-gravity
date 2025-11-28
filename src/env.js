@@ -11,12 +11,25 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string()
         : z.string().optional(),
-    AUTH_DISCORD_ID: z.string(),
-    AUTH_DISCORD_SECRET: z.string(),
+    AUTH_GOOGLE_ID:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
+    AUTH_GOOGLE_SECRET:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
     DATABASE_URL: z.string().url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    // AI Model Configuration
+    AI_MODEL_API_KEY: z.string().optional(),
+    AI_MODEL_BASE_URL: z.string().url().optional(),
+    AI_MODEL_NAME: z.string().default("gpt-4o"),
+    AI_MODEL_MINI_NAME: z.string().default("gpt-4o-mini"),
+    // Cron Secret for protecting cron job endpoints
+    CRON_SECRET: z.string().optional(),
   },
 
   /**
@@ -34,10 +47,15 @@ export const env = createEnv({
    */
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
-    AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID,
-    AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET,
+    AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
+    AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
+    AI_MODEL_API_KEY: process.env.AI_MODEL_API_KEY,
+    AI_MODEL_BASE_URL: process.env.AI_MODEL_BASE_URL,
+    AI_MODEL_NAME: process.env.AI_MODEL_NAME,
+    AI_MODEL_MINI_NAME: process.env.AI_MODEL_MINI_NAME,
+    CRON_SECRET: process.env.CRON_SECRET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
