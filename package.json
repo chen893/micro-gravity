@@ -21,6 +21,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/openai": "3.0.0-beta.71",
+    "@ai-sdk/react": "3.0.0-beta.122",
     "@auth/prisma-adapter": "^2.7.2",
     "@prisma/client": "^6.6.0",
     "@t3-oss/env-nextjs": "^0.12.0",
@@ -28,6 +30,7 @@
     "@trpc/client": "^11.0.0",
     "@trpc/react-query": "^11.0.0",
     "@trpc/server": "^11.0.0",
+    "ai": "6.0.0-beta.122",
     "next": "^15.2.3",
     "next-auth": "5.0.0-beta.25",
     "react": "^19.0.0",
