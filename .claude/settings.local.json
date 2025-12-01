@@ -9,11 +9,12 @@
       "Bash(pnpm list:*)",
       "Bash(pnpm add:*)",
       "Bash(ls:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(pnpm check:*)",
+      "Bash(pnpm db:push:*)"
     ],
     "deny": [],
     "ask": []
   },
-
   "defaultMode": "acceptEdits"
 }

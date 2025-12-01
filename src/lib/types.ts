@@ -139,7 +139,7 @@ export const habitDataSchema = z.object({
       difficultyRating: z.number().optional(),
       moodBefore: z.number().optional(),
       moodAfter: z.number().optional(),
-    })
+    }),
   ),
   stats: z.object({
     totalDays: z.number(),
@@ -190,7 +190,7 @@ export const triggerAnalysisSchema = z.object({
       description: z.string(),
       confidence: z.number().min(0).max(1),
       evidence: z.array(z.string()),
-    })
+    }),
   ),
   deepNeed: z.string().describe("坏习惯满足的深层需求"),
   substituteBehaviors: z.array(z.string()).describe("替代行为建议"),
@@ -237,26 +237,53 @@ export const patternFindingSchema = z.object({
 export type PatternFinding = z.infer<typeof patternFindingSchema>;
 
 /**
- * 周报完整结构
+ * 庆祝时刻（v2.0 新增）
+ * 基于福格行为模型的"庆祝是习惯养成的肥料"理念
+ */
+export const celebrationMomentSchema = z.object({
+  habitName: z.string(),
+  achievement: z.string().describe("值得庆祝的成就"),
+  celebrationText: z.string().describe("情感化的庆祝语言"),
+  emoji: z.string(),
+});
+export type CelebrationMoment = z.infer<typeof celebrationMomentSchema>;
+
+/**
+ * 周报完整结构 (v2.0 庆祝优先版)
  */
 export const weeklyReportSchema = z.object({
+  // 核心数据摘要（简化展示）
   summary: reportSummarySchema,
+  // 🎉 本周庆祝（最重要！）
+  celebrationMoments: z
+    .array(celebrationMomentSchema)
+    .describe("本周值得庆祝的时刻"),
+  // ✨ 亮点时刻
   highlights: z.array(reportHighlightSchema),
+  // 💡 轻量洞察（最多2个）
   patterns: z.array(patternFindingSchema),
-  suggestions: z.array(
-    z.object({
-      category: z.enum(["TIMING", "DIFFICULTY", "MOTIVATION", "TRIGGER"]),
-      suggestion: z.string(),
-      expectedImpact: z.string(),
-    })
-  ),
-  nextWeekGoals: z.array(
-    z.object({
-      goal: z.string(),
-      habitId: z.string().optional(),
-      measurable: z.string(),
-    })
-  ),
+  // 🎯 下周一件事（只给一个最重要的建议）
+  suggestions: z
+    .array(
+      z.object({
+        category: z.enum(["TIMING", "DIFFICULTY", "MOTIVATION", "TRIGGER"]),
+        suggestion: z.string(),
+        expectedImpact: z.string(),
+      }),
+    )
+    .max(1),
+  // 🌟 下周小目标（简单、具体、可达成）
+  nextWeekGoals: z
+    .array(
+      z.object({
+        goal: z.string(),
+        habitId: z.string().optional(),
+        measurable: z.string(),
+      }),
+    )
+    .max(2),
+  // 整体鼓励语
+  encouragement: z.string().optional().describe("温暖的整体鼓励"),
 });
 export type WeeklyReport = z.infer<typeof weeklyReportSchema>;
 
@@ -311,7 +338,7 @@ export const timeHeatmapSchema = z.object({
       hourOfDay: z.number().min(0).max(23),
       completionRate: z.number(),
       avgDuration: z.number().optional(),
-    })
+    }),
   ),
   insights: z.array(z.string()),
   optimalWindows: z.array(
@@ -320,7 +347,7 @@ export const timeHeatmapSchema = z.object({
       startHour: z.number(),
       endHour: z.number(),
       reason: z.string(),
-    })
+    }),
   ),
 });
 export type TimeHeatmap = z.infer<typeof timeHeatmapSchema>;
@@ -340,7 +367,7 @@ export const moodCorrelationSchema = z.object({
       trigger: z.string(),
       impactOnCompletion: z.number().min(-1).max(1),
       frequency: z.number(),
-    })
+    }),
   ),
   recommendations: z.array(z.string()),
 });
@@ -357,21 +384,21 @@ export const habitCorrelationSchema = z.object({
       correlationScore: z.number().min(-1).max(1),
       relationship: z.enum(["POSITIVE", "NEGATIVE", "NEUTRAL"]),
       insight: z.string(),
-    })
+    }),
   ),
   clusters: z.array(
     z.object({
       name: z.string(),
       habitIds: z.array(z.string()),
       description: z.string(),
-    })
+    }),
   ),
   suggestions: z.array(
     z.object({
       type: z.enum(["STACK", "SEPARATE", "SEQUENCE"]),
       habits: z.array(z.string()),
       reason: z.string(),
-    })
+    }),
   ),
 });
 export type HabitCorrelation = z.infer<typeof habitCorrelationSchema>;
@@ -387,21 +414,21 @@ export const breakRiskSchema = z.object({
       factor: z.string(),
       weight: z.number(),
       currentStatus: z.string(),
-    })
+    }),
   ),
   warningSignals: z.array(
     z.object({
       signal: z.string(),
       detected: z.boolean(),
       lastOccurrence: z.string().optional(),
-    })
+    }),
   ),
   preventiveActions: z.array(
     z.object({
       action: z.string(),
       priority: z.enum(["HIGH", "MEDIUM", "LOW"]),
       expectedImpact: z.string(),
-    })
+    }),
   ),
 });
 export type BreakRisk = z.infer<typeof breakRiskSchema>;

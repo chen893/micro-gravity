@@ -31,7 +31,7 @@ export const analyticsRouter = createTRPCRouter({
       z.object({
         habitId: z.string().optional(),
         days: z.number().min(7).max(90).default(30),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const logs = await ctx.db.habitLog.findMany({
@@ -66,7 +66,7 @@ export const analyticsRouter = createTRPCRouter({
           difficultyRating: log.difficultyRating,
           moodBefore: log.moodBefore,
           moodAfter: log.moodAfter,
-        }))
+        })),
       );
     }),
 
@@ -78,7 +78,7 @@ export const analyticsRouter = createTRPCRouter({
       z.object({
         habitId: z.string().optional(),
         days: z.number().min(14).max(90).default(30),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const logs = await ctx.db.habitLog.findMany({
@@ -113,7 +113,7 @@ export const analyticsRouter = createTRPCRouter({
           difficultyRating: log.difficultyRating,
           moodBefore: log.moodBefore,
           moodAfter: log.moodAfter,
-        }))
+        })),
       );
     }),
 
@@ -125,7 +125,7 @@ export const analyticsRouter = createTRPCRouter({
       z.object({
         habitId: z.string(),
         days: z.number().min(7).max(90).default(30),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const habit = await ctx.db.habit.findFirst({
@@ -171,7 +171,7 @@ export const analyticsRouter = createTRPCRouter({
           difficultyRating: log.difficultyRating,
           moodBefore: log.moodBefore,
           moodAfter: log.moodAfter,
-        }))
+        })),
       );
     }),
 
@@ -182,7 +182,7 @@ export const analyticsRouter = createTRPCRouter({
     .input(
       z.object({
         days: z.number().min(14).max(90).default(30),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const habits = await ctx.db.habit.findMany({
@@ -230,7 +230,7 @@ export const analyticsRouter = createTRPCRouter({
           difficultyRating: log.difficultyRating,
           moodBefore: log.moodBefore,
           moodAfter: log.moodAfter,
-        }))
+        })),
       );
     }),
 
@@ -241,7 +241,7 @@ export const analyticsRouter = createTRPCRouter({
     .input(
       z.object({
         habitId: z.string(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const habit = await ctx.db.habit.findFirst({
@@ -293,7 +293,7 @@ export const analyticsRouter = createTRPCRouter({
         logDate.setHours(0, 0, 0, 0);
 
         const diffDays = Math.floor(
-          (today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24)
+          (today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24),
         );
 
         if (diffDays === currentStreak && log.completed) {
@@ -305,7 +305,7 @@ export const analyticsRouter = createTRPCRouter({
 
       // 计算从开始到现在的天数
       const daysSinceStart = Math.floor(
-        (Date.now() - habit.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+        (Date.now() - habit.createdAt.getTime()) / (1000 * 60 * 60 * 24),
       );
 
       return predictBreakRisk(
@@ -321,7 +321,7 @@ export const analyticsRouter = createTRPCRouter({
           moodAfter: log.moodAfter,
         })),
         currentStreak,
-        daysSinceStart
+        daysSinceStart,
       );
     }),
 
@@ -332,7 +332,7 @@ export const analyticsRouter = createTRPCRouter({
     .input(
       z.object({
         days: z.number().min(7).max(90).default(30),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const habits = await ctx.db.habit.findMany({
@@ -361,7 +361,8 @@ export const analyticsRouter = createTRPCRouter({
       const allLogs = habits.flatMap((h) => h.logs);
       const totalLogs = allLogs.length;
       const completedLogs = allLogs.filter((l) => l.completed).length;
-      const overallRate = totalLogs > 0 ? Math.round((completedLogs / totalLogs) * 100) : 0;
+      const overallRate =
+        totalLogs > 0 ? Math.round((completedLogs / totalLogs) * 100) : 0;
 
       // 生成热力图数据
       const heatmapData = generateTimeHeatmapData(
@@ -374,7 +375,7 @@ export const analyticsRouter = createTRPCRouter({
           difficultyRating: log.difficultyRating,
           moodBefore: log.moodBefore,
           moodAfter: log.moodAfter,
-        }))
+        })),
       );
 
       // 计算每个习惯的风险
@@ -390,7 +391,7 @@ export const analyticsRouter = createTRPCRouter({
             logDate.setHours(0, 0, 0, 0);
 
             const diffDays = Math.floor(
-              (today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24)
+              (today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24),
             );
 
             if (diffDays === currentStreak && log.completed) {
@@ -401,7 +402,7 @@ export const analyticsRouter = createTRPCRouter({
           }
 
           const daysSinceStart = Math.floor(
-            (Date.now() - habit.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+            (Date.now() - habit.createdAt.getTime()) / (1000 * 60 * 60 * 24),
           );
 
           const risk = await predictBreakRisk(
@@ -417,14 +418,14 @@ export const analyticsRouter = createTRPCRouter({
               moodAfter: log.moodAfter,
             })),
             currentStreak,
-            daysSinceStart
+            daysSinceStart,
           );
           return {
             habitId: habit.id,
             habitName: habit.name,
             ...risk,
           };
-        })
+        }),
       );
 
       return {
@@ -444,7 +445,8 @@ export const analyticsRouter = createTRPCRouter({
           completionRate:
             h.logs.length > 0
               ? Math.round(
-                  (h.logs.filter((l) => l.completed).length / h.logs.length) * 100
+                  (h.logs.filter((l) => l.completed).length / h.logs.length) *
+                    100,
                 )
               : 0,
           totalLogs: h._count.logs,
@@ -459,7 +461,7 @@ export const analyticsRouter = createTRPCRouter({
     .input(
       z.object({
         habitId: z.string(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const habit = await ctx.db.habit.findFirst({
@@ -546,7 +548,7 @@ export const analyticsRouter = createTRPCRouter({
       z.object({
         habitId: z.string(),
         targetDaysClean: z.number().min(1).default(7),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const habit = await ctx.db.habit.findFirst({
@@ -597,21 +599,33 @@ export const analyticsRouter = createTRPCRouter({
       }
 
       // 复发分析
-      const relapseAnalysis = analyzeRelapse(triggerRecords, input.targetDaysClean);
+      const relapseAnalysis = analyzeRelapse(
+        triggerRecords,
+        input.targetDaysClean,
+      );
 
       // 计算抵抗率趋势
       const totalRecords = triggerRecords.length;
       const resistedRecords = triggerRecords.filter((r) => r.resisted).length;
-      const resistanceRate = totalRecords > 0 ? Math.round((resistedRecords / totalRecords) * 100) : 0;
+      const resistanceRate =
+        totalRecords > 0
+          ? Math.round((resistedRecords / totalRecords) * 100)
+          : 0;
 
       // 近7天抵抗率
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      const recentRecords = triggerRecords.filter((r) => new Date(r.timestamp) > sevenDaysAgo);
+      const recentRecords = triggerRecords.filter(
+        (r) => new Date(r.timestamp) > sevenDaysAgo,
+      );
       const recentResisted = recentRecords.filter((r) => r.resisted).length;
-      const recentResistanceRate = recentRecords.length > 0 ? Math.round((recentResisted / recentRecords.length) * 100) : 0;
+      const recentResistanceRate =
+        recentRecords.length > 0
+          ? Math.round((recentResisted / recentRecords.length) * 100)
+          : 0;
 
       // 计算变化
-      const rateChange = recentRecords.length > 0 ? recentResistanceRate - resistanceRate : 0;
+      const rateChange =
+        recentRecords.length > 0 ? recentResistanceRate - resistanceRate : 0;
 
       // 阶段里程碑
       const milestones = [3, 7, 14, 21, 30, 60, 90].map((days) => ({
@@ -640,7 +654,7 @@ export const analyticsRouter = createTRPCRouter({
     .input(
       z.object({
         habitId: z.string(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const habit = await ctx.db.habit.findFirst({

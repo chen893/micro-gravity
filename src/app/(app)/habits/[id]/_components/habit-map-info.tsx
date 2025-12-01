@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Heart, Zap, Bell, Lightbulb, Target, Clock } from "lucide-react";
@@ -48,7 +54,11 @@ const reminderStyleLabels: Record<string, string> = {
   PLAYFUL: "有趣",
 };
 
-export function HabitMapInfo({ motivation, ability, prompt }: HabitMapInfoProps) {
+export function HabitMapInfo({
+  motivation,
+  ability,
+  prompt,
+}: HabitMapInfoProps) {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       {/* 动机 (M) */}
@@ -65,7 +75,8 @@ export function HabitMapInfo({ motivation, ability, prompt }: HabitMapInfoProps)
             <div className="mb-1 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">动机类型</span>
               <Badge variant="secondary">
-                {motivationTypeLabels[motivation.primaryType] ?? motivation.primaryType}
+                {motivationTypeLabels[motivation.primaryType] ??
+                  motivation.primaryType}
               </Badge>
             </div>
           </div>
@@ -73,27 +84,31 @@ export function HabitMapInfo({ motivation, ability, prompt }: HabitMapInfoProps)
           <div>
             <div className="mb-1 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">动机强度</span>
-              <span className="font-medium">{motivation.motivationScore}/10</span>
+              <span className="font-medium">
+                {motivation.motivationScore}/10
+              </span>
             </div>
             <Progress value={motivation.motivationScore * 10} className="h-2" />
           </div>
 
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">深层原因</p>
+            <p className="text-muted-foreground text-sm">深层原因</p>
             <p className="text-sm">{motivation.deepReason}</p>
           </div>
 
           <div className="space-y-1">
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <div className="text-muted-foreground flex items-center gap-1 text-sm">
               <Lightbulb className="h-3 w-3" />
               愿景声明
             </div>
-            <p className="text-sm italic">&ldquo;{motivation.visionStatement}&rdquo;</p>
+            <p className="text-sm italic">
+              &ldquo;{motivation.visionStatement}&rdquo;
+            </p>
           </div>
 
           {motivation.painPoints && motivation.painPoints.length > 0 && (
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">痛点</p>
+              <p className="text-muted-foreground text-sm">痛点</p>
               <div className="flex flex-wrap gap-1">
                 {motivation.painPoints.map((point, i) => (
                   <Badge key={i} variant="outline" className="text-xs">
@@ -118,11 +133,11 @@ export function HabitMapInfo({ motivation, ability, prompt }: HabitMapInfoProps)
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">当前水平</p>
+              <p className="text-muted-foreground text-xs">当前水平</p>
               <p className="text-sm font-medium">{ability.currentLevel}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">目标水平</p>
+              <p className="text-muted-foreground text-xs">目标水平</p>
               <p className="text-sm font-medium">{ability.targetLevel}</p>
             </div>
           </div>
@@ -132,25 +147,22 @@ export function HabitMapInfo({ motivation, ability, prompt }: HabitMapInfoProps)
               <span className="text-muted-foreground">难度评估</span>
               <span className="font-medium">{ability.difficultyScore}/10</span>
             </div>
-            <Progress
-              value={ability.difficultyScore * 10}
-              className="h-2"
-            />
+            <Progress value={ability.difficultyScore * 10} className="h-2" />
           </div>
 
           <div className="space-y-1">
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <div className="text-muted-foreground flex items-center gap-1 text-sm">
               <Target className="h-3 w-3" />
               微习惯定义
             </div>
-            <p className="rounded-md bg-muted p-2 text-sm font-medium">
+            <p className="bg-muted rounded-md p-2 text-sm font-medium">
               {ability.microHabit}
             </p>
           </div>
 
           {ability.barriers && ability.barriers.length > 0 && (
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">障碍</p>
+              <p className="text-muted-foreground text-sm">障碍</p>
               <ul className="list-inside list-disc text-sm">
                 {ability.barriers.map((barrier, i) => (
                   <li key={i}>{barrier}</li>
@@ -159,16 +171,17 @@ export function HabitMapInfo({ motivation, ability, prompt }: HabitMapInfoProps)
             </div>
           )}
 
-          {ability.simplificationTips && ability.simplificationTips.length > 0 && (
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">简化建议</p>
-              <ul className="list-inside list-disc text-sm text-green-600">
-                {ability.simplificationTips.map((tip, i) => (
-                  <li key={i}>{tip}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {ability.simplificationTips &&
+            ability.simplificationTips.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-muted-foreground text-sm">简化建议</p>
+                <ul className="list-inside list-disc text-sm text-green-600">
+                  {ability.simplificationTips.map((tip, i) => (
+                    <li key={i}>{tip}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
         </CardContent>
       </Card>
 
@@ -183,29 +196,30 @@ export function HabitMapInfo({ motivation, ability, prompt }: HabitMapInfoProps)
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">锚定习惯</p>
+            <p className="text-muted-foreground text-sm">锚定习惯</p>
             <p className="text-sm font-medium">{prompt.anchorHabit}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">触发类型</p>
+              <p className="text-muted-foreground text-xs">触发类型</p>
               <Badge variant="outline">
                 {triggerTypeLabels[prompt.triggerType] ?? prompt.triggerType}
               </Badge>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">提醒风格</p>
+              <p className="text-muted-foreground text-xs">提醒风格</p>
               <Badge variant="outline">
                 {prompt.reminderStyle
-                  ? (reminderStyleLabels[prompt.reminderStyle] ?? prompt.reminderStyle)
+                  ? (reminderStyleLabels[prompt.reminderStyle] ??
+                    prompt.reminderStyle)
                   : "默认"}
               </Badge>
             </div>
           </div>
 
           <div className="space-y-1">
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <div className="text-muted-foreground flex items-center gap-1 text-sm">
               <Clock className="h-3 w-3" />
               偏好时间
             </div>
@@ -214,7 +228,7 @@ export function HabitMapInfo({ motivation, ability, prompt }: HabitMapInfoProps)
 
           {prompt.contextCues && prompt.contextCues.length > 0 && (
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">情境线索</p>
+              <p className="text-muted-foreground text-sm">情境线索</p>
               <div className="flex flex-wrap gap-1">
                 {prompt.contextCues.map((cue, i) => (
                   <Badge key={i} variant="secondary" className="text-xs">

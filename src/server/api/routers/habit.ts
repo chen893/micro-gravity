@@ -5,10 +5,7 @@
 
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-} from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import {
   motivationSchema,
   abilitySchema,
@@ -102,13 +99,15 @@ export const habitRouter = createTRPCRouter({
    */
   list: protectedProcedure
     .input(
-      z.object({
-        status: z
-          .enum(["ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"])
-          .optional(),
-        type: z.enum(["BUILD", "BREAK"]).optional(),
-        category: z.string().optional(),
-      }).optional()
+      z
+        .object({
+          status: z
+            .enum(["ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"])
+            .optional(),
+          type: z.enum(["BUILD", "BREAK"]).optional(),
+          category: z.string().optional(),
+        })
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
       const habits = await ctx.db.habit.findMany({
@@ -236,7 +235,7 @@ export const habitRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         currentPhase: z.number().min(1),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const habit = await ctx.db.habit.findFirst({
@@ -405,7 +404,7 @@ export const habitRouter = createTRPCRouter({
         logDate.setHours(0, 0, 0, 0);
 
         const diffDays = Math.floor(
-          (today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24)
+          (today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24),
         );
 
         if (diffDays === currentStreak && log.completed) {
@@ -426,7 +425,7 @@ export const habitRouter = createTRPCRouter({
 
         if (lastDate) {
           const diffDays = Math.floor(
-            (lastDate.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24)
+            (lastDate.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24),
           );
           if (diffDays === 1) {
             tempStreak++;

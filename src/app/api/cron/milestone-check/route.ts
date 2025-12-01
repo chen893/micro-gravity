@@ -57,7 +57,9 @@ export async function GET(request: Request) {
       const achievedMilestones = new Set(habit.milestones.map((m) => m.type));
 
       // 检查每个里程碑
-      for (const milestoneType of Object.keys(MILESTONE_DAYS) as MilestoneType[]) {
+      for (const milestoneType of Object.keys(
+        MILESTONE_DAYS,
+      ) as MilestoneType[]) {
         const days = MILESTONE_DAYS[milestoneType];
         if (streakDays >= days && !achievedMilestones.has(milestoneType)) {
           try {
@@ -91,7 +93,10 @@ export async function GET(request: Request) {
               success: true,
             });
           } catch (error) {
-            console.error(`Failed to create milestone ${milestoneType} for habit ${habit.id}:`, error);
+            console.error(
+              `Failed to create milestone ${milestoneType} for habit ${habit.id}:`,
+              error,
+            );
             results.push({
               habitId: habit.id,
               milestone: milestoneType,
@@ -113,7 +118,7 @@ export async function GET(request: Request) {
     console.error("Milestone check cron error:", error);
     return NextResponse.json(
       { error: "Failed to check milestones" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -138,7 +143,9 @@ function calculateStreak(logDates: Date[]): number {
     logDay.setHours(0, 0, 0, 0);
 
     // 检查是否是连续的日期
-    const diffDays = Math.floor((expectedDate.getTime() - logDay.getTime()) / (24 * 60 * 60 * 1000));
+    const diffDays = Math.floor(
+      (expectedDate.getTime() - logDay.getTime()) / (24 * 60 * 60 * 1000),
+    );
 
     if (diffDays === 0) {
       streak++;

@@ -32,7 +32,14 @@ export async function GET(request: Request) {
     const results = [];
     const now = new Date();
     const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const periodEnd = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+    );
 
     for (const user of users) {
       try {
@@ -78,8 +85,19 @@ export async function GET(request: Request) {
         });
 
         // 获取上月数据
-        const previousPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const previousPeriodEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+        const previousPeriodStart = new Date(
+          now.getFullYear(),
+          now.getMonth() - 1,
+          1,
+        );
+        const previousPeriodEnd = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          0,
+          23,
+          59,
+          59,
+        );
         const previousLogs = await db.habitLog.findMany({
           where: {
             habit: { userId: user.id },
@@ -93,7 +111,11 @@ export async function GET(request: Request) {
 
         const previousCompletionRate =
           previousLogs.length > 0
-            ? Math.round((previousLogs.filter((l) => l.completed).length / previousLogs.length) * 100)
+            ? Math.round(
+                (previousLogs.filter((l) => l.completed).length /
+                  previousLogs.length) *
+                  100,
+              )
             : undefined;
 
         // 计算周报摘要
@@ -102,11 +124,21 @@ export async function GET(request: Request) {
         let weekNumber = 1;
 
         while (weekStart < periodEnd) {
-          const weekEnd = new Date(Math.min(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000, periodEnd.getTime()));
-          const weekLogs = logs.filter((l) => l.loggedAt >= weekStart && l.loggedAt < weekEnd);
+          const weekEnd = new Date(
+            Math.min(
+              weekStart.getTime() + 7 * 24 * 60 * 60 * 1000,
+              periodEnd.getTime(),
+            ),
+          );
+          const weekLogs = logs.filter(
+            (l) => l.loggedAt >= weekStart && l.loggedAt < weekEnd,
+          );
 
           const completed = weekLogs.filter((l) => l.completed).length;
-          const completionRate = weekLogs.length > 0 ? Math.round((completed / weekLogs.length) * 100) : 0;
+          const completionRate =
+            weekLogs.length > 0
+              ? Math.round((completed / weekLogs.length) * 100)
+              : 0;
 
           weeklyReports.push({
             weekNumber,
@@ -170,7 +202,10 @@ export async function GET(request: Request) {
 
         results.push({ userId: user.id, success: true });
       } catch (error) {
-        console.error(`Failed to generate monthly report for user ${user.id}:`, error);
+        console.error(
+          `Failed to generate monthly report for user ${user.id}:`,
+          error,
+        );
         results.push({ userId: user.id, success: false, error: String(error) });
       }
     }
@@ -184,7 +219,7 @@ export async function GET(request: Request) {
     console.error("Monthly report cron error:", error);
     return NextResponse.json(
       { error: "Failed to generate monthly reports" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

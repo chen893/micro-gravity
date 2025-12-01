@@ -1,11 +1,23 @@
 "use client";
 
 import { api } from "@/trpc/react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Circle, PlayCircle, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  PlayCircle,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { useState } from "react";
 
 interface Phase {
@@ -23,8 +35,14 @@ interface HabitPhaseProgressProps {
   habitId: string;
 }
 
-export function HabitPhaseProgress({ currentPhase, phases, habitId }: HabitPhaseProgressProps) {
-  const [expandedPhase, setExpandedPhase] = useState<number | null>(currentPhase);
+export function HabitPhaseProgress({
+  currentPhase,
+  phases,
+  habitId,
+}: HabitPhaseProgressProps) {
+  const [expandedPhase, setExpandedPhase] = useState<number | null>(
+    currentPhase,
+  );
   const utils = api.useUtils();
 
   const updatePhaseMutation = api.habit.updatePhase.useMutation({
@@ -48,7 +66,7 @@ export function HabitPhaseProgress({ currentPhase, phases, habitId }: HabitPhase
               <span className="font-medium">第 {currentPhase} 阶段</span>
             </div>
             <Progress value={(currentPhase / 6) * 100} className="h-2" />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               通常习惯养成需要经历 6 个阶段，坚持下去！
             </p>
           </div>
@@ -111,18 +129,15 @@ export function HabitPhaseProgress({ currentPhase, phases, habitId }: HabitPhase
           <Progress value={progressPercent} className="h-2" />
           <div className="flex justify-between">
             {phases.map((phase) => (
-              <div
-                key={phase.phase}
-                className="flex flex-col items-center"
-              >
+              <div key={phase.phase} className="flex flex-col items-center">
                 {phase.phase < currentPhase ? (
                   <CheckCircle2 className="h-6 w-6 text-green-500" />
                 ) : phase.phase === currentPhase ? (
-                  <PlayCircle className="h-6 w-6 text-primary" />
+                  <PlayCircle className="text-primary h-6 w-6" />
                 ) : (
-                  <Circle className="h-6 w-6 text-muted-foreground" />
+                  <Circle className="text-muted-foreground h-6 w-6" />
                 )}
-                <span className="mt-1 text-xs text-muted-foreground">
+                <span className="text-muted-foreground mt-1 text-xs">
                   {phase.phase}
                 </span>
               </div>
@@ -144,21 +159,23 @@ export function HabitPhaseProgress({ currentPhase, phases, habitId }: HabitPhase
                   isCurrent
                     ? "border-primary bg-primary/5"
                     : isCompleted
-                    ? "border-green-200 bg-green-50/50"
-                    : "border-muted"
+                      ? "border-green-200 bg-green-50/50"
+                      : "border-muted"
                 }`}
               >
                 <button
                   className="flex w-full items-center justify-between text-left"
-                  onClick={() => setExpandedPhase(isExpanded ? null : phase.phase)}
+                  onClick={() =>
+                    setExpandedPhase(isExpanded ? null : phase.phase)
+                  }
                 >
                   <div className="flex items-center gap-3">
                     {isCompleted ? (
                       <CheckCircle2 className="h-5 w-5 text-green-500" />
                     ) : isCurrent ? (
-                      <PlayCircle className="h-5 w-5 text-primary" />
+                      <PlayCircle className="text-primary h-5 w-5" />
                     ) : (
-                      <Circle className="h-5 w-5 text-muted-foreground" />
+                      <Circle className="text-muted-foreground h-5 w-5" />
                     )}
                     <div>
                       <div className="flex items-center gap-2">
@@ -171,7 +188,7 @@ export function HabitPhaseProgress({ currentPhase, phases, habitId }: HabitPhase
                     </div>
                   </div>
                   <ChevronDown
-                    className={`h-4 w-4 text-muted-foreground transition-transform ${
+                    className={`text-muted-foreground h-4 w-4 transition-transform ${
                       isExpanded ? "rotate-180" : ""
                     }`}
                   />
@@ -180,17 +197,24 @@ export function HabitPhaseProgress({ currentPhase, phases, habitId }: HabitPhase
                 {isExpanded && (
                   <div className="mt-3 space-y-2 pl-8">
                     <div>
-                      <p className="text-xs text-muted-foreground">微习惯</p>
+                      <p className="text-muted-foreground text-xs">微习惯</p>
                       <p className="text-sm">{phase.microHabit}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">成功标准</p>
+                      <p className="text-muted-foreground text-xs">成功标准</p>
                       <p className="text-sm">{phase.successCriteria}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">难度:</span>
-                      <Progress value={phase.difficultyScore * 10} className="h-1.5 flex-1" />
-                      <span className="text-xs">{phase.difficultyScore}/10</span>
+                      <span className="text-muted-foreground text-xs">
+                        难度:
+                      </span>
+                      <Progress
+                        value={phase.difficultyScore * 10}
+                        className="h-1.5 flex-1"
+                      />
+                      <span className="text-xs">
+                        {phase.difficultyScore}/10
+                      </span>
                     </div>
                   </div>
                 )}

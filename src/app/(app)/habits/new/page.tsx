@@ -3,12 +3,25 @@
 import { useMemo, useState } from "react";
 import { useChat, type UIMessage } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Send, Bot, User, Loader2, CheckCircle2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Send,
+  Bot,
+  User,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -71,7 +84,7 @@ export default function NewHabitPage() {
       <Card className="flex h-[600px] flex-col overflow-hidden">
         <CardHeader className="shrink-0 border-b">
           <div className="flex items-center gap-2">
-            <Bot className="h-5 w-5 text-primary" />
+            <Bot className="text-primary h-5 w-5" />
             <CardTitle className="text-base">AI 习惯教练</CardTitle>
           </div>
           <CardDescription>
@@ -86,7 +99,7 @@ export default function NewHabitPage() {
                 <ChatMessage key={message.id} message={message} />
               ))}
               {isLoading && (
-                <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="text-muted-foreground flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm">AI 正在思考...</span>
                 </div>
@@ -153,10 +166,19 @@ function ChatMessage({ message }: ChatMessageProps) {
           const state = part.state;
 
           // Show success for completed states
-          if (toolType === "createHabit" && (state === "done" || state === "output-available")) {
+          if (
+            toolType === "createHabit" &&
+            (state === "done" || state === "output-available")
+          ) {
             return (
-              <div key={index} className="mt-2 rounded-lg border bg-green-50 p-3 dark:bg-green-950">
-                <Badge variant="outline" className="mb-2 bg-green-100 text-green-700">
+              <div
+                key={index}
+                className="mt-2 rounded-lg border bg-green-50 p-3 dark:bg-green-950"
+              >
+                <Badge
+                  variant="outline"
+                  className="mb-2 bg-green-100 text-green-700"
+                >
                   习惯已创建
                 </Badge>
                 <p className="text-sm text-green-700 dark:text-green-300">
@@ -168,7 +190,10 @@ function ChatMessage({ message }: ChatMessageProps) {
           // Show loading for streaming/pending states
           if (state === "streaming" || state === "input-streaming") {
             return (
-              <div key={index} className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+              <div
+                key={index}
+                className="text-muted-foreground mt-2 flex items-center gap-2 text-sm"
+              >
                 <Loader2 className="h-3 w-3 animate-spin" />
                 正在{toolType === "createHabit" ? "创建习惯" : "处理"}...
               </div>
@@ -182,16 +207,11 @@ function ChatMessage({ message }: ChatMessageProps) {
   };
 
   return (
-    <div
-      className={cn(
-        "flex gap-3",
-        isUser ? "flex-row-reverse" : "flex-row"
-      )}
-    >
+    <div className={cn("flex gap-3", isUser ? "flex-row-reverse" : "flex-row")}>
       <div
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-          isUser ? "bg-primary text-primary-foreground" : "bg-muted"
+          isUser ? "bg-primary text-primary-foreground" : "bg-muted",
         )}
       >
         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
@@ -199,9 +219,7 @@ function ChatMessage({ message }: ChatMessageProps) {
       <div
         className={cn(
           "max-w-[80%] rounded-lg px-4 py-2",
-          isUser
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted"
+          isUser ? "bg-primary text-primary-foreground" : "bg-muted",
         )}
       >
         {renderContent()}

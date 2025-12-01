@@ -42,7 +42,7 @@ export interface HabitForBreakdown {
  * 根据习惯描述评估各维度的难度
  */
 export function assessAbilityDimensions(
-  habit: HabitForBreakdown
+  habit: HabitForBreakdown,
 ): AbilityDimensions {
   // 基础评估逻辑（实际可以用 AI 来做更精准的评估）
   const isBreakHabit = habit.type === "BREAK";
@@ -88,7 +88,9 @@ export function assessAbilityDimensions(
 /**
  * 计算综合难度分数
  */
-export function calculateDifficultyScore(dimensions: AbilityDimensions): number {
+export function calculateDifficultyScore(
+  dimensions: AbilityDimensions,
+): number {
   // 加权平均，时间和心理难度权重更高
   const weights = {
     time: 0.25,
@@ -156,7 +158,7 @@ function generateDefaultPhases(habit: HabitForBreakdown): PhaseConfig[] {
  * 将复杂习惯拆解为渐进式微习惯
  */
 export async function breakdownHabit(
-  habit: HabitForBreakdown
+  habit: HabitForBreakdown,
 ): Promise<TaskBreakdown> {
   const dimensions = assessAbilityDimensions(habit);
   const overallDifficulty = calculateDifficultyScore(dimensions);
@@ -220,7 +222,7 @@ export function evaluatePhaseReadiness(
   currentPhase: number,
   phases: PhaseConfig[],
   recentLogs: Array<{ completed: boolean; difficultyRating?: number | null }>,
-  daysInCurrentPhase: number
+  daysInCurrentPhase: number,
 ): PhaseEvaluationResult {
   const phase = phases.find((p) => p.phase === currentPhase);
   if (!phase) {
@@ -319,9 +321,7 @@ export function evaluatePhaseReadiness(
  * 获取简化建议
  * 当用户感觉困难时提供简化策略
  */
-export function getSimplificationTips(
-  dimensions: AbilityDimensions
-): string[] {
+export function getSimplificationTips(dimensions: AbilityDimensions): string[] {
   const tips: string[] = [];
 
   if (dimensions.time > 6) {

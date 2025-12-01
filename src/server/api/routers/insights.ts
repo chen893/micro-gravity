@@ -15,7 +15,7 @@ import {
 
 // Helper to convert null to undefined
 function nullToUndefined<T>(value: T | null): T | undefined {
-  return value === null ? undefined : value;
+  return value ?? undefined;
 }
 
 export const insightsRouter = createTRPCRouter({
@@ -27,7 +27,7 @@ export const insightsRouter = createTRPCRouter({
       z.object({
         habitId: z.string(),
         days: z.number().min(7).max(90).default(30),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const habit = await ctx.db.habit.findFirst({
@@ -110,7 +110,7 @@ export const insightsRouter = createTRPCRouter({
       z.object({
         habitId: z.string(),
         days: z.number().min(7).max(30).default(14),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const habit = await ctx.db.habit.findFirst({
@@ -156,7 +156,7 @@ export const insightsRouter = createTRPCRouter({
           difficultyRating: nullToUndefined(l.difficultyRating),
           moodBefore: nullToUndefined(l.moodBefore),
           moodAfter: nullToUndefined(l.moodAfter),
-        }))
+        })),
       );
     }),
 
@@ -168,7 +168,7 @@ export const insightsRouter = createTRPCRouter({
       z.object({
         habitId: z.string().optional(),
         days: z.number().min(1).max(365).default(30),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const logs = await ctx.db.habitLog.findMany({
@@ -197,7 +197,7 @@ export const insightsRouter = createTRPCRouter({
           difficultyRating: nullToUndefined(l.difficultyRating),
           moodBefore: nullToUndefined(l.moodBefore),
           moodAfter: nullToUndefined(l.moodAfter),
-        }))
+        })),
       );
     }),
 
@@ -209,7 +209,7 @@ export const insightsRouter = createTRPCRouter({
       z.object({
         habitId: z.string().optional(),
         days: z.number().min(7).max(90).default(30),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const logs = await ctx.db.habitLog.findMany({
@@ -232,7 +232,7 @@ export const insightsRouter = createTRPCRouter({
         logs.map((l) => ({
           loggedAt: l.loggedAt,
           completed: l.completed,
-        }))
+        })),
       );
     }),
 
@@ -243,7 +243,7 @@ export const insightsRouter = createTRPCRouter({
     .input(
       z.object({
         days: z.number().min(7).max(90).default(30),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const habits = await ctx.db.habit.findMany({
@@ -286,7 +286,7 @@ export const insightsRouter = createTRPCRouter({
           difficultyRating: nullToUndefined(l.difficultyRating),
           moodBefore: nullToUndefined(l.moodBefore),
           moodAfter: nullToUndefined(l.moodAfter),
-        }))
+        })),
       );
 
       // 时间分布
@@ -294,7 +294,7 @@ export const insightsRouter = createTRPCRouter({
         logs.map((l) => ({
           loggedAt: l.loggedAt,
           completed: l.completed,
-        }))
+        })),
       );
 
       // 每个习惯的统计
@@ -310,7 +310,9 @@ export const insightsRouter = createTRPCRouter({
           totalLogs: habitLogs.length,
           completedLogs: completed,
           completionRate:
-            habitLogs.length > 0 ? Math.round((completed / habitLogs.length) * 100) : 0,
+            habitLogs.length > 0
+              ? Math.round((completed / habitLogs.length) * 100)
+              : 0,
         };
       });
 
@@ -322,7 +324,7 @@ export const insightsRouter = createTRPCRouter({
           difficultyRating: nullToUndefined(l.difficultyRating),
           moodBefore: nullToUndefined(l.moodBefore),
           moodAfter: nullToUndefined(l.moodAfter),
-        }))
+        })),
       );
 
       return {
@@ -337,7 +339,7 @@ export const insightsRouter = createTRPCRouter({
           bestHabit:
             habitStats.length > 0
               ? habitStats.reduce((best, curr) =>
-                  curr.completionRate > best.completionRate ? curr : best
+                  curr.completionRate > best.completionRate ? curr : best,
                 )
               : null,
           needsAttention:

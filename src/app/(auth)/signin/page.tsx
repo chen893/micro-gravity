@@ -8,15 +8,15 @@ export default async function SignInPage({
   const { callbackUrl } = await searchParams;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="w-full max-w-md px-6">
         {/* 登录卡片 */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-100 dark:border-gray-700">
+        <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-2xl dark:border-gray-700 dark:bg-gray-800">
           {/* Logo 和标题 */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 mb-4">
+          <div className="mb-8 text-center">
+            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
               <svg
-                className="w-8 h-8 text-white"
+                className="h-8 w-8 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -29,12 +29,10 @@ export default async function SignInPage({
                 />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
               Micro Gravity
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              智能习惯管理系统
-            </p>
+            <p className="text-gray-600 dark:text-gray-400">智能习惯管理系统</p>
           </div>
 
           {/* 描述 */}
@@ -55,9 +53,9 @@ export default async function SignInPage({
           >
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+              className="flex w-full transform items-center justify-center gap-3 rounded-xl border-2 border-gray-300 bg-white px-6 py-4 font-medium text-gray-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:border-gray-500 dark:hover:bg-gray-600"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -80,12 +78,12 @@ export default async function SignInPage({
           </form>
 
           {/* 功能特点 */}
-          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-8 border-t border-gray-200 pt-6 dark:border-gray-700">
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mt-0.5">
+                <div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
                   <svg
-                    className="w-3 h-3 text-blue-600 dark:text-blue-400"
+                    className="h-3 w-3 text-blue-600 dark:text-blue-400"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -101,9 +99,9 @@ export default async function SignInPage({
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mt-0.5">
+                <div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
                   <svg
-                    className="w-3 h-3 text-purple-600 dark:text-purple-400"
+                    className="h-3 w-3 text-purple-600 dark:text-purple-400"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -119,9 +117,9 @@ export default async function SignInPage({
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mt-0.5">
+                <div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
                   <svg
-                    className="w-3 h-3 text-green-600 dark:text-green-400"
+                    className="h-3 w-3 text-green-600 dark:text-green-400"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -141,7 +139,7 @@ export default async function SignInPage({
         </div>
 
         {/* 底部信息 */}
-        <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-6">
+        <p className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
           登录即表示您同意我们的服务条款和隐私政策
         </p>
       </div>

@@ -144,12 +144,12 @@ export function HabitEditDialog({
               />
             </div>
 
-            <div className="rounded-md bg-muted p-3">
-              <p className="text-sm text-muted-foreground">
+            <div className="bg-muted rounded-md p-3">
+              <p className="text-muted-foreground text-sm">
                 <span className="font-medium">习惯类型：</span>
                 {habit.type === "BUILD" ? "养成型" : "戒除型"}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="text-muted-foreground mt-1 text-xs">
                 习惯类型在创建后无法修改
               </p>
             </div>
@@ -163,7 +163,10 @@ export function HabitEditDialog({
             >
               取消
             </Button>
-            <Button type="submit" disabled={updateMutation.isPending || !name.trim()}>
+            <Button
+              type="submit"
+              disabled={updateMutation.isPending || !name.trim()}
+            >
               {updateMutation.isPending ? "保存中..." : "保存修改"}
             </Button>
           </DialogFooter>

@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { api } from "@/trpc/react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -48,9 +54,7 @@ export default function ReportsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">报告中心</h2>
-          <p className="text-muted-foreground">
-            查看周期报告和里程碑成就
-          </p>
+          <p className="text-muted-foreground">查看周期报告和里程碑成就</p>
         </div>
         <Button
           onClick={handleGenerateWeekly}
@@ -91,9 +95,9 @@ export default function ReportsPage() {
             </div>
           ) : (
             <Card className="py-12 text-center">
-              <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+              <FileText className="text-muted-foreground mx-auto h-12 w-12" />
               <h3 className="mt-4 text-lg font-semibold">暂无报告</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="text-muted-foreground mt-2 text-sm">
                 点击 &quot;生成周报&quot; 按钮，创建你的第一份习惯报告
               </p>
             </Card>
@@ -109,9 +113,9 @@ export default function ReportsPage() {
             </div>
           ) : (
             <Card className="py-12 text-center">
-              <Trophy className="mx-auto h-12 w-12 text-muted-foreground" />
+              <Trophy className="text-muted-foreground mx-auto h-12 w-12" />
               <h3 className="mt-4 text-lg font-semibold">暂无里程碑</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="text-muted-foreground mt-2 text-sm">
                 坚持完成习惯，解锁成就徽章
               </p>
             </Card>
@@ -151,13 +155,22 @@ function ReportCard({ report }: ReportCardProps) {
   };
 
   return (
-    <Card className="cursor-pointer transition-shadow hover:shadow-md" onClick={() => window.location.href = `/reports/${report.id}`}>
+    <Card
+      className="cursor-pointer transition-shadow hover:shadow-md"
+      onClick={() => (window.location.href = `/reports/${report.id}`)}
+    >
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Badge variant={report.type === "WEEKLY" ? "default" : "secondary"}>
-                {report.type === "WEEKLY" ? "周报" : report.type === "MONTHLY" ? "月报" : "里程碑"}
+              <Badge
+                variant={report.type === "WEEKLY" ? "default" : "secondary"}
+              >
+                {report.type === "WEEKLY"
+                  ? "周报"
+                  : report.type === "MONTHLY"
+                    ? "月报"
+                    : "里程碑"}
               </Badge>
               {!report.isRead && <Badge variant="destructive">新</Badge>}
             </div>
@@ -165,17 +178,19 @@ function ReportCard({ report }: ReportCardProps) {
               {formatDate(report.periodStart)} - {formatDate(report.periodEnd)}
             </CardTitle>
           </div>
-          <Calendar className="h-5 w-5 text-muted-foreground" />
+          <Calendar className="text-muted-foreground h-5 w-5" />
         </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <div>
-            <p className="text-sm text-muted-foreground">完成率</p>
-            <p className="text-lg font-semibold">{summary?.completionRate ?? 0}%</p>
+            <p className="text-muted-foreground text-sm">完成率</p>
+            <p className="text-lg font-semibold">
+              {summary?.completionRate ?? 0}%
+            </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">变化</p>
+            <p className="text-muted-foreground text-sm">变化</p>
             <p className="flex items-center text-lg font-semibold">
               {(summary?.rateChange ?? 0) >= 0 ? (
                 <TrendingUp className="mr-1 h-4 w-4 text-green-500" />
@@ -187,11 +202,13 @@ function ReportCard({ report }: ReportCardProps) {
             </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">打卡次数</p>
-            <p className="text-lg font-semibold">{summary?.totalCheckins ?? 0}</p>
+            <p className="text-muted-foreground text-sm">打卡次数</p>
+            <p className="text-lg font-semibold">
+              {summary?.totalCheckins ?? 0}
+            </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">完美天数</p>
+            <p className="text-muted-foreground text-sm">完美天数</p>
             <p className="text-lg font-semibold">{summary?.perfectDays ?? 0}</p>
           </div>
         </div>
@@ -226,19 +243,21 @@ function MilestoneCard({ milestone }: MilestoneCardProps) {
 
   return (
     <Card className="overflow-hidden">
-      <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-4">
+      <div className="from-primary/10 to-primary/5 bg-gradient-to-r p-4">
         <div className="flex items-center justify-between">
           <Trophy className="h-8 w-8 text-yellow-500" />
-          <Badge variant="outline">{milestoneLabels[milestone.type] ?? milestone.type}</Badge>
+          <Badge variant="outline">
+            {milestoneLabels[milestone.type] ?? milestone.type}
+          </Badge>
         </div>
       </div>
       <CardContent className="pt-4">
         <h3 className="font-semibold">{milestone.habit.name}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-sm">
           连续 {milestone.streakDays} 天
         </p>
         <p className="mt-3 text-sm">{milestone.celebration}</p>
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className="text-muted-foreground mt-2 text-xs">
           达成于 {new Date(milestone.achievedAt).toLocaleDateString("zh-CN")}
         </p>
       </CardContent>

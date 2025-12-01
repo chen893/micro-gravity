@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { api } from "@/trpc/react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -52,10 +58,13 @@ export function HabitLogHistory({
 
   const { data: moreLogsData, isFetching } = api.log.getByHabit.useQuery(
     { habitId, limit: 10, offset },
-    { enabled: offset > 10 }
+    { enabled: offset > 10 },
   );
 
-  const allLogs = offset > 10 && moreLogsData ? [...initialLogs, ...moreLogsData.logs] : initialLogs;
+  const allLogs =
+    offset > 10 && moreLogsData
+      ? [...initialLogs, ...moreLogsData.logs]
+      : initialLogs;
   const hasMore = moreLogsData ? moreLogsData.hasMore : initialHasMore;
 
   const loadMore = () => {
@@ -108,8 +117,8 @@ export function HabitLogHistory({
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Calendar className="h-12 w-12 text-muted-foreground" />
-            <p className="mt-4 text-sm text-muted-foreground">
+            <Calendar className="text-muted-foreground h-12 w-12" />
+            <p className="text-muted-foreground mt-4 text-sm">
               {habitType === "BUILD"
                 ? "完成今天的习惯，开启你的记录之旅"
                 : "记录每一次抵抗冲动的时刻"}
@@ -132,7 +141,7 @@ export function HabitLogHistory({
             {allLogs.map((log) => (
               <div
                 key={log.id}
-                className="flex items-center justify-between rounded-lg p-3 transition-colors hover:bg-muted/50"
+                className="hover:bg-muted/50 flex items-center justify-between rounded-lg p-3 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   {log.completed ? (
@@ -147,14 +156,14 @@ export function HabitLogHistory({
                           locale: zhCN,
                         })}
                       </span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         {formatDistanceToNow(new Date(log.loggedAt), {
                           addSuffix: true,
                           locale: zhCN,
                         })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center gap-2 text-xs">
                       {log.completionTime && (
                         <span>
                           {format(new Date(log.completionTime), "HH:mm")}
@@ -173,7 +182,7 @@ export function HabitLogHistory({
                     <div className="flex items-center gap-1">
                       {getMoodIcon(log.moodBefore)}
                       {log.moodBefore !== null && log.moodAfter !== null && (
-                        <span className="text-xs text-muted-foreground">→</span>
+                        <span className="text-muted-foreground text-xs">→</span>
                       )}
                       {getMoodIcon(log.moodAfter)}
                     </div>
@@ -196,8 +205,8 @@ export function HabitLogHistory({
                         ? "已完成"
                         : "已坚持"
                       : habitType === "BUILD"
-                      ? "未完成"
-                      : "复发"}
+                        ? "未完成"
+                        : "复发"}
                   </Badge>
                 </div>
               </div>

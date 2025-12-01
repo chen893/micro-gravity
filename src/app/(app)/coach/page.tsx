@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useChat, type UIMessage } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,9 +18,18 @@ import { Send, Bot, User, Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const QUICK_PROMPTS = [
-  { label: "今天状态不好", prompt: "我今天状态不太好，不太想完成习惯，该怎么办？" },
-  { label: "想放弃了", prompt: "我感觉坚持太难了，有点想放弃，能给我一些建议吗？" },
-  { label: "习惯变简单了", prompt: "我觉得现在的习惯已经很容易了，是不是可以升级一下？" },
+  {
+    label: "今天状态不好",
+    prompt: "我今天状态不太好，不太想完成习惯，该怎么办？",
+  },
+  {
+    label: "想放弃了",
+    prompt: "我感觉坚持太难了，有点想放弃，能给我一些建议吗？",
+  },
+  {
+    label: "习惯变简单了",
+    prompt: "我觉得现在的习惯已经很容易了，是不是可以升级一下？",
+  },
   { label: "分析我的进度", prompt: "帮我分析一下我最近的习惯完成情况" },
 ];
 
@@ -77,7 +92,7 @@ export default function CoachPage() {
         <Card className="flex h-[600px] flex-col">
           <CardHeader className="border-b">
             <div className="flex items-center gap-2">
-              <Bot className="h-5 w-5 text-primary" />
+              <Bot className="text-primary h-5 w-5" />
               <CardTitle className="text-base">习惯教练</CardTitle>
             </div>
           </CardHeader>
@@ -88,7 +103,7 @@ export default function CoachPage() {
                 <ChatMessage key={message.id} message={message} />
               ))}
               {isLoading && (
-                <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="text-muted-foreground flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm">AI 正在思考...</span>
                 </div>
@@ -118,9 +133,7 @@ export default function CoachPage() {
                 <Sparkles className="h-4 w-4" />
                 快捷问题
               </CardTitle>
-              <CardDescription>
-                点击快速开始对话
-              </CardDescription>
+              <CardDescription>点击快速开始对话</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {QUICK_PROMPTS.map((item, index) => (
@@ -180,7 +193,10 @@ function ChatMessage({ message }: ChatMessageProps) {
           // Show loading for streaming/pending states
           if (state === "streaming" || state === "input-streaming") {
             return (
-              <div key={index} className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+              <div
+                key={index}
+                className="text-muted-foreground mt-2 flex items-center gap-2 text-sm"
+              >
                 <Loader2 className="h-3 w-3 animate-spin" />
                 正在处理...
               </div>
@@ -194,16 +210,11 @@ function ChatMessage({ message }: ChatMessageProps) {
   };
 
   return (
-    <div
-      className={cn(
-        "flex gap-3",
-        isUser ? "flex-row-reverse" : "flex-row"
-      )}
-    >
+    <div className={cn("flex gap-3", isUser ? "flex-row-reverse" : "flex-row")}>
       <div
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-          isUser ? "bg-primary text-primary-foreground" : "bg-muted"
+          isUser ? "bg-primary text-primary-foreground" : "bg-muted",
         )}
       >
         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
@@ -211,9 +222,7 @@ function ChatMessage({ message }: ChatMessageProps) {
       <div
         className={cn(
           "max-w-[80%] rounded-lg px-4 py-2",
-          isUser
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted"
+          isUser ? "bg-primary text-primary-foreground" : "bg-muted",
         )}
       >
         {renderContent()}

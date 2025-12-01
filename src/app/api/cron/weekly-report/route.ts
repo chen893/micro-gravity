@@ -71,7 +71,9 @@ export async function GET(request: Request) {
         });
 
         // 获取上周数据
-        const previousPeriodStart = new Date(periodStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const previousPeriodStart = new Date(
+          periodStart.getTime() - 7 * 24 * 60 * 60 * 1000,
+        );
         const previousLogs = await db.habitLog.findMany({
           where: {
             habit: { userId: user.id },
@@ -85,7 +87,11 @@ export async function GET(request: Request) {
 
         const previousCompletionRate =
           previousLogs.length > 0
-            ? Math.round((previousLogs.filter((l) => l.completed).length / previousLogs.length) * 100)
+            ? Math.round(
+                (previousLogs.filter((l) => l.completed).length /
+                  previousLogs.length) *
+                  100,
+              )
             : undefined;
 
         const reportData: ReportInputData = {
@@ -129,7 +135,10 @@ export async function GET(request: Request) {
 
         results.push({ userId: user.id, success: true });
       } catch (error) {
-        console.error(`Failed to generate weekly report for user ${user.id}:`, error);
+        console.error(
+          `Failed to generate weekly report for user ${user.id}:`,
+          error,
+        );
         results.push({ userId: user.id, success: false, error: String(error) });
       }
     }
@@ -143,7 +152,7 @@ export async function GET(request: Request) {
     console.error("Weekly report cron error:", error);
     return NextResponse.json(
       { error: "Failed to generate weekly reports" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

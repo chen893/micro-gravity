@@ -22,14 +22,16 @@ export const reportRouter = createTRPCRouter({
     .input(
       z.object({
         weekStart: z.date().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // 计算周期
       const periodEnd = input.weekStart
         ? new Date(input.weekStart.getTime() + 7 * 24 * 60 * 60 * 1000)
         : new Date();
-      const periodStart = input.weekStart ?? new Date(periodEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const periodStart =
+        input.weekStart ??
+        new Date(periodEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
 
       // 获取习惯和日志
       const habits = await ctx.db.habit.findMany({
@@ -66,7 +68,9 @@ export const reportRouter = createTRPCRouter({
       });
 
       // 获取上周数据用于对比
-      const previousPeriodStart = new Date(periodStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const previousPeriodStart = new Date(
+        periodStart.getTime() - 7 * 24 * 60 * 60 * 1000,
+      );
       const previousLogs = await ctx.db.habitLog.findMany({
         where: {
           habit: {
@@ -85,7 +89,9 @@ export const reportRouter = createTRPCRouter({
       const previousCompletionRate =
         previousLogs.length > 0
           ? Math.round(
-              (previousLogs.filter((l) => l.completed).length / previousLogs.length) * 100
+              (previousLogs.filter((l) => l.completed).length /
+                previousLogs.length) *
+                100,
             )
           : undefined;
 
@@ -142,7 +148,7 @@ export const reportRouter = createTRPCRouter({
       z.object({
         month: z.number().min(1).max(12),
         year: z.number(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const periodStart = new Date(input.year, input.month - 1, 1);
@@ -201,7 +207,14 @@ export const reportRouter = createTRPCRouter({
 
       // 获取上月数据用于对比
       const previousPeriodStart = new Date(input.year, input.month - 2, 1);
-      const previousPeriodEnd = new Date(input.year, input.month - 1, 0, 23, 59, 59);
+      const previousPeriodEnd = new Date(
+        input.year,
+        input.month - 1,
+        0,
+        23,
+        59,
+        59,
+      );
       const previousLogs = await ctx.db.habitLog.findMany({
         where: {
           habit: {
@@ -220,7 +233,9 @@ export const reportRouter = createTRPCRouter({
       const previousCompletionRate =
         previousLogs.length > 0
           ? Math.round(
-              (previousLogs.filter((l) => l.completed).length / previousLogs.length) * 100
+              (previousLogs.filter((l) => l.completed).length /
+                previousLogs.length) *
+                100,
             )
           : undefined;
 
@@ -230,14 +245,21 @@ export const reportRouter = createTRPCRouter({
       let weekNumber = 1;
 
       while (weekStart < periodEnd) {
-        const weekEnd = new Date(Math.min(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000, periodEnd.getTime()));
+        const weekEnd = new Date(
+          Math.min(
+            weekStart.getTime() + 7 * 24 * 60 * 60 * 1000,
+            periodEnd.getTime(),
+          ),
+        );
         const weekLogs = logs.filter(
-          (l) => l.loggedAt >= weekStart && l.loggedAt < weekEnd
+          (l) => l.loggedAt >= weekStart && l.loggedAt < weekEnd,
         );
 
         const completed = weekLogs.filter((l) => l.completed).length;
         const completionRate =
-          weekLogs.length > 0 ? Math.round((completed / weekLogs.length) * 100) : 0;
+          weekLogs.length > 0
+            ? Math.round((completed / weekLogs.length) * 100)
+            : 0;
 
         // 计算完美日数
         const dateSet = new Set<string>();
@@ -322,9 +344,15 @@ export const reportRouter = createTRPCRouter({
     .input(
       z.object({
         habitId: z.string(),
-        milestoneType: z.enum(["DAY_7", "DAY_21", "DAY_66", "DAY_100", "CUSTOM"]),
+        milestoneType: z.enum([
+          "DAY_7",
+          "DAY_21",
+          "DAY_66",
+          "DAY_100",
+          "CUSTOM",
+        ]),
         streakDays: z.number().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const habit = await ctx.db.habit.findFirst({
@@ -393,7 +421,7 @@ export const reportRouter = createTRPCRouter({
         type: z.enum(["WEEKLY", "MONTHLY", "MILESTONE"]).optional(),
         limit: z.number().min(1).max(50).default(10),
         offset: z.number().min(0).default(0),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const reports = await ctx.db.report.findMany({
@@ -450,7 +478,7 @@ export const reportRouter = createTRPCRouter({
     .input(
       z.object({
         habitId: z.string().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const milestones = await ctx.db.milestone.findMany({

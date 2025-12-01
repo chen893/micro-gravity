@@ -34,7 +34,7 @@ interface HabitLogSimple {
  */
 export function detectMotivationDip(
   logs: HabitLogSimple[],
-  daysSinceStart: number
+  daysSinceStart: number,
 ): MotivationState {
   if (logs.length === 0) {
     return daysSinceStart > 3 ? "CRITICAL" : "NORMAL";
@@ -43,7 +43,9 @@ export function detectMotivationDip(
   // 计算最近7天的数据
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const recentLogs = logs.filter((log) => new Date(log.loggedAt) >= sevenDaysAgo);
+  const recentLogs = logs.filter(
+    (log) => new Date(log.loggedAt) >= sevenDaysAgo,
+  );
 
   if (recentLogs.length === 0) {
     return "CRITICAL";
@@ -107,7 +109,7 @@ export function getInterventionTiming(daysSinceStart: number): string | null {
  */
 function selectMotivationType(
   state: MotivationState,
-  primaryMotivationType: string
+  primaryMotivationType: string,
 ): string {
   const stateStrategies: Record<MotivationState, string[]> = {
     STRONG: ["SOCIAL_PROOF", "HOPE_FUTURE"],
@@ -136,12 +138,12 @@ function selectMotivationType(
  * 生成动机激励内容
  */
 export async function generateMotivation(
-  context: MotivationContext
+  context: MotivationContext,
 ): Promise<MotivationMessage> {
   const interventionTiming = getInterventionTiming(context.daysSinceStart);
   const suggestedType = selectMotivationType(
     context.currentState,
-    context.deepReason.includes("健康") ? "PLEASURE" : "HOPE"
+    context.deepReason.includes("健康") ? "PLEASURE" : "HOPE",
   );
 
   const prompt = `
@@ -187,7 +189,7 @@ ${interventionTiming ? `关键时机：${interventionTiming}` : ""}
  */
 export function calculateMotivationScore(
   logs: HabitLogSimple[],
-  daysSinceStart: number
+  daysSinceStart: number,
 ): number {
   if (logs.length === 0) {
     return daysSinceStart > 7 ? 3 : 7; // 新习惯初始动机较高
@@ -195,7 +197,9 @@ export function calculateMotivationScore(
 
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const recentLogs = logs.filter((log) => new Date(log.loggedAt) >= sevenDaysAgo);
+  const recentLogs = logs.filter(
+    (log) => new Date(log.loggedAt) >= sevenDaysAgo,
+  );
 
   if (recentLogs.length === 0) {
     return 3;
@@ -249,7 +253,7 @@ export interface MotivationAnalysis {
  */
 export function analyzeMotivation(
   logs: HabitLogSimple[],
-  daysSinceStart: number
+  daysSinceStart: number,
 ): MotivationAnalysis {
   const currentScore = calculateMotivationScore(logs, daysSinceStart);
   const state = detectMotivationDip(logs, daysSinceStart);
@@ -260,11 +264,13 @@ export function analyzeMotivation(
   const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
   const sixDaysAgo = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
 
-  const recentLogs = logs.filter((log) => new Date(log.loggedAt) >= threeDaysAgo);
+  const recentLogs = logs.filter(
+    (log) => new Date(log.loggedAt) >= threeDaysAgo,
+  );
   const olderLogs = logs.filter(
     (log) =>
       new Date(log.loggedAt) >= sixDaysAgo &&
-      new Date(log.loggedAt) < threeDaysAgo
+      new Date(log.loggedAt) < threeDaysAgo,
   );
 
   const recentRate =

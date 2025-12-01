@@ -5,10 +5,7 @@
 
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-} from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { triggerRecordSchema } from "@/lib/types";
 
 // 创建打卡记录输入 schema
@@ -74,7 +71,8 @@ export const logRouter = createTRPCRouter({
         },
         update: {
           completed: input.completed,
-          completionTime: input.completionTime ?? (input.completed ? new Date() : null),
+          completionTime:
+            input.completionTime ?? (input.completed ? new Date() : null),
           durationMinutes: input.durationMinutes,
           difficultyRating: input.difficultyRating,
           moodBefore: input.moodBefore,
@@ -87,7 +85,8 @@ export const logRouter = createTRPCRouter({
           userId: ctx.session.user.id,
           loggedAt: logDate,
           completed: input.completed,
-          completionTime: input.completionTime ?? (input.completed ? new Date() : null),
+          completionTime:
+            input.completionTime ?? (input.completed ? new Date() : null),
           durationMinutes: input.durationMinutes,
           difficultyRating: input.difficultyRating,
           moodBefore: input.moodBefore,
@@ -109,14 +108,14 @@ export const logRouter = createTRPCRouter({
     }),
 
   /**
-   * 快速打卡（简化版）
+   * 快速打卡（简化版）- 返回庆祝所需数据
    */
   quickLog: protectedProcedure
     .input(
       z.object({
         habitId: z.string(),
         completed: z.boolean().default(true),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // 验证习惯属于当前用户
@@ -157,7 +156,51 @@ export const logRouter = createTRPCRouter({
         },
       });
 
-      return log;
+      // 计算连续天数（用于庆祝）
+      let streakDays = 0;
+      if (input.completed) {
+        const recentLogs = await ctx.db.habitLog.findMany({
+          where: {
+            habitId: input.habitId,
+            completed: true,
+          },
+          orderBy: { loggedAt: "desc" },
+          take: 100,
+        });
+
+        // 从今天往回数连续天数
+        for (let i = 0; i < recentLogs.length; i++) {
+          const logDate = new Date(recentLogs[i]!.loggedAt);
+          logDate.setHours(0, 0, 0, 0);
+          const expectedDate = new Date(today);
+          expectedDate.setDate(expectedDate.getDate() - i);
+
+          if (logDate.getTime() === expectedDate.getTime()) {
+            streakDays++;
+          } else {
+            break;
+          }
+        }
+      }
+
+      // 检测里程碑
+      const MILESTONES = [7, 21, 66, 100] as const;
+      type MilestoneType = "DAY_7" | "DAY_21" | "DAY_66" | "DAY_100";
+      let isMilestone = false;
+      let milestoneType: MilestoneType | undefined;
+
+      if (MILESTONES.includes(streakDays as 7 | 21 | 66 | 100)) {
+        isMilestone = true;
+        milestoneType = `DAY_${streakDays}` as MilestoneType;
+      }
+
+      return {
+        log,
+        habitName: habit.name,
+        streakDays,
+        isMilestone,
+        milestoneType,
+      };
     }),
 
   /**
@@ -201,7 +244,7 @@ export const logRouter = createTRPCRouter({
         habitId: z.string(),
         limit: z.number().min(1).max(100).default(30),
         offset: z.number().min(0).default(0),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       // 验证习惯属于当前用户
@@ -246,7 +289,7 @@ export const logRouter = createTRPCRouter({
         habitId: z.string().optional(),
         startDate: z.date(),
         endDate: z.date(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const logs = await ctx.db.habitLog.findMany({
@@ -365,7 +408,9 @@ export const logRouter = createTRPCRouter({
           ...(input.difficultyRating !== undefined && {
             difficultyRating: input.difficultyRating,
           }),
-          ...(input.moodBefore !== undefined && { moodBefore: input.moodBefore }),
+          ...(input.moodBefore !== undefined && {
+            moodBefore: input.moodBefore,
+          }),
           ...(input.moodAfter !== undefined && { moodAfter: input.moodAfter }),
           ...(input.notes !== undefined && { notes: input.notes }),
           ...(input.triggerContext !== undefined && {
@@ -413,7 +458,7 @@ export const logRouter = createTRPCRouter({
       z.object({
         habitId: z.string().optional(),
         days: z.number().min(1).max(365).default(30),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const startDate = new Date();
@@ -433,7 +478,10 @@ export const logRouter = createTRPCRouter({
       const completedLogs = logs.filter((log) => log.completed).length;
 
       // 按日期分组统计
-      const dailyStats = new Map<string, { completed: number; total: number }>();
+      const dailyStats = new Map<
+        string,
+        { completed: number; total: number }
+      >();
 
       logs.forEach((log) => {
         const dateKey = log.loggedAt.toISOString().split("T")[0]!;
@@ -446,25 +494,26 @@ export const logRouter = createTRPCRouter({
 
       // 计算情绪变化
       const logsWithMood = logs.filter(
-        (log) => log.moodBefore !== null && log.moodAfter !== null
+        (log) => log.moodBefore !== null && log.moodAfter !== null,
       );
       const avgMoodChange =
         logsWithMood.length > 0
           ? logsWithMood.reduce(
-              (sum, log) => sum + ((log.moodAfter ?? 0) - (log.moodBefore ?? 0)),
-              0
+              (sum, log) =>
+                sum + ((log.moodAfter ?? 0) - (log.moodBefore ?? 0)),
+              0,
             ) / logsWithMood.length
           : 0;
 
       // 计算平均难度
       const logsWithDifficulty = logs.filter(
-        (log) => log.difficultyRating !== null
+        (log) => log.difficultyRating !== null,
       );
       const avgDifficulty =
         logsWithDifficulty.length > 0
           ? logsWithDifficulty.reduce(
               (sum, log) => sum + (log.difficultyRating ?? 0),
-              0
+              0,
             ) / logsWithDifficulty.length
           : 0;
 

@@ -93,14 +93,22 @@ const defaultStrategies = {
 
 type CategoryKey = keyof typeof defaultStrategies;
 
-export function EnvironmentDesign({ habitId, habitName }: EnvironmentDesignProps) {
-  const [completedStrategies, setCompletedStrategies] = useState<Set<string>>(new Set());
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(["physical"]);
-
-  const { data: aiSuggestions, isLoading } = api.analytics.getEnvironmentDesign.useQuery(
-    { habitId },
-    { staleTime: 10 * 60 * 1000 } // 10分钟缓存
+export function EnvironmentDesign({
+  habitId,
+  habitName,
+}: EnvironmentDesignProps) {
+  const [completedStrategies, setCompletedStrategies] = useState<Set<string>>(
+    new Set(),
   );
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([
+    "physical",
+  ]);
+
+  const { data: aiSuggestions, isLoading } =
+    api.analytics.getEnvironmentDesign.useQuery(
+      { habitId },
+      { staleTime: 10 * 60 * 1000 }, // 10分钟缓存
+    );
 
   const toggleStrategy = (id: string) => {
     setCompletedStrategies((prev) => {
@@ -121,11 +129,23 @@ export function EnvironmentDesign({ habitId, habitName }: EnvironmentDesignProps
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case "high":
-        return <Badge variant="destructive" className="text-xs">重要</Badge>;
+        return (
+          <Badge variant="destructive" className="text-xs">
+            重要
+          </Badge>
+        );
       case "medium":
-        return <Badge variant="secondary" className="text-xs">推荐</Badge>;
+        return (
+          <Badge variant="secondary" className="text-xs">
+            推荐
+          </Badge>
+        );
       default:
-        return <Badge variant="outline" className="text-xs">可选</Badge>;
+        return (
+          <Badge variant="outline" className="text-xs">
+            可选
+          </Badge>
+        );
     }
   };
 
@@ -136,24 +156,22 @@ export function EnvironmentDesign({ habitId, habitName }: EnvironmentDesignProps
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
                 <Shield className="h-5 w-5 text-blue-500" />
                 环境设计
               </CardTitle>
-              <CardDescription>
-                优化环境，降低触发概率
-              </CardDescription>
+              <CardDescription>优化环境，降低触发概率</CardDescription>
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold">{progressPercent}%</div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-muted-foreground text-xs">
                 {completedCount}/{totalStrategies} 已完成
               </div>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="h-2 w-full rounded-full bg-muted">
+          <div className="bg-muted h-2 w-full rounded-full">
             <div
               className="h-full rounded-full bg-blue-500 transition-all"
               style={{ width: `${progressPercent}%` }}
@@ -166,7 +184,7 @@ export function EnvironmentDesign({ habitId, habitName }: EnvironmentDesignProps
       {isLoading ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Lightbulb className="h-4 w-4 text-amber-500" />
               AI 个性化建议
             </CardTitle>
@@ -180,7 +198,7 @@ export function EnvironmentDesign({ habitId, habitName }: EnvironmentDesignProps
       ) : aiSuggestions && aiSuggestions.suggestions.length > 0 ? (
         <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Lightbulb className="h-4 w-4 text-amber-500" />
               AI 个性化建议
             </CardTitle>
@@ -193,13 +211,13 @@ export function EnvironmentDesign({ habitId, habitName }: EnvironmentDesignProps
               {aiSuggestions.suggestions.map((suggestion, index) => (
                 <li
                   key={index}
-                  className="flex items-start gap-3 rounded-lg bg-background p-3"
+                  className="bg-background flex items-start gap-3 rounded-lg p-3"
                 >
-                  <Target className="h-4 w-4 mt-0.5 shrink-0 text-amber-600" />
+                  <Target className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                   <div>
                     <p className="text-sm">{suggestion.suggestion}</p>
                     {suggestion.reason && (
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="text-muted-foreground mt-1 text-xs">
                         原因：{suggestion.reason}
                       </p>
                     )}
@@ -214,7 +232,7 @@ export function EnvironmentDesign({ habitId, habitName }: EnvironmentDesignProps
       {/* 环境设计清单 */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-base">
             <Zap className="h-4 w-4 text-purple-500" />
             环境优化清单
           </CardTitle>
@@ -231,21 +249,23 @@ export function EnvironmentDesign({ habitId, habitName }: EnvironmentDesignProps
             {environmentCategories.map((category) => {
               const strategies = defaultStrategies[category.id as CategoryKey];
               const categoryCompleted = strategies.filter((s) =>
-                completedStrategies.has(s.id)
+                completedStrategies.has(s.id),
               ).length;
 
               return (
                 <AccordionItem key={category.id} value={category.id}>
                   <AccordionTrigger className="hover:no-underline">
                     <div className="flex items-center gap-3">
-                      <div className="text-muted-foreground">{category.icon}</div>
+                      <div className="text-muted-foreground">
+                        {category.icon}
+                      </div>
                       <div className="text-left">
                         <div className="font-medium">{category.label}</div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           {category.description}
                         </div>
                       </div>
-                      <Badge variant="outline" className="ml-auto mr-2">
+                      <Badge variant="outline" className="mr-2 ml-auto">
                         {categoryCompleted}/{strategies.length}
                       </Badge>
                     </div>

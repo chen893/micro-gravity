@@ -46,17 +46,21 @@ export async function POST(req: Request) {
        * 当 AI 收集完所有必要信息后调用此工具创建习惯
        */
       createHabit: tool({
-        
         description:
           "当收集完习惯信息后，创建习惯配置。需要包含名称、类型、动机、能力和提示信息。",
         inputSchema: z.object({
           name: z.string().describe("习惯名称"),
           type: z.enum(["BUILD", "BREAK"]).describe("养成(BUILD)或戒除(BREAK)"),
-          category: z.string().optional().describe("习惯分类，如健康、学习、工作等"),
+          category: z
+            .string()
+            .optional()
+            .describe("习惯分类，如健康、学习、工作等"),
           motivation: z.object({
             primaryType: z
               .enum(["PLEASURE", "HOPE", "SOCIAL"])
-              .describe("主要动机类型：愉悦(PLEASURE)、希望(HOPE)、社会认同(SOCIAL)"),
+              .describe(
+                "主要动机类型：愉悦(PLEASURE)、希望(HOPE)、社会认同(SOCIAL)",
+              ),
             deepReason: z.string().describe("深层原因：用户为什么想要这个习惯"),
             visionStatement: z
               .string()
@@ -92,13 +96,11 @@ export async function POST(req: Request) {
               .describe("简化建议：如何让习惯更容易执行"),
           }),
           prompt: z.object({
-            anchorHabit: z
-              .string()
-              .describe("锚定习惯：新习惯附着的已有习惯"),
+            anchorHabit: z.string().describe("锚定习惯：新习惯附着的已有习惯"),
             triggerType: z
               .enum(["SIGNAL", "FACILITATOR", "SPARK"])
               .describe(
-                "触发类型：信号型(SIGNAL)、便利型(FACILITATOR)、火花型(SPARK)"
+                "触发类型：信号型(SIGNAL)、便利型(FACILITATOR)、火花型(SPARK)",
               ),
             preferredTime: z.string().describe("偏好时间：最佳执行时间"),
             contextCues: z
@@ -293,7 +295,7 @@ export async function POST(req: Request) {
       }),
     },
     // 最大步骤数，防止无限循环
-    stopWhen : stepCountIs(5),
+    stopWhen: stepCountIs(5),
   });
 
   // 返回流式响应

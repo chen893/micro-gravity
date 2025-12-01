@@ -30,7 +30,10 @@ export function DashboardSkeleton() {
         <CardContent>
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center justify-between rounded-lg border p-4">
+              <div
+                key={i}
+                className="flex items-center justify-between rounded-lg border p-4"
+              >
                 <div className="flex items-center gap-4">
                   <Skeleton className="h-6 w-6 rounded-full" />
                   <div>

@@ -15,9 +15,7 @@ export default async function HabitsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">我的习惯</h2>
-            <p className="text-muted-foreground">
-              管理和追踪你的所有习惯
-            </p>
+            <p className="text-muted-foreground">管理和追踪你的所有习惯</p>
           </div>
           <Button asChild>
             <Link href="/habits/new">

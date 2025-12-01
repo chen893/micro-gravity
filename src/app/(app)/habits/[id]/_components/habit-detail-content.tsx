@@ -15,18 +15,16 @@ interface HabitDetailContentProps {
 export function HabitDetailContent({ habitId }: HabitDetailContentProps) {
   const { data: habit, isLoading: habitLoading } = api.habit.getById.useQuery(
     { id: habitId },
-    { retry: false }
+    { retry: false },
   );
 
   const { data: stats, isLoading: statsLoading } = api.habit.getStats.useQuery(
     { id: habitId },
-    { retry: false }
+    { retry: false },
   );
 
-  const { data: logsData, isLoading: logsLoading } = api.log.getByHabit.useQuery(
-    { habitId, limit: 10 },
-    { retry: false }
-  );
+  const { data: logsData, isLoading: logsLoading } =
+    api.log.getByHabit.useQuery({ habitId, limit: 10 }, { retry: false });
 
   if (habitLoading) {
     return null; // Suspense 会处理
@@ -92,11 +90,7 @@ export function HabitDetailContent({ habitId }: HabitDetailContentProps) {
       />
 
       {/* MAP 模型配置信息 */}
-      <HabitMapInfo
-        motivation={motivation}
-        ability={ability}
-        prompt={prompt}
-      />
+      <HabitMapInfo motivation={motivation} ability={ability} prompt={prompt} />
 
       {/* 阶段进度 */}
       <HabitPhaseProgress

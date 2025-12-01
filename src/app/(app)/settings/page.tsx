@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -84,7 +90,7 @@ export default function SettingsPage() {
             </Avatar>
             <div>
               <h3 className="font-semibold">{session?.user?.name ?? "用户"}</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {session?.user?.email ?? ""}
               </p>
             </div>
@@ -107,7 +113,7 @@ export default function SettingsPage() {
                 defaultValue={session?.user?.email ?? ""}
                 disabled
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 邮箱由第三方登录提供，无法修改
               </p>
             </div>
@@ -129,14 +135,17 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>每日提醒</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   每天提醒你完成习惯打卡
                 </p>
               </div>
               <Switch
                 checked={notifications.dailyReminder}
                 onCheckedChange={(checked) =>
-                  setNotifications((prev) => ({ ...prev, dailyReminder: checked }))
+                  setNotifications((prev) => ({
+                    ...prev,
+                    dailyReminder: checked,
+                  }))
                 }
               />
             </div>
@@ -154,7 +163,10 @@ export default function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>提醒风格</Label>
-                  <Select value={reminderStyle} onValueChange={setReminderStyle}>
+                  <Select
+                    value={reminderStyle}
+                    onValueChange={setReminderStyle}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -173,14 +185,17 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>周报通知</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   每周生成习惯报告时通知你
                 </p>
               </div>
               <Switch
                 checked={notifications.weeklyReport}
                 onCheckedChange={(checked) =>
-                  setNotifications((prev) => ({ ...prev, weeklyReport: checked }))
+                  setNotifications((prev) => ({
+                    ...prev,
+                    weeklyReport: checked,
+                  }))
                 }
               />
             </div>
@@ -188,7 +203,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>里程碑通知</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   达成里程碑成就时通知你
                 </p>
               </div>
@@ -203,14 +218,17 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>动机激励</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   当检测到动机下降时发送激励消息
                 </p>
               </div>
               <Switch
                 checked={notifications.motivationBoost}
                 onCheckedChange={(checked) =>
-                  setNotifications((prev) => ({ ...prev, motivationBoost: checked }))
+                  setNotifications((prev) => ({
+                    ...prev,
+                    motivationBoost: checked,
+                  }))
                 }
               />
             </div>
@@ -273,7 +291,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
               <p className="font-medium">登录方式</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 通过 Google 账号登录
               </p>
             </div>
@@ -288,9 +306,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">退出登录</p>
-                <p className="text-sm text-muted-foreground">
-                  退出当前账户
-                </p>
+                <p className="text-muted-foreground text-sm">退出当前账户</p>
               </div>
               <Button variant="outline" onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
@@ -300,8 +316,8 @@ export default function SettingsPage() {
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-destructive">删除账户</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-destructive font-medium">删除账户</p>
+                <p className="text-muted-foreground text-sm">
                   永久删除你的账户和所有数据
                 </p>
               </div>

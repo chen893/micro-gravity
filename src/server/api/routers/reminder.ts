@@ -21,7 +21,7 @@ export const reminderRouter = createTRPCRouter({
     .input(
       z.object({
         habitId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const habit = await ctx.db.habit.findFirst({
@@ -59,7 +59,7 @@ export const reminderRouter = createTRPCRouter({
         logDate.setHours(0, 0, 0, 0);
 
         const diffDays = Math.floor(
-          (today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24)
+          (today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24),
         );
 
         if (diffDays === currentStreak && log.completed) {
@@ -78,7 +78,9 @@ export const reminderRouter = createTRPCRouter({
       const recentRate =
         recentLogs.length > 0
           ? Math.round(
-              (recentLogs.filter((l) => l.completed).length / recentLogs.length) * 100
+              (recentLogs.filter((l) => l.completed).length /
+                recentLogs.length) *
+                100,
             )
           : 0;
 
@@ -86,13 +88,18 @@ export const reminderRouter = createTRPCRouter({
       const lastCompleted = habit.logs.find((l) => l.completed);
 
       // 解析 motivation JSON
-      const motivation = habit.motivation as { primaryType?: string; motivationScore?: number } | null;
+      const motivation = habit.motivation as {
+        primaryType?: string;
+        motivationScore?: number;
+      } | null;
 
       const context: ReminderContext = {
         habitId: habit.id,
         habitName: habit.name,
         habitType: habit.type,
-        motivationType: (motivation?.primaryType as "PLEASURE" | "HOPE" | "SOCIAL") ?? "PLEASURE",
+        motivationType:
+          (motivation?.primaryType as "PLEASURE" | "HOPE" | "SOCIAL") ??
+          "PLEASURE",
         motivationLevel: motivation?.motivationScore ?? 5,
         streakDays: currentStreak,
         recentRate,
@@ -146,7 +153,7 @@ export const reminderRouter = createTRPCRouter({
         logDate.setHours(0, 0, 0, 0);
 
         const diffDays = Math.floor(
-          (today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24)
+          (today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24),
         );
 
         if (diffDays === currentStreak && log.completed) {
@@ -165,18 +172,25 @@ export const reminderRouter = createTRPCRouter({
       const recentRate =
         recentLogs.length > 0
           ? Math.round(
-              (recentLogs.filter((l) => l.completed).length / recentLogs.length) * 100
+              (recentLogs.filter((l) => l.completed).length /
+                recentLogs.length) *
+                100,
             )
           : 0;
 
       const lastCompleted = habit.logs.find((l) => l.completed);
-      const motivation = habit.motivation as { primaryType?: string; motivationScore?: number } | null;
+      const motivation = habit.motivation as {
+        primaryType?: string;
+        motivationScore?: number;
+      } | null;
 
       return {
         habitId: habit.id,
         habitName: habit.name,
         habitType: habit.type,
-        motivationType: (motivation?.primaryType as "PLEASURE" | "HOPE" | "SOCIAL") ?? "PLEASURE",
+        motivationType:
+          (motivation?.primaryType as "PLEASURE" | "HOPE" | "SOCIAL") ??
+          "PLEASURE",
         motivationLevel: motivation?.motivationScore ?? 5,
         streakDays: currentStreak,
         recentRate,

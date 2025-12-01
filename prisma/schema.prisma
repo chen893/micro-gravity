@@ -59,6 +59,50 @@ enum AnalysisType {
     RISK         // 中断风险
 }
 
+// ============ v2.0 庆祝系统枚举 ============
+
+// 庆祝方式分类
+enum CelebrationCategory {
+    VERBAL   // 语言类：说"太棒了"
+    PHYSICAL // 动作类：挥拳、跳舞
+    MENTAL   // 想象类：想象烟花绽放
+    SENSORY  // 感官类：深呼吸、闭眼感受
+}
+
+// ============ v2.0 Phase 2 枚举 ============
+
+// 容易做策略
+enum EasyStrategy {
+    STARTER_STEP // 入门步骤：关注启动行为的第一步
+    SCALE_DOWN   // 缩小规模：缩小行为本身的规模
+}
+
+// 焦点地图象限
+enum FocusQuadrant {
+    GOLDEN      // 黄金行为：高影响力 + 容易做
+    HIGH_IMPACT // 高影响但难：需要拆解
+    EASY_WIN    // 简单小胜：容易但影响一般
+    AVOID       // 避免区：难做且影响小
+}
+
+// ============ v2.0 Phase 3 枚举 ============
+
+// 时段枚举（用于日程清单）
+enum TimeSlot {
+    MORNING // 早晨（起床-出门）
+    WORK    // 工作时段
+    EVENING // 傍晚（下班-晚餐）
+    NIGHT   // 夜间（晚餐后-睡前）
+}
+
+// 活动频率
+enum ActivityFrequency {
+    DAILY      // 每天
+    WEEKDAYS   // 工作日
+    WEEKENDS   // 周末
+    OCCASIONAL // 偶尔
+}
+
 // ============ NextAuth.js 模型 ============
 
 model Account {
@@ -114,6 +158,15 @@ model User {
     reports            Report[]
     milestones         Milestone[]
     analyticsSnapshots AnalyticsSnapshot[]
+    // v2.0 庆祝系统
+    userCelebrations   UserCelebration[]
+    flashCelebrations  FlashCelebration[]
+    // v2.0 Phase 2: 愿望系统
+    aspirations        Aspiration[]
+    // v2.0 Phase 3: 日程清单
+    dailyRoutines      DailyRoutine[]
+    // v2.0 Phase 8: 成就徽章
+    userBadges         UserBadge[]
     createdAt          DateTime            @default(now())
     updatedAt          DateTime            @updatedAt
 }
@@ -140,6 +193,26 @@ model Habit {
     currentPhase Int         @default(1)
     phases       Json?       // PhaseConfig[]: 渐进式阶段配置
 
+    // ============ v2.0 Phase 2: 习惯创建流程重构 ============
+
+    // 关联愿望
+    aspirationId    String?
+    aspiration      Aspiration? @relation(fields: [aspirationId], references: [id], onDelete: SetNull)
+
+    // 容易做策略
+    easyStrategy    EasyStrategy  @default(SCALE_DOWN)
+    starterStep     String?       // 入门步骤描述（若选择入门步骤策略）
+    scaledBehavior  String?       // 缩小后的行为描述（若选择缩小规模策略）
+
+    // 微习惯配方
+    recipeAnchor      String?     // 锚点行为："在我【锚点】之后"
+    recipeBehavior    String?     // 微行为："我会【行为】"
+    recipeCelebration String?     // 庆祝方式："为了让大脑记住，我要【庆祝】"
+
+    // 配方演练记录
+    rehearsalCount    Int         @default(0)    // 演练次数（建议7-10次）
+    rehearsedAt       DateTime?   // 最后演练时间
+
     status        HabitStatus   @default(ACTIVE)
     logs          HabitLog[]
     conversations Conversation[]
@@ -149,6 +222,7 @@ model Habit {
 
     @@index([userId])
     @@index([status])
+    @@index([aspirationId])
 }
 
 // 打卡记录模型
@@ -169,6 +243,12 @@ model HabitLog {
     moodAfter        Int?      // 执行后情绪 1-5
     notes            String?   // 备注
     triggerContext   Json?     // 触发记录（仅 BREAK 类型）
+
+    // v2.0 庆祝相关字段
+    celebratedAt        DateTime? // 庆祝时间
+    celebrationMethodId String?   // 使用的庆祝方式ID
+    shineScore          Int?      // 发光感评分 1-5
+    celebrationNote     String?   // 庆祝感想（可选）
 
     createdAt DateTime @default(now())
 
@@ -274,4 +354,158 @@ model AnalyticsSnapshot {
     @@unique([userId, habitId, analysisType])
     @@index([userId])
     @@index([analysisType])
+}
+
+// ============ v2.0 Phase 2: 愿望与行为集群模型 ============
+
+// 愿望（用户的顶层目标）
+model Aspiration {
+    id          String   @id @default(cuid())
+    userId      String
+    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    description String   // 愿望描述，如"变得更健康"
+    clarified   String?  // 明确后的愿望，如"精力充沛"
+    category    String?  // 愿望分类
+
+    behaviorClusters BehaviorCluster[]
+    habits           Habit[]
+
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    @@index([userId])
+}
+
+// 行为集群（探索阶段产生的行为选项）
+model BehaviorCluster {
+    id            String     @id @default(cuid())
+    aspirationId  String
+    aspiration    Aspiration @relation(fields: [aspirationId], references: [id], onDelete: Cascade)
+
+    // 行为列表
+    // behaviors: [{ name, description, impactScore, feasibilityScore, quadrant, isSelected }]
+    behaviors     Json
+
+    // 焦点地图数据
+    // focusMap: { goldenBehavior, recommendation, summary }
+    focusMapData  Json?
+
+    // AI 生成的建议
+    aiSuggestions String?
+
+    createdAt     DateTime   @default(now())
+
+    @@index([aspirationId])
+}
+
+// ============ v2.0 庆祝系统模型 ============
+
+// 庆祝方式库（预置数据）
+model CelebrationMethod {
+    id        String              @id @default(cuid())
+    category  CelebrationCategory
+    content   String              // 庆祝方式描述
+    emoji     String?             // 表情符号
+    isBuiltIn Boolean             @default(true) // 是否为内置方式
+
+    userFavorites UserCelebration[]
+
+    @@index([category])
+}
+
+// 用户收藏的庆祝方式
+model UserCelebration {
+    id                  String            @id @default(cuid())
+    userId              String
+    user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+    celebrationMethodId String
+    celebrationMethod   CelebrationMethod @relation(fields: [celebrationMethodId], references: [id], onDelete: Cascade)
+    isDefault           Boolean           @default(false) // 是否为默认庆祝方式
+    useCount            Int               @default(0) // 使用次数（用于个性化推荐）
+
+    createdAt DateTime @default(now())
+
+    @@unique([userId, celebrationMethodId])
+    @@index([userId])
+}
+
+// 闪电庆祝（P2功能：随时为任何良好行为庆祝）
+model FlashCelebration {
+    id                  String   @id @default(cuid())
+    userId              String
+    user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    content             String   // 庆祝的行为描述
+    celebrationMethodId String?  // 使用的庆祝方式
+    shineScore          Int?     // 发光感评分 1-5
+
+    createdAt DateTime @default(now())
+
+    @@index([userId])
+    @@index([createdAt])
+}
+
+// ============ v2.0 Phase 8: 成就徽章系统枚举 ============
+
+// 徽章稀有度
+enum BadgeRarity {
+    COMMON    // 普通
+    RARE      // 稀有
+    EPIC      // 史诗
+    LEGENDARY // 传说
+}
+
+// ============ v2.0 Phase 3: 提示系统升级模型 ============
+
+// 日程清单（用户的日常既有习惯/活动）
+model DailyRoutine {
+    id         String   @id @default(cuid())
+    userId     String
+    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    timeSlot   TimeSlot // 时段
+    activities Json     // 活动列表 [{ name, time, frequency, location }]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([userId, timeSlot]) // 每个用户每个时段只有一条记录
+    @@index([userId])
+}
+
+// ============ v2.0 Phase 8: 成就徽章系统模型 ============
+
+// 徽章定义（系统内置）
+model Badge {
+    id              String      @id @default(cuid())
+    code            String      @unique // 唯一标识码，如 "FIRST_HABIT"
+    name            String      // 徽章名称
+    description     String      // 徽章描述
+    icon            String      // 图标/emoji
+    rarity          BadgeRarity
+    category        String      // 类别：起步/连续/庆祝/全勤/特殊
+
+    // 解锁条件（JSON 结构）
+    // { type: "STREAK", days: 7 } 或 { type: "TOTAL_CHECKINS", count: 10 }
+    unlockCondition Json
+
+    userBadges UserBadge[]
+
+    createdAt DateTime @default(now())
+
+    @@index([category])
+    @@index([rarity])
+}
+
+// 用户获得的徽章
+model UserBadge {
+    id         String   @id @default(cuid())
+    userId     String
+    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    badgeId    String
+    badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+    unlockedAt DateTime @default(now()) // 解锁时间
+    habitId    String?  // 关联的习惯（如果是习惯相关徽章）
+
+    @@unique([userId, badgeId]) // 同一用户同一徽章只能获得一次
+    @@index([userId])
+    @@index([badgeId])
 }

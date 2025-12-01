@@ -2,7 +2,13 @@
 
 import { use } from "react";
 import { api } from "@/trpc/react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -95,14 +101,21 @@ export default function ReportDetailPage({ params }: ReportDetailPageProps) {
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
-            <Badge variant="outline">{reportTypeLabels[report.type] ?? report.type}</Badge>
+            <Badge variant="outline">
+              {reportTypeLabels[report.type] ?? report.type}
+            </Badge>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight pl-11">
-            {format(new Date(report.periodStart), "yyyy年M月d日", { locale: zhCN })} -{" "}
-            {format(new Date(report.periodEnd), "M月d日", { locale: zhCN })}
+          <h1 className="pl-11 text-2xl font-bold tracking-tight">
+            {format(new Date(report.periodStart), "yyyy年M月d日", {
+              locale: zhCN,
+            })}{" "}
+            - {format(new Date(report.periodEnd), "M月d日", { locale: zhCN })}
           </h1>
           <p className="text-muted-foreground pl-11">
-            生成于 {format(new Date(report.generatedAt), "yyyy年M月d日 HH:mm", { locale: zhCN })}
+            生成于{" "}
+            {format(new Date(report.generatedAt), "yyyy年M月d日 HH:mm", {
+              locale: zhCN,
+            })}
           </p>
         </div>
       </div>
@@ -141,7 +154,7 @@ export default function ReportDetailPage({ params }: ReportDetailPageProps) {
       {highlights.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Star className="h-4 w-4 text-yellow-500" />
               本周亮点
             </CardTitle>
@@ -157,7 +170,7 @@ export default function ReportDetailPage({ params }: ReportDetailPageProps) {
                   <span className="text-2xl">{highlight.emoji ?? "🎉"}</span>
                   <div>
                     <div className="font-medium">{highlight.habitName}</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       {highlight.achievement}
                     </div>
                     {highlight.metric && (
@@ -177,7 +190,7 @@ export default function ReportDetailPage({ params }: ReportDetailPageProps) {
       {patterns.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Lightbulb className="h-4 w-4 text-amber-500" />
               模式发现
             </CardTitle>
@@ -196,7 +209,7 @@ export default function ReportDetailPage({ params }: ReportDetailPageProps) {
                     )}
                   </div>
                   {pattern.implication && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       含义: {pattern.implication}
                     </p>
                   )}
@@ -211,7 +224,7 @@ export default function ReportDetailPage({ params }: ReportDetailPageProps) {
       {suggestions.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Target className="h-4 w-4 text-blue-500" />
               改进建议
             </CardTitle>
@@ -222,9 +235,9 @@ export default function ReportDetailPage({ params }: ReportDetailPageProps) {
               {suggestions.map((suggestion, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 rounded-lg bg-muted/50 p-3"
+                  className="bg-muted/50 flex items-start gap-3 rounded-lg p-3"
                 >
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                  <div className="bg-primary text-primary-foreground flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs">
                     {index + 1}
                   </div>
                   <div>
@@ -235,7 +248,7 @@ export default function ReportDetailPage({ params }: ReportDetailPageProps) {
                     )}
                     <p className="text-sm">{suggestion.suggestion}</p>
                     {suggestion.expectedImpact && (
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="text-muted-foreground mt-1 text-xs">
                         预期效果: {suggestion.expectedImpact}
                       </p>
                     )}
@@ -251,7 +264,7 @@ export default function ReportDetailPage({ params }: ReportDetailPageProps) {
       {goals.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <CheckCircle2 className="h-4 w-4 text-green-500" />
               下周目标
             </CardTitle>
@@ -264,11 +277,11 @@ export default function ReportDetailPage({ params }: ReportDetailPageProps) {
                   key={index}
                   className="flex items-center gap-3 rounded-lg border p-3"
                 >
-                  <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
+                  <CheckCircle2 className="text-muted-foreground h-5 w-5" />
                   <div>
                     <p className="font-medium">{goal.goal}</p>
                     {goal.measurable && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         衡量标准: {goal.measurable}
                       </p>
                     )}
@@ -302,13 +315,15 @@ function StatCard({ title, value, suffix, change, icon }: StatCardProps) {
         <div className="text-2xl font-bold">
           {value}
           {suffix && (
-            <span className="text-sm font-normal text-muted-foreground">
+            <span className="text-muted-foreground text-sm font-normal">
               {suffix}
             </span>
           )}
         </div>
         {change !== undefined && (
-          <p className={`text-xs ${change >= 0 ? "text-green-600" : "text-red-600"}`}>
+          <p
+            className={`text-xs ${change >= 0 ? "text-green-600" : "text-red-600"}`}
+          >
             {change >= 0 ? (
               <TrendingUp className="mr-1 inline h-3 w-3" />
             ) : (

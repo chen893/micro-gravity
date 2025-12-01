@@ -36,7 +36,7 @@ export function TimeHeatmap({
   // 将数据转换为二维矩阵
   const heatmapMatrix = useMemo(() => {
     const matrix: (number | null)[][] = Array.from({ length: 7 }, () =>
-      Array.from({ length: 24 }, () => null)
+      Array.from({ length: 24 }, () => null),
     );
 
     data.forEach((item) => {
@@ -88,11 +88,11 @@ export function TimeHeatmap({
         <div className="overflow-x-auto">
           <div className="min-w-[400px]">
             {/* 小时标签 */}
-            <div className="flex pl-8 mb-1">
+            <div className="mb-1 flex pl-8">
               {hourLabels.map((hour) => (
                 <div
                   key={hour}
-                  className="flex-1 text-center text-xs text-muted-foreground"
+                  className="text-muted-foreground flex-1 text-center text-xs"
                   style={{ width: `${100 / 8}%` }}
                 >
                   {hour}时
@@ -105,7 +105,7 @@ export function TimeHeatmap({
               {heatmapMatrix.map((row, dayIndex) => (
                 <div key={dayIndex} className="flex items-center gap-1">
                   {/* 星期标签 */}
-                  <div className="w-7 text-xs text-muted-foreground text-right pr-1">
+                  <div className="text-muted-foreground w-7 pr-1 text-right text-xs">
                     周{dayNames[dayIndex]}
                   </div>
                   {/* 每小时的格子 */}
@@ -113,9 +113,9 @@ export function TimeHeatmap({
                     {row.map((value, hourIndex) => (
                       <div
                         key={hourIndex}
-                        className={`flex-1 aspect-square rounded-sm ${getColor(
-                          value
-                        )} transition-colors hover:ring-1 hover:ring-primary`}
+                        className={`aspect-square flex-1 rounded-sm ${getColor(
+                          value,
+                        )} hover:ring-primary transition-colors hover:ring-1`}
                         title={
                           value !== null
                             ? `周${dayNames[dayIndex]} ${hourIndex}:00 - ${hourIndex + 1}:00\n完成率: ${value}%`
@@ -129,16 +129,20 @@ export function TimeHeatmap({
             </div>
 
             {/* 图例 */}
-            <div className="flex items-center justify-end gap-2 mt-4">
-              <span className="text-xs text-muted-foreground">低</span>
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <span className="text-muted-foreground text-xs">低</span>
               <div className="flex gap-[2px]">
-                {["bg-red-200 dark:bg-red-900", "bg-amber-200 dark:bg-amber-900", "bg-lime-200 dark:bg-lime-900", "bg-green-300 dark:bg-green-800", "bg-green-500 dark:bg-green-600"].map(
-                  (color, i) => (
-                    <div key={i} className={`w-4 h-4 rounded-sm ${color}`} />
-                  )
-                )}
+                {[
+                  "bg-red-200 dark:bg-red-900",
+                  "bg-amber-200 dark:bg-amber-900",
+                  "bg-lime-200 dark:bg-lime-900",
+                  "bg-green-300 dark:bg-green-800",
+                  "bg-green-500 dark:bg-green-600",
+                ].map((color, i) => (
+                  <div key={i} className={`h-4 w-4 rounded-sm ${color}`} />
+                ))}
               </div>
-              <span className="text-xs text-muted-foreground">高</span>
+              <span className="text-muted-foreground text-xs">高</span>
             </div>
           </div>
         </div>

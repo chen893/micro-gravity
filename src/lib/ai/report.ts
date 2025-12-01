@@ -1,6 +1,6 @@
 /**
- * v1.5 报告生成模块
- * 周报、月报、里程碑报告
+ * v2.0 报告生成模块 - 庆祝优先版
+ * 基于福格行为模型："情绪创造习惯，庆祝是习惯养成的肥料"
  */
 
 import { generateObject } from "ai";
@@ -19,7 +19,7 @@ import {
   type ReportSummary,
   type ReportHighlight,
   type PatternFinding,
-  type MilestoneReflection,
+  type CelebrationMoment,
 } from "@/lib/types";
 import { z } from "zod";
 import { modelMini } from "./model";
@@ -55,7 +55,7 @@ export interface ReportInputData {
  */
 export function calculatePeriodSummary(
   data: ReportInputData,
-  previousRate?: number
+  previousRate?: number,
 ): ReportSummary {
   const totalLogs = data.logs.length;
   const completedLogs = data.logs.filter((log) => log.completed).length;
@@ -127,9 +127,7 @@ export function calculatePeriodSummary(
 /**
  * 识别周期亮点
  */
-export function identifyHighlights(
-  data: ReportInputData
-): ReportHighlight[] {
+export function identifyHighlights(data: ReportInputData): ReportHighlight[] {
   const highlights: ReportHighlight[] = [];
 
   // 按习惯统计
@@ -201,13 +199,101 @@ export function identifyHighlights(
 }
 
 /**
+ * 生成庆祝时刻（v2.0 新增）
+ * 找出每个小胜利并用情感化语言庆祝
+ */
+export function generateCelebrationMoments(
+  data: ReportInputData,
+): CelebrationMoment[] {
+  const celebrations: CelebrationMoment[] = [];
+
+  // 按习惯统计
+  const habitStats = new Map<
+    string,
+    { completed: number; total: number; name: string }
+  >();
+
+  data.habits.forEach((habit) => {
+    habitStats.set(habit.id, { completed: 0, total: 0, name: habit.name });
+  });
+
+  data.logs.forEach((log) => {
+    const stats = habitStats.get(log.habitId);
+    if (stats) {
+      stats.total++;
+      if (log.completed) stats.completed++;
+    }
+  });
+
+  // 为每个有完成记录的习惯生成庆祝
+  habitStats.forEach((stats) => {
+    if (stats.completed === 0) return;
+
+    const rate = stats.total > 0 ? stats.completed / stats.total : 0;
+
+    // 完美完成
+    if (rate === 1 && stats.completed >= 7) {
+      celebrations.push({
+        habitName: stats.name,
+        achievement: `连续${stats.completed}天全部完成`,
+        celebrationText: `太棒了！「${stats.name}」整整一周都没有落下，这份坚持真的很了不起！`,
+        emoji: "🏆",
+      });
+    }
+    // 高完成率
+    else if (rate >= 0.8 && stats.completed >= 5) {
+      celebrations.push({
+        habitName: stats.name,
+        achievement: `完成了${stats.completed}次`,
+        celebrationText: `「${stats.name}」本周表现出色！每一次坚持都在让你变得更强！`,
+        emoji: "⭐",
+      });
+    }
+    // 有坚持就值得庆祝
+    else if (stats.completed >= 3) {
+      celebrations.push({
+        habitName: stats.name,
+        achievement: `坚持了${stats.completed}天`,
+        celebrationText: `「${stats.name}」已经做到${stats.completed}次了，这就是进步的力量！`,
+        emoji: "💪",
+      });
+    }
+    // 即使只完成1-2次
+    else if (stats.completed >= 1) {
+      celebrations.push({
+        habitName: stats.name,
+        achievement: `迈出了第一步`,
+        celebrationText: `「${stats.name}」开始行动了！记住：开始永远是最难的一步，你做到了！`,
+        emoji: "🌱",
+      });
+    }
+  });
+
+  // 整体庆祝
+  const totalCompleted = data.logs.filter((log) => log.completed).length;
+  if (totalCompleted > 0 && celebrations.length === 0) {
+    celebrations.push({
+      habitName: "本周习惯",
+      achievement: `共完成${totalCompleted}次打卡`,
+      celebrationText: `这周你完成了${totalCompleted}次打卡，每一次都是对未来自己的投资！`,
+      emoji: "🎉",
+    });
+  }
+
+  return celebrations.slice(0, 3); // 最多3个庆祝时刻
+}
+
+/**
  * 发现数据模式
  */
 export function findPatterns(data: ReportInputData): PatternFinding[] {
   const patterns: PatternFinding[] = [];
 
   // 时间模式分析
-  const dayOfWeekStats = new Map<number, { completed: number; total: number }>();
+  const dayOfWeekStats = new Map<
+    number,
+    { completed: number; total: number }
+  >();
   for (let i = 0; i < 7; i++) {
     dayOfWeekStats.set(i, { completed: 0, total: 0 });
   }
@@ -261,13 +347,13 @@ export function findPatterns(data: ReportInputData): PatternFinding[] {
 
   // 情绪模式
   const moodLogs = data.logs.filter(
-    (log) => log.moodBefore !== null && log.moodAfter !== null
+    (log) => log.moodBefore !== null && log.moodAfter !== null,
   );
   if (moodLogs.length >= 5) {
     const avgMoodChange =
       moodLogs.reduce(
         (sum, log) => sum + ((log.moodAfter ?? 0) - (log.moodBefore ?? 0)),
-        0
+        0,
       ) / moodLogs.length;
 
     if (avgMoodChange >= 0.5) {
@@ -284,39 +370,37 @@ export function findPatterns(data: ReportInputData): PatternFinding[] {
 }
 
 /**
- * 生成周报
+ * 生成周报 (v2.0 庆祝优先版)
+ * 核心理念：情绪创造习惯，庆祝是习惯养成的肥料
  */
 export async function generateWeeklyReport(
-  data: ReportInputData
+  data: ReportInputData,
 ): Promise<WeeklyReport> {
   const summary = calculatePeriodSummary(
     data,
-    data.previousPeriodStats?.completionRate
+    data.previousPeriodStats?.completionRate,
   );
   const highlights = identifyHighlights(data);
-  const patterns = findPatterns(data);
+  const patterns = findPatterns(data).slice(0, 2); // 最多2个洞察
+  const celebrationMoments = generateCelebrationMoments(data);
 
+  // 简化的、庆祝优先的提示词
   const prompt = `
-周报数据（${data.periodStart.toLocaleDateString()} - ${data.periodEnd.toLocaleDateString()}）：
+这周的习惯数据（${data.periodStart.toLocaleDateString()} - ${data.periodEnd.toLocaleDateString()}）：
 
-习惯列表：
-${data.habits.map((h) => `- ${h.name} (${h.type === "BUILD" ? "养成" : "戒除"})`).join("\n")}
+习惯：${data.habits.map((h) => h.name).join("、")}
+完成情况：共打卡${summary.totalCheckins}次
 
-统计摘要：
-- 总完成率：${summary.completionRate}%
-- 较上周变化：${summary.rateChange > 0 ? "+" : ""}${summary.rateChange}%
-- 活跃习惯：${summary.activeHabits}个
-- 最长连续：${summary.longestStreak}天
-- 总打卡次数：${summary.totalCheckins}
-- 完美天数：${summary.perfectDays}
+已识别的庆祝时刻：
+${celebrationMoments.map((c) => `${c.emoji} ${c.habitName}：${c.celebrationText}`).join("\n")}
 
-本周亮点：
-${highlights.map((h) => `- ${h.emoji} ${h.habitName}: ${h.achievement} (${h.metric})`).join("\n") || "暂无特别亮点"}
+请基于以上数据，用温暖鼓励的语言：
+1. 确认这些庆祝时刻（可以润色得更温暖）
+2. 找出1-2个有趣发现
+3. 给出下周最重要的一个建议
+4. 设定一个简单可达成的小目标
 
-发现的模式：
-${patterns.map((p) => `- ${p.finding}: ${p.implication}`).join("\n") || "数据不足以发现明显模式"}
-
-请生成完整的周报内容，包括建议和下周目标。
+记住：庆祝优先，少即是多，情感语言！
 `;
 
   try {
@@ -327,35 +411,47 @@ ${patterns.map((p) => `- ${p.finding}: ${p.implication}`).join("\n") || "数据�
       schema: weeklyReportSchema,
     });
 
-    return object;
+    // 确保返回的数据包含我们预先生成的庆祝时刻
+    return {
+      ...object,
+      summary,
+      celebrationMoments:
+        object.celebrationMoments?.length > 0
+          ? object.celebrationMoments
+          : celebrationMoments,
+    };
   } catch (error) {
     console.error("生成周报失败:", error);
-    // 返回基础周报
+    // 返回基础周报（庆祝优先）
     return {
       summary,
+      celebrationMoments,
       highlights,
       patterns,
-      suggestions: [
-        {
-          category: "TIMING",
-          suggestion:
-            summary.completionRate < 70
-              ? "尝试在固定时间执行习惯"
-              : "保持当前节奏",
-          expectedImpact: "提高一致性",
-        },
-      ],
+      suggestions:
+        summary.completionRate < 70
+          ? [
+              {
+                category: "TIMING" as const,
+                suggestion: "试试在每天同一个时间做习惯，让它变成自然的一部分",
+                expectedImpact: "更容易记住和坚持",
+              },
+            ]
+          : [],
       nextWeekGoals: [
         {
           goal:
-            summary.completionRate < 50
-              ? "达到50%完成率"
-              : summary.completionRate < 80
-                ? "达到80%完成率"
-                : "保持当前水平",
-          measurable: `完成率${Math.min(100, summary.completionRate + 10)}%+`,
+            summary.totalCheckins >= 7
+              ? "保持这份节奏"
+              : "每天至少完成一个习惯",
+          measurable:
+            summary.totalCheckins >= 7 ? "继续每天打卡" : "本周打卡7次以上",
         },
       ],
+      encouragement:
+        summary.totalCheckins > 0
+          ? "你已经在路上了，每一小步都算数！"
+          : "新的一周，新的开始，你可以的！",
     };
   }
 }
@@ -385,7 +481,7 @@ const monthlyReportSchema = z.object({
       week: z.number(),
       completionRate: z.number(),
       highlight: z.string(),
-    })
+    }),
   ),
   monthHighlights: z.array(reportHighlightSchema),
   keyInsights: z.array(patternFindingSchema),
@@ -394,7 +490,7 @@ const monthlyReportSchema = z.object({
       area: z.string(),
       goal: z.string(),
       actions: z.array(z.string()),
-    })
+    }),
   ),
 });
 
@@ -404,11 +500,11 @@ export type MonthlyReport = z.infer<typeof monthlyReportSchema>;
  * 生成月报
  */
 export async function generateMonthlyReport(
-  data: MonthlyReportData
+  data: MonthlyReportData,
 ): Promise<MonthlyReport> {
   const summary = calculatePeriodSummary(
     data,
-    data.previousPeriodStats?.completionRate
+    data.previousPeriodStats?.completionRate,
   );
   const highlights = identifyHighlights(data);
   const patterns = findPatterns(data);
@@ -417,7 +513,8 @@ export async function generateMonthlyReport(
   const weeklyTrend = data.weeklyReports.map((w) => ({
     week: w.weekNumber,
     completionRate: w.summary.completionRate,
-    highlight: w.summary.perfectDays > 0 ? `${w.summary.perfectDays}个完美日` : "",
+    highlight:
+      w.summary.perfectDays > 0 ? `${w.summary.perfectDays}个完美日` : "",
   }));
 
   const prompt = `
@@ -503,7 +600,7 @@ export type MilestoneReport = z.infer<typeof milestoneReportOutputSchema>;
  * 生成里程碑报告
  */
 export async function generateMilestoneReport(
-  data: MilestoneReportData
+  data: MilestoneReportData,
 ): Promise<MilestoneReport> {
   const milestoneName = {
     DAY_7: "7天",
@@ -514,7 +611,7 @@ export async function generateMilestoneReport(
   }[data.milestoneType];
 
   const completionRate = Math.round(
-    (data.completedLogs / data.totalLogs) * 100
+    (data.completedLogs / data.totalLogs) * 100,
   );
 
   const prompt = `

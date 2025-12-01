@@ -18,7 +18,11 @@ interface HabitStatsCardProps {
   habitType: "BUILD" | "BREAK";
 }
 
-export function HabitStatsCard({ stats, isLoading, habitType }: HabitStatsCardProps) {
+export function HabitStatsCard({
+  stats,
+  isLoading,
+  habitType,
+}: HabitStatsCardProps) {
   if (isLoading || !stats) {
     return (
       <div className="grid gap-4 md:grid-cols-4">
@@ -45,9 +49,13 @@ export function HabitStatsCard({ stats, isLoading, habitType }: HabitStatsCardPr
       title: "当前连续",
       value: stats.currentStreak,
       unit: "天",
-      description: stats.currentStreak > 0 ? `${streakLabel} ${stats.currentStreak} 天` : "今天开始新的连续",
+      description:
+        stats.currentStreak > 0
+          ? `${streakLabel} ${stats.currentStreak} 天`
+          : "今天开始新的连续",
       icon: Flame,
-      iconColor: stats.currentStreak > 7 ? "text-orange-500" : "text-muted-foreground",
+      iconColor:
+        stats.currentStreak > 7 ? "text-orange-500" : "text-muted-foreground",
     },
     {
       title: "最长连续",
@@ -63,7 +71,8 @@ export function HabitStatsCard({ stats, isLoading, habitType }: HabitStatsCardPr
       unit: "%",
       description: `共 ${stats.completedDays}/${stats.totalDays} 天`,
       icon: TrendingUp,
-      iconColor: stats.completionRate >= 80 ? "text-green-500" : "text-muted-foreground",
+      iconColor:
+        stats.completionRate >= 80 ? "text-green-500" : "text-muted-foreground",
     },
     {
       title: "近7天完成率",
@@ -86,11 +95,11 @@ export function HabitStatsCard({ stats, isLoading, habitType }: HabitStatsCardPr
           <CardContent>
             <div className="text-2xl font-bold">
               {stat.value}
-              <span className="text-sm font-normal text-muted-foreground">
+              <span className="text-muted-foreground text-sm font-normal">
                 {stat.unit}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground">{stat.description}</p>
+            <p className="text-muted-foreground text-xs">{stat.description}</p>
           </CardContent>
         </Card>
       ))}

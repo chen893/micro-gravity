@@ -1,116 +1,96 @@
 # CLAUDE.md
 
-本文件为 Claude Code (claude.ai/code) 在处理本仓库代码时提供指导。
+本文件为 Claude Code 在处理本仓库时提供项目指导。
 
 ## 项目概述
 
-**micro-gravity** 是一个基于**福格行为模型（B=MAP）**的智能习惯管理系统：
-- **M（Motivation）**：AI 驱动的动机诊断与个性化激励
-- **A（Ability）**：智能任务拆解与难度动态调整
-- **P（Prompt）**：情境感知的智能触发系统
+**micro-gravity** 是一个基于**福格行为模型（B=MAP）**的智能习惯管理系统。
 
-当前开发版本：**v1.5 增强版**
+核心理念：**"情绪创造习惯，庆祝是习惯养成的肥料"**
+
+### MAP 模型
+
+| 要素 | 含义 | 系统实现 |
+|------|------|---------|
+| **M** (Motivation) | 动机 | AI 动机诊断与个性化激励 |
+| **A** (Ability) | 能力 | 微习惯设计与难度动态调整 |
+| **P** (Prompt) | 提示 | 锚点习惯与情境触发系统 |
+
+**当前版本**：v1.5 已完成，v2.0 开发中（福格对齐增强版）
 
 ## 常用命令
 
 ```bash
 # 开发
-pnpm dev              # 启动开发服务器（使用 Turbopack）
+pnpm dev              # 启动开发服务器（Turbopack）
 
-# 构建与生产
+# 构建
 pnpm build            # 构建生产版本
 pnpm start            # 启动生产服务器
-pnpm preview          # 构建并启动（组合命令）
 
 # 代码质量
-pnpm check            # 运行 lint + 类型检查
-pnpm lint             # 仅运行 ESLint
+pnpm check            # lint + 类型检查
+pnpm lint             # ESLint
 pnpm lint:fix         # ESLint 自动修复
-pnpm typecheck        # 仅 TypeScript 类型检查
-pnpm format:check     # Prettier 格式检查
-pnpm format:write     # Prettier 格式修复
+pnpm typecheck        # TypeScript 类型检查
+pnpm format:write     # Prettier 格式化
 
 # 数据库
-pnpm db:generate      # 创建新迁移（prisma migrate dev）
-pnpm db:migrate       # 应用迁移（prisma migrate deploy）
+pnpm db:generate      # 创建迁移（prisma migrate dev）
 pnpm db:push          # 推送 schema（不创建迁移）
-pnpm db:studio        # 打开 Prisma Studio
+pnpm db:studio        # Prisma Studio
 ```
 
 ## 技术栈
 
-```
-Frontend
-├── Next.js 15 (App Router + Turbopack)
-├── React 19 + TypeScript
-├── Tailwind CSS v4 + shadcn/ui
-├── @ai-sdk/react (useChat hook)
-└── Recharts (数据可视化)
-
-Backend
-├── tRPC v11 (类型安全API)
-├── Vercel AI SDK (ai package)
-├── Prisma ORM (客户端生成至 generated/prisma/)
-├── PostgreSQL
-├── NextAuth.js v5 (认证)
-└── Zod (Schema验证)
-
-Infrastructure
-├── Vercel (部署)
-└── PostgreSQL (数据库)
-```
+| 层级 | 技术 |
+|------|------|
+| 框架 | Next.js 15 (App Router + Turbopack) |
+| 前端 | React 19, TypeScript, Tailwind CSS v4, shadcn/ui |
+| AI | Vercel AI SDK v6 (ai@beta), @ai-sdk/react |
+| API | tRPC v11 |
+| 数据库 | Prisma ORM, PostgreSQL |
+| 认证 | NextAuth.js v5 |
+| 可视化 | Recharts |
 
 ## 项目结构
 
 ```
 src/
-├── app/                          # Next.js App Router
-│   ├── (app)/                    # 认证后的应用页面
+├── app/
+│   ├── (app)/                    # 认证后页面
 │   │   ├── dashboard/            # 仪表盘
 │   │   ├── habits/               # 习惯管理
 │   │   │   ├── page.tsx          # 习惯列表
-│   │   │   └── [id]/             # 习惯详情页
-│   │   │       ├── page.tsx
-│   │   │       └── _components/  # 详情页组件 (10个)
-│   │   ├── analytics/            # 数据分析页
-│   │   ├── coach/                # AI 教练页
+│   │   │   ├── new/page.tsx      # 创建习惯
+│   │   │   └── [id]/             # 习惯详情
+│   │   ├── analytics/            # 数据分析
+│   │   ├── coach/                # AI 教练
 │   │   ├── reports/              # 报告中心
-│   │   │   ├── page.tsx          # 报告列表
-│   │   │   └── [id]/page.tsx     # 报告详情
-│   │   └── settings/page.tsx     # 设置页面
-│   ├── (auth)/                   # 认证相关页面
-│   ├── api/
-│   │   ├── chat/route.ts         # AI 对话流式端点
-│   │   └── cron/                 # Vercel Cron Jobs
-│   └── ...
-├── components/                   # 可复用组件
-│   ├── ui/                       # shadcn/ui 基础组件
-│   ├── layout/                   # 布局组件 (sidebar 等)
-│   ├── charts/                   # 数据可视化组件 (6个 Recharts)
-│   │   ├── time-heatmap.tsx      # 时间热力图
-│   │   ├── completion-chart.tsx  # 完成率趋势图
-│   │   ├── mood-chart.tsx        # 情绪变化图
-│   │   ├── streak-chart.tsx      # 连续天数图
-│   │   ├── difficulty-chart.tsx  # 难度分布图
-│   │   └── correlation-chart.tsx # 习惯相关性图
-│   └── break-habit/              # 坏习惯戒除组件 (4个)
-│       ├── trigger-form.tsx      # 触发记录表单
-│       ├── trigger-analysis.tsx  # AI 触发分析
-│       ├── relapse-manager.tsx   # 复发管理
-│       └── environment-design.tsx # 环境设计建议
-├── server/
+│   │   └── settings/             # 设置
+│   ├── (auth)/                   # 认证页面
 │   └── api/
-│       ├── routers/              # tRPC 路由
-│       │   ├── habit.ts          # 习惯 CRUD (11个端点)
-│       │   ├── log.ts            # 打卡记录 (9个端点)
-│       │   ├── report.ts         # 周期报告
-│       │   ├── analytics.ts      # 进阶分析 (含触发分析3个新端点)
-│       │   └── insights.ts       # 数据洞察
-│       ├── root.ts               # 路由注册
-│       └── trpc.ts               # tRPC 上下文和过程
+│       ├── chat/route.ts         # AI 对话端点
+│       └── cron/                 # 定时任务
+├── components/
+│   ├── ui/                       # shadcn/ui 组件
+│   ├── layout/                   # 布局组件
+│   ├── charts/                   # Recharts 图表组件
+│   └── break-habit/              # 坏习惯戒除组件
+├── server/api/
+│   ├── routers/                  # tRPC 路由
+│   │   ├── habit.ts              # 习惯 CRUD
+│   │   ├── log.ts                # 打卡记录
+│   │   ├── report.ts             # 周期报告
+│   │   ├── analytics.ts          # 进阶分析
+│   │   ├── insights.ts           # 数据洞察
+│   │   └── reminder.ts           # 提醒
+│   ├── root.ts                   # 路由注册
+│   └── trpc.ts                   # tRPC 配置
 ├── lib/
-│   ├── ai/
+│   ├── ai/                       # AI 功能模块
 │   │   ├── prompts.ts            # 系统提示词
+│   │   ├── model.ts              # 模型配置
 │   │   ├── reminder.ts           # 提醒生成
 │   │   ├── motivation.ts         # 动机维护
 │   │   ├── ability.ts            # 任务拆解
@@ -118,29 +98,30 @@ src/
 │   │   ├── insights.ts           # 数据洞察
 │   │   ├── analytics.ts          # 进阶分析
 │   │   └── report.ts             # 报告生成
-│   └── types.ts                  # 类型定义（Zod schemas）
-├── trpc/                         # 客户端 tRPC 设置
-└── styles/                       # 全局样式
+│   ├── types.ts                  # Zod schemas
+│   └── utils.ts                  # 工具函数
+└── trpc/                         # 客户端 tRPC
 ```
 
-## AI SDK 使用规范（v6 最新版）
+## AI SDK 使用规范（v6）
 
 ### 模型配置
 
-使用 Vercel AI Gateway 统一管理模型访问，直接使用字符串格式指定模型：
+AI SDK v6 使用 Vercel AI Gateway，支持直接使用字符串指定模型：
 
 ```typescript
-// 直接在调用时指定模型，无需单独配置文件
+// 直接使用字符串格式：provider/model-name
 model: 'openai/gpt-4o'
-// 或其他模型
-model: 'anthropic/claude-sonnet-4-20250514'
+
+// 环境变量配置
+// .env
+AI_GATEWAY_API_KEY=your-api-key
 ```
 
-### 核心 API 模式
+### 核心 API
 
-**1. streamText - 对话流式响应（API Route）**
+**1. streamText - 流式对话**
 ```typescript
-// app/api/chat/route.ts
 import { streamText, convertToModelMessages, UIMessage } from 'ai';
 
 export async function POST(req: Request) {
@@ -156,34 +137,25 @@ export async function POST(req: Request) {
 }
 ```
 
-**2. useChat - 前端对话 Hook**
+**2. useChat - 前端 Hook**
 ```typescript
 'use client';
 import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
 import { useState } from 'react';
 
 export function ChatComponent() {
   const [input, setInput] = useState('');
-  const { messages, sendMessage, isLoading } = useChat({
-    transport: new DefaultChatTransport({
-      api: '/api/chat',
-    }),
-  });
+  const { messages, sendMessage, isLoading } = useChat();
 
-  // 发送消息
-  sendMessage({ text: input });
-
-  // 渲染消息（使用 parts）
-  {messages.map(m => (
-    <div key={m.id}>
-      {m.parts.map((part, i) => {
-        if (part.type === 'text') return <p key={i}>{part.text}</p>;
-        if (part.type === 'tool-invocation') return <div key={i}>工具调用: {part.toolName}</div>;
-        return null;
-      })}
-    </div>
-  ))}
+  return (
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      sendMessage({ text: input });
+      setInput('');
+    }}>
+      <input value={input} onChange={(e) => setInput(e.target.value)} />
+    </form>
+  );
 }
 ```
 
@@ -194,12 +166,11 @@ import { z } from 'zod';
 
 const { object } = await generateObject({
   model: 'openai/gpt-4o',
-  system: 'System prompt',
-  prompt: 'User prompt',
   schema: z.object({
-    field1: z.string(),
-    field2: z.number(),
+    suggestion: z.string(),
+    confidence: z.number(),
   }),
+  prompt: 'Generate a suggestion',
 });
 ```
 
@@ -208,102 +179,111 @@ const { object } = await generateObject({
 import { tool } from 'ai';
 import { z } from 'zod';
 
-const myTool = tool({
-  description: '工具描述',
+const searchTool = tool({
+  description: 'Search for information',
   inputSchema: z.object({
-    param: z.string().describe('参数描述'),
+    query: z.string().describe('the search query'),
   }),
-  execute: async ({ param }) => {
-    // 执行逻辑
-    return result;
+  execute: async ({ query }) => {
+    return { results: [] };
   },
 });
 ```
 
-**5. 多步骤调用（Agent 模式）**
-```typescript
-import { streamText, stepCountIs } from 'ai';
+### 注意事项
 
-const result = streamText({
-  model: 'openai/gpt-4o',
-  messages: convertToModelMessages(messages),
-  tools: { /* ... */ },
-  stopWhen: stepCountIs(5), // 最多 5 步
-});
-```
-
-### AI 流式响应注意事项
-
-- AI 流式响应需要配合 Next.js API Route 使用（`/api/chat`）
-- tRPC 主要处理习惯 CRUD 等标准操作
-- 使用 `convertToModelMessages()` 转换 UI 消息格式
-- 使用 `toUIMessageStreamResponse()` 返回流式响应
+- 流式响应使用 Next.js API Route（`/api/chat`）
+- tRPC 用于习惯 CRUD 等标准操作
+- AI 生成结构化数据用 `generateObject`
 
 ## tRPC 规范
 
-- 使用 `publicProcedure` 处理无需认证的端点
-- 使用 `protectedProcedure` 处理需要认证的端点（确保 `ctx.session.user` 存在）
-- 新路由必须在 `src/server/api/root.ts` 的 `appRouter` 中注册
-- 服务端调用使用 `root.ts` 中的 `createCaller`
-- tRPC 相关类型应通过 tRPC 导出获取，不要重新定义类型
+```typescript
+// 无需认证
+export const publicProcedure = t.procedure;
 
-## 类型定义
+// 需要认证
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.session?.user) throw new TRPCError({ code: 'UNAUTHORIZED' });
+  return next({ ctx: { session: ctx.session } });
+});
+```
 
-所有业务类型定义在 `src/lib/types.ts`，使用 Zod schema：
+新路由必须在 `src/server/api/root.ts` 注册：
 
-- `habitConfigSchema` - 完整习惯配置
-- `motivationSchema` - 动机配置 (MAP-M)
-- `abilitySchema` - 能力配置 (MAP-A)
-- `promptSchema` - 提示配置 (MAP-P)
-- `reminderContextSchema` - 提醒上下文
-- `triggerRecordSchema` - 触发记录（坏习惯）
-- `reportSummarySchema` - 报告摘要
-- `phaseConfigSchema` - 渐进式阶段配置
+```typescript
+export const appRouter = createTRPCRouter({
+  habit: habitRouter,
+  log: logRouter,
+  // 新路由在此添加
+});
+```
 
 ## 数据库模型
 
-核心模型（详见 `prisma/schema.prisma`）：
+核心模型（`prisma/schema.prisma`）：
 
 | 模型 | 用途 |
-|-----|------|
+|------|------|
 | `User` | 用户，含动机画像 |
-| `Habit` | 习惯，含 MAP 模型数据 |
+| `Habit` | 习惯（MAP 模型数据） |
 | `HabitLog` | 打卡记录 |
 | `Conversation` | AI 对话历史 |
-| `Report` | 周期报告（v1.5） |
-| `Milestone` | 里程碑成就（v1.5） |
-| `AnalyticsSnapshot` | 分析缓存（v1.5） |
+| `Report` | 周期报告 |
+| `Milestone` | 里程碑成就 |
+| `AnalyticsSnapshot` | 分析缓存 |
+
+**Prisma 客户端生成至** `generated/prisma/`
+
+## 类型定义
+
+所有业务类型在 `src/lib/types.ts`，使用 Zod schema：
+
+- `motivationSchema` - 动机配置 (MAP-M)
+- `abilitySchema` - 能力配置 (MAP-A)
+- `promptSchema` - 提示配置 (MAP-P)
+- `habitConfigSchema` - 完整习惯配置
+- `phaseConfigSchema` - 渐进式阶段配置
+- `triggerRecordSchema` - 触发记录（坏习惯）
+- `reportSummarySchema` - 报告摘要
 
 ## 环境变量
 
 ```env
-# AI Gateway（Vercel AI Gateway 统一 API Key）
-AI_GATEWAY_API_KEY=your-api-key
+# AI (Vercel AI Gateway - 直接使用字符串模型格式)
+AI_GATEWAY_API_KEY=your-vercel-ai-gateway-key
 
 # 数据库
-DATABASE_URL=postgresql://postgres:123789@localhost:5432/micro_gravity
+DATABASE_URL=postgresql://...
 
-# NextAuth.js v5
-AUTH_SECRET=your-auth-secret
-AUTH_DISCORD_ID=your-discord-client-id
-AUTH_DISCORD_SECRET=your-discord-client-secret
+# NextAuth
+AUTH_SECRET=
+AUTH_DISCORD_ID=
+AUTH_DISCORD_SECRET=
 ```
 
-## 功能模块
+## v2.0 开发计划
 
-| 模块 | 描述 | 版本 |
-|-----|------|------|
-| AI 对话式习惯配置 | 对话引导创建习惯 | v1.0 |
-| 智能提醒系统 | 个性化提醒文案生成 | v1.0 |
-| 动机维护引擎 | 动机波动检测与激励 | v1.5 |
-| 能力评估与任务拆解 | 微习惯设计 | v1.0 |
-| 坏习惯戒除系统 | 触发模式分析与复发管理 | v1.5 |
-| AI 教练对话 | 多场景对话支持 | v1.0 |
-| 数据洞察 | 模式识别与建议 | v1.0 |
-| 周期报告系统 | 周报/月报/里程碑报告 | v1.5 |
-| 进阶分析系统 | 热力图、情绪分析、风险预测 | v1.5 |
+详见 `迭代计划.md`，核心阶段：
 
-## 外部文档
+1. **Phase 1**: 庆祝系统（ABC 中的 C）
+2. **Phase 2**: 习惯创建流程重构
+3. **Phase 3**: 提示系统升级（锚点习惯）
+4. **Phase 4**: 戒除流程标准化
+5. **Phase 5**: 体验简化与优化
+6. **Phase 7**: 习惯进阶系统
+7. **Phase 8**: 成就徽章系统
 
-- **Vercel AI SDK**: 如需访问 Vercel AI SDK 文档，请参见项目根目录下的 `llms.txt` 文件
-- **产品需求文档**: 详见 `习惯养成Web应用PRD.md`
+## 开发约定
+
+1. **组件命名**：使用 PascalCase，文件名用 kebab-case
+2. **服务端组件优先**：除非需要交互，否则使用 Server Component
+3. **类型安全**：所有 API 输入输出使用 Zod 验证
+4. **错误处理**：使用 tRPC 内置错误类型
+5. **样式**：Tailwind CSS，避免内联样式对象
+
+## 相关文档
+
+- `迭代计划.md` - v2.0 详细开发计划
+- `福格行为模型.md` - 福格理论笔记
+- `习惯养成Web应用PRD.md` - 产品需求文档

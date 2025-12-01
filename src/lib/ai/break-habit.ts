@@ -29,7 +29,7 @@ interface TriggerPatternStats {
  * 统计触发记录的模式
  */
 export function analyzeTriggerPatterns(
-  records: TriggerRecord[]
+  records: TriggerRecord[],
 ): TriggerPatternStats[] {
   if (records.length === 0) {
     return [];
@@ -80,7 +80,8 @@ export function analyzeTriggerPatterns(
         percentage: Math.round((stats.count / records.length) * 100),
         examples: stats.contexts.slice(0, 3),
         avgIntensity:
-          stats.intensities.reduce((a, b) => a + b, 0) / stats.intensities.length,
+          stats.intensities.reduce((a, b) => a + b, 0) /
+          stats.intensities.length,
         resistanceRate: Math.round((stats.resisted / stats.count) * 100),
       });
     }
@@ -93,9 +94,7 @@ export function analyzeTriggerPatterns(
 /**
  * 识别时间模式
  */
-export function identifyTemporalPatterns(
-  records: TriggerRecord[]
-): {
+export function identifyTemporalPatterns(records: TriggerRecord[]): {
   peakHours: number[];
   peakDays: number[];
   timeInsights: string[];
@@ -167,7 +166,7 @@ export function identifyTemporalPatterns(
  */
 export async function analyzeTriggersDeep(
   records: TriggerRecord[],
-  habitName: string
+  habitName: string,
 ): Promise<TriggerAnalysis> {
   if (records.length < 3) {
     // 数据太少，返回默认分析
@@ -180,11 +179,7 @@ export async function analyzeTriggersDeep(
         "起身走动5分钟",
         "与朋友聊天",
       ],
-      environmentDesign: [
-        "移除触发物品",
-        "改变环境布置",
-        "设置提醒卡片",
-      ],
+      environmentDesign: ["移除触发物品", "改变环境布置", "设置提醒卡片"],
     };
   }
 
@@ -201,7 +196,7 @@ ${patternStats
 - ${p.type === "TEMPORAL" ? "时间触发" : p.type === "CONTEXTUAL" ? "情境触发" : p.type === "EMOTIONAL" ? "情绪触发" : "行为触发"}：${p.count}次（${p.percentage}%）
   - 平均冲动强度：${p.avgIntensity.toFixed(1)}/10
   - 抵抗成功率：${p.resistanceRate}%
-  - 示例：${p.examples.join("；")}`
+  - 示例：${p.examples.join("；")}`,
   )
   .join("\n")}
 
@@ -219,7 +214,7 @@ ${records
 - 情绪：${r.emotion ?? "未记录"}
 - 冲动强度：${r.intensity}/10
 - 是否抵抗：${r.resisted ? "是" : "否"}
-- 使用策略：${r.copingStrategy ?? "无"}`
+- 使用策略：${r.copingStrategy ?? "无"}`,
   )
   .join("\n")}
 
@@ -274,14 +269,15 @@ export interface RelapseAnalysis {
 
 export function analyzeRelapse(
   records: TriggerRecord[],
-  targetDaysClean = 7
+  targetDaysClean = 7,
 ): RelapseAnalysis {
   const failures = records.filter((r) => !r.resisted);
 
   if (failures.length === 0) {
     return {
       isRelapse: false,
-      daysSinceLastRelapse: records.length > 0 ? calculateDaysSince(records[0]!.timestamp) : 0,
+      daysSinceLastRelapse:
+        records.length > 0 ? calculateDaysSince(records[0]!.timestamp) : 0,
       relapseCount: 0,
       relapsePattern: null,
       recoveryAdvice: ["继续保持，你做得很好！"],
@@ -296,7 +292,7 @@ export function analyzeRelapse(
   let relapsePattern: string | null = null;
   if (failures.length >= 3) {
     const emotionalFailures = failures.filter(
-      (r) => r.triggerType === "EMOTIONAL"
+      (r) => r.triggerType === "EMOTIONAL",
     );
     if (emotionalFailures.length > failures.length * 0.5) {
       relapsePattern = "情绪驱动型复发";
@@ -371,7 +367,7 @@ function findCommonWords(texts: string[]): string[] {
  * 生成中断策略
  */
 export function generateInterruptionStrategies(
-  triggerType: TriggerPatternType
+  triggerType: TriggerPatternType,
 ): string[] {
   const strategies: Record<TriggerPatternType, string[]> = {
     TEMPORAL: [

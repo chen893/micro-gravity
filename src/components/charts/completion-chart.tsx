@@ -77,8 +77,16 @@ export function CompletionChart({
             >
               <defs>
                 <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  <stop
+                    offset="5%"
+                    stopColor="hsl(var(--primary))"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="hsl(var(--primary))"
+                    stopOpacity={0}
+                  />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -99,15 +107,21 @@ export function CompletionChart({
               />
               <Tooltip
                 content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const data = payload[0]?.payload as typeof chartData[0];
+                  if (active && payload?.length) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    const data = payload[0]?.payload as
+                      | (typeof chartData)[0]
+                      | undefined;
+                    if (!data) return null;
                     return (
-                      <div className="rounded-lg border bg-background p-2 shadow-sm">
-                        <div className="text-sm font-medium">{data.fullDate}</div>
-                        <div className="text-xs text-muted-foreground">
+                      <div className="bg-background rounded-lg border p-2 shadow-sm">
+                        <div className="text-sm font-medium">
+                          {data.fullDate}
+                        </div>
+                        <div className="text-muted-foreground text-xs">
                           完成率: {data.rate}%
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           {data.completed}/{data.total} 个习惯
                         </div>
                       </div>

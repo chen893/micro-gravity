@@ -18,7 +18,7 @@ export function Header() {
   const { data: session, status } = useSession();
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background px-6">
+    <header className="bg-background sticky top-0 z-30 flex h-16 items-center justify-between border-b px-6">
       <div className="flex items-center gap-4">
         <h1 className="text-lg font-medium">欢迎回来</h1>
       </div>
@@ -27,18 +27,21 @@ export function Header() {
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" />
+          <span className="bg-destructive absolute top-1 right-1 h-2 w-2 rounded-full" />
         </Button>
 
         {/* User Menu */}
         {status === "loading" ? (
-          <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+          <div className="bg-muted h-8 w-8 animate-pulse rounded-full" />
         ) : session?.user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ""} />
+                  <AvatarImage
+                    src={session.user.image ?? undefined}
+                    alt={session.user.name ?? ""}
+                  />
                   <AvatarFallback>
                     {session.user.name?.charAt(0).toUpperCase() ?? "U"}
                   </AvatarFallback>
@@ -48,8 +51,10 @@ export function Header() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{session.user.name}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
+                  <p className="text-sm leading-none font-medium">
+                    {session.user.name}
+                  </p>
+                  <p className="text-muted-foreground text-xs leading-none">
                     {session.user.email}
                   </p>
                 </div>

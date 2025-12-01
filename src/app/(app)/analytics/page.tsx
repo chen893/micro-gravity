@@ -1,15 +1,29 @@
 "use client";
 
 import { api } from "@/trpc/react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, AlertTriangle, CheckCircle, Calendar, Flame } from "lucide-react";
+import {
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
+  Calendar,
+  Flame,
+} from "lucide-react";
 
 export default function AnalyticsPage() {
-  const { data: dashboard, isLoading } = api.analytics.getDashboard.useQuery({ days: 30 });
+  const { data: dashboard, isLoading } = api.analytics.getDashboard.useQuery({
+    days: 30,
+  });
   const { data: insights } = api.insights.getDashboard.useQuery({ days: 30 });
 
   if (isLoading) {
@@ -28,9 +42,7 @@ export default function AnalyticsPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">数据分析</h2>
-        <p className="text-muted-foreground">
-          深入了解你的习惯表现和模式
-        </p>
+        <p className="text-muted-foreground">深入了解你的习惯表现和模式</p>
       </div>
 
       {/* Overview Stats */}
@@ -38,11 +50,13 @@ export default function AnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">活跃习惯</CardTitle>
-            <Flame className="h-4 w-4 text-muted-foreground" />
+            <Flame className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboard.summary.totalHabits}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold">
+              {dashboard.summary.totalHabits}
+            </div>
+            <p className="text-muted-foreground text-xs">
               过去 {dashboard.summary.periodDays} 天
             </p>
           </CardContent>
@@ -51,11 +65,13 @@ export default function AnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">总打卡次数</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CheckCircle className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboard.summary.completedLogs}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold">
+              {dashboard.summary.completedLogs}
+            </div>
+            <p className="text-muted-foreground text-xs">
               共 {dashboard.summary.totalLogs} 次记录
             </p>
           </CardContent>
@@ -64,10 +80,12 @@ export default function AnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">完成率</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboard.summary.overallRate}%</div>
+            <div className="text-2xl font-bold">
+              {dashboard.summary.overallRate}%
+            </div>
             <Progress value={dashboard.summary.overallRate} className="mt-2" />
           </CardContent>
         </Card>
@@ -75,11 +93,13 @@ export default function AnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">分析周期</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboard.summary.periodDays}</div>
-            <p className="text-xs text-muted-foreground">天</p>
+            <div className="text-2xl font-bold">
+              {dashboard.summary.periodDays}
+            </div>
+            <p className="text-muted-foreground text-xs">天</p>
           </CardContent>
         </Card>
       </div>
@@ -111,15 +131,16 @@ export default function AnalyticsPage() {
                 <CardDescription>AI 发现的模式</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {insights?.quickInsights && insights.quickInsights.length > 0 ? (
+                {insights?.quickInsights &&
+                insights.quickInsights.length > 0 ? (
                   insights.quickInsights.map((insight, index) => (
                     <div key={index} className="flex items-start gap-2 text-sm">
-                      <div className="mt-0.5 h-2 w-2 rounded-full bg-primary" />
+                      <div className="bg-primary mt-0.5 h-2 w-2 rounded-full" />
                       <span>{insight}</span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     继续记录习惯，AI 将为你发现更多模式
                   </p>
                 )}
@@ -135,7 +156,9 @@ export default function AnalyticsPage() {
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">{habit.name}</CardTitle>
-                    <Badge variant={habit.type === "BUILD" ? "default" : "secondary"}>
+                    <Badge
+                      variant={habit.type === "BUILD" ? "default" : "secondary"}
+                    >
                       {habit.type === "BUILD" ? "养成" : "戒除"}
                     </Badge>
                   </div>
@@ -146,7 +169,7 @@ export default function AnalyticsPage() {
                     <span className="font-medium">{habit.completionRate}%</span>
                   </div>
                   <Progress value={habit.completionRate} />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     共 {habit.totalLogs} 次打卡
                   </p>
                 </CardContent>
@@ -161,7 +184,9 @@ export default function AnalyticsPage() {
               <Card key={risk.habitId}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">{risk.habitName}</CardTitle>
+                    <CardTitle className="text-base">
+                      {risk.habitName}
+                    </CardTitle>
                     <RiskBadge level={risk.overallRisk} />
                   </div>
                 </CardHeader>
@@ -184,8 +209,13 @@ export default function AnalyticsPage() {
                     <div className="space-y-1">
                       <p className="text-xs font-medium">风险因素：</p>
                       {risk.riskFactors.slice(0, 3).map((factor, index) => (
-                        <div key={index} className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">{factor.factor}</span>
+                        <div
+                          key={index}
+                          className="flex items-center justify-between text-xs"
+                        >
+                          <span className="text-muted-foreground">
+                            {factor.factor}
+                          </span>
                           <span>{factor.currentStatus}</span>
                         </div>
                       ))}
@@ -207,32 +237,68 @@ export default function AnalyticsPage() {
 }
 
 function RiskBadge({ level }: { level: string }) {
-  const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode }> = {
+  const variants: Record<
+    string,
+    {
+      variant: "default" | "secondary" | "destructive" | "outline";
+      icon: React.ReactNode;
+    }
+  > = {
     LOW: { variant: "outline", icon: <CheckCircle className="h-3 w-3" /> },
-    MEDIUM: { variant: "secondary", icon: <AlertTriangle className="h-3 w-3" /> },
-    HIGH: { variant: "destructive", icon: <AlertTriangle className="h-3 w-3" /> },
-    CRITICAL: { variant: "destructive", icon: <AlertTriangle className="h-3 w-3" /> },
+    MEDIUM: {
+      variant: "secondary",
+      icon: <AlertTriangle className="h-3 w-3" />,
+    },
+    HIGH: {
+      variant: "destructive",
+      icon: <AlertTriangle className="h-3 w-3" />,
+    },
+    CRITICAL: {
+      variant: "destructive",
+      icon: <AlertTriangle className="h-3 w-3" />,
+    },
   };
 
-  const defaultConfig = { variant: "outline" as const, icon: <CheckCircle className="h-3 w-3" /> };
+  const defaultConfig = {
+    variant: "outline" as const,
+    icon: <CheckCircle className="h-3 w-3" />,
+  };
   const config = variants[level] ?? defaultConfig;
 
   return (
     <Badge variant={config.variant} className="flex items-center gap-1">
       {config.icon}
-      {level === "LOW" ? "低风险" : level === "MEDIUM" ? "中风险" : level === "HIGH" ? "高风险" : "危险"}
+      {level === "LOW"
+        ? "低风险"
+        : level === "MEDIUM"
+          ? "中风险"
+          : level === "HIGH"
+            ? "高风险"
+            : "危险"}
     </Badge>
   );
 }
 
-function TimeHeatmap({ data }: { data: Array<{ dayOfWeek: number; hourOfDay: number; completionRate: number; count: number }> }) {
+function TimeHeatmap({
+  data,
+}: {
+  data: Array<{
+    dayOfWeek: number;
+    hourOfDay: number;
+    completionRate: number;
+    count: number;
+  }>;
+}) {
   const days = ["日", "一", "二", "三", "四", "五", "六"];
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
   // Create a map for quick lookup
   const heatmapMap = new Map<string, { rate: number; count: number }>();
   data.forEach((d) => {
-    heatmapMap.set(`${d.dayOfWeek}-${d.hourOfDay}`, { rate: d.completionRate, count: d.count });
+    heatmapMap.set(`${d.dayOfWeek}-${d.hourOfDay}`, {
+      rate: d.completionRate,
+      count: d.count,
+    });
   });
 
   const getColor = (rate: number | undefined) => {
@@ -249,29 +315,34 @@ function TimeHeatmap({ data }: { data: Array<{ dayOfWeek: number; hourOfDay: num
       <div className="grid grid-cols-[auto_repeat(7,1fr)] gap-1 text-xs">
         <div />
         {days.map((day) => (
-          <div key={day} className="text-center text-muted-foreground">
+          <div key={day} className="text-muted-foreground text-center">
             {day}
           </div>
         ))}
-        {hours.filter((h) => h % 4 === 0).map((hour) => (
-          <>
-            <div key={`label-${hour}`} className="text-right text-muted-foreground pr-1">
-              {hour}:00
-            </div>
-            {days.map((_, dayIndex) => {
-              const cell = heatmapMap.get(`${dayIndex}-${hour}`);
-              return (
-                <div
-                  key={`${dayIndex}-${hour}`}
-                  className={`h-4 rounded ${getColor(cell?.rate)}`}
-                  title={cell ? `${cell.rate}% (${cell.count}次)` : "无数据"}
-                />
-              );
-            })}
-          </>
-        ))}
+        {hours
+          .filter((h) => h % 4 === 0)
+          .map((hour) => (
+            <>
+              <div
+                key={`label-${hour}`}
+                className="text-muted-foreground pr-1 text-right"
+              >
+                {hour}:00
+              </div>
+              {days.map((_, dayIndex) => {
+                const cell = heatmapMap.get(`${dayIndex}-${hour}`);
+                return (
+                  <div
+                    key={`${dayIndex}-${hour}`}
+                    className={`h-4 rounded ${getColor(cell?.rate)}`}
+                    title={cell ? `${cell.rate}% (${cell.count}次)` : "无数据"}
+                  />
+                );
+              })}
+            </>
+          ))}
       </div>
-      <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
+      <div className="text-muted-foreground flex items-center justify-end gap-2 text-xs">
         <span>低</span>
         <div className="flex gap-0.5">
           <div className="h-3 w-3 rounded bg-red-400" />

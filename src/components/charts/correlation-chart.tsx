@@ -76,8 +76,8 @@ export function CorrelationChart({
         </CardHeader>
         <CardContent>
           <div className="flex h-64 flex-col items-center justify-center gap-2">
-            <Unlink className="h-8 w-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
+            <Unlink className="text-muted-foreground h-8 w-8" />
+            <p className="text-muted-foreground text-sm">
               需要至少 2 个习惯才能分析相关性
             </p>
           </div>
@@ -115,7 +115,9 @@ export function CorrelationChart({
               <div className="flex items-center gap-2">
                 <div
                   className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: getCorrelationColor(item.correlation) }}
+                  style={{
+                    backgroundColor: getCorrelationColor(item.correlation),
+                  }}
                 />
                 <span className="text-sm">
                   {item.habit1} ↔ {item.habit2}
@@ -127,14 +129,14 @@ export function CorrelationChart({
                     item.correlation > 0.3
                       ? "default"
                       : item.correlation < -0.3
-                      ? "destructive"
-                      : "secondary"
+                        ? "destructive"
+                        : "secondary"
                   }
                 >
                   {item.correlation > 0 ? "+" : ""}
                   {(item.correlation * 100).toFixed(0)}%
                 </Badge>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   同完成 {item.coOccurrence}次
                 </span>
               </div>
@@ -146,29 +148,33 @@ export function CorrelationChart({
         {(strongPositive.length > 0 || strongNegative.length > 0) && (
           <div className="mt-4 space-y-2">
             {strongPositive.length > 0 && (
-              <div className="rounded-lg bg-green-50 dark:bg-green-950/20 p-3">
+              <div className="rounded-lg bg-green-50 p-3 dark:bg-green-950/20">
                 <div className="flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-300">
                   <Link2 className="h-4 w-4" />
                   强正相关习惯
                 </div>
                 <p className="mt-1 text-xs text-green-600 dark:text-green-400">
-                  {strongPositive.map((d) => `${d.habit1}+${d.habit2}`).join("、")}
+                  {strongPositive
+                    .map((d) => `${d.habit1}+${d.habit2}`)
+                    .join("、")}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="text-muted-foreground mt-1 text-xs">
                   这些习惯经常一起完成，可以考虑捆绑进行
                 </p>
               </div>
             )}
             {strongNegative.length > 0 && (
-              <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 p-3">
+              <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-950/20">
                 <div className="flex items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-300">
                   <Unlink className="h-4 w-4" />
                   互斥习惯
                 </div>
                 <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                  {strongNegative.map((d) => `${d.habit1}/${d.habit2}`).join("、")}
+                  {strongNegative
+                    .map((d) => `${d.habit1}/${d.habit2}`)
+                    .join("、")}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="text-muted-foreground mt-1 text-xs">
                   这些习惯难以同时完成，建议分配到不同时段
                 </p>
               </div>
@@ -177,7 +183,7 @@ export function CorrelationChart({
         )}
 
         {/* 图例 */}
-        <div className="mt-4 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+        <div className="text-muted-foreground mt-4 flex items-center justify-center gap-4 text-xs">
           <div className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-[hsl(var(--chart-1))]" />
             强正相关

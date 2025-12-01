@@ -28,11 +28,30 @@ interface TriggerAnalysisProps {
   habitName: string;
 }
 
-const triggerTypeConfig: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  TEMPORAL: { label: "时间触发", icon: <Clock className="h-4 w-4" />, color: "text-blue-500" },
-  CONTEXTUAL: { label: "情境触发", icon: <MapPin className="h-4 w-4" />, color: "text-green-500" },
-  EMOTIONAL: { label: "情绪触发", icon: <Brain className="h-4 w-4" />, color: "text-purple-500" },
-  BEHAVIORAL: { label: "行为触发", icon: <Zap className="h-4 w-4" />, color: "text-orange-500" },
+const triggerTypeConfig: Record<
+  string,
+  { label: string; icon: React.ReactNode; color: string }
+> = {
+  TEMPORAL: {
+    label: "时间触发",
+    icon: <Clock className="h-4 w-4" />,
+    color: "text-blue-500",
+  },
+  CONTEXTUAL: {
+    label: "情境触发",
+    icon: <MapPin className="h-4 w-4" />,
+    color: "text-green-500",
+  },
+  EMOTIONAL: {
+    label: "情绪触发",
+    icon: <Brain className="h-4 w-4" />,
+    color: "text-purple-500",
+  },
+  BEHAVIORAL: {
+    label: "行为触发",
+    icon: <Zap className="h-4 w-4" />,
+    color: "text-orange-500",
+  },
 };
 
 export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
@@ -43,7 +62,7 @@ export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
     isFetching,
   } = api.analytics.getTriggerAnalysis.useQuery(
     { habitId },
-    { staleTime: 5 * 60 * 1000 } // 5分钟缓存
+    { staleTime: 5 * 60 * 1000 }, // 5分钟缓存
   );
 
   if (isLoading) {
@@ -71,8 +90,8 @@ export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <AlertTriangle className="h-12 w-12 text-muted-foreground" />
-            <p className="mt-4 text-sm text-muted-foreground">
+            <AlertTriangle className="text-muted-foreground h-12 w-12" />
+            <p className="text-muted-foreground mt-4 text-sm">
               记录至少 3 次触发时刻后，AI 将为你分析触发模式
             </p>
           </div>
@@ -100,7 +119,9 @@ export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
             onClick={() => refetch()}
             disabled={isFetching}
           >
-            <RefreshCw className={`mr-1 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-1 h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+            />
             刷新
           </Button>
         </CardHeader>
@@ -108,7 +129,7 @@ export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
           {/* 模式统计 */}
           {stats?.patternStats && stats.patternStats.length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-sm font-medium flex items-center gap-2">
+              <h4 className="flex items-center gap-2 text-sm font-medium">
                 <TrendingUp className="h-4 w-4" />
                 触发类型分布
               </h4>
@@ -127,8 +148,10 @@ export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
                         </span>
                       </div>
                       <Progress value={pattern.percentage} className="h-2" />
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>平均强度: {pattern.avgIntensity.toFixed(1)}/10</span>
+                      <div className="text-muted-foreground flex items-center justify-between text-xs">
+                        <span>
+                          平均强度: {pattern.avgIntensity.toFixed(1)}/10
+                        </span>
                         <span>抵抗成功率: {pattern.resistanceRate}%</span>
                       </div>
                     </div>
@@ -141,7 +164,7 @@ export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
           {/* AI 识别的模式 */}
           {analysis.patterns && analysis.patterns.length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-sm font-medium flex items-center gap-2">
+              <h4 className="flex items-center gap-2 text-sm font-medium">
                 <Brain className="h-4 w-4" />
                 AI 识别的模式
               </h4>
@@ -151,7 +174,7 @@ export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
                   return (
                     <div
                       key={index}
-                      className="rounded-lg border p-3 space-y-2"
+                      className="space-y-2 rounded-lg border p-3"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -162,11 +185,11 @@ export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
                           置信度 {Math.round(pattern.confidence * 100)}%
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         {pattern.description}
                       </p>
                       {pattern.evidence && pattern.evidence.length > 0 && (
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           <span className="font-medium">证据：</span>
                           {pattern.evidence.slice(0, 2).join("；")}
                         </div>
@@ -180,8 +203,8 @@ export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
 
           {/* 深层需求 */}
           {analysis.deepNeed && (
-            <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 dark:bg-amber-950/20 dark:border-amber-800">
-              <h4 className="text-sm font-medium flex items-center gap-2 text-amber-800 dark:text-amber-200">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/20">
+              <h4 className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
                 <Lightbulb className="h-4 w-4" />
                 深层需求分析
               </h4>
@@ -194,53 +217,54 @@ export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
       </Card>
 
       {/* 替代行为建议 */}
-      {analysis.substituteBehaviors && analysis.substituteBehaviors.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">替代行为建议</CardTitle>
-            <CardDescription>
-              当冲动来临时，可以尝试这些替代行为
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {analysis.substituteBehaviors.map((behavior, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-2 rounded-lg border p-3"
-                >
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
-                    {index + 1}
+      {analysis.substituteBehaviors &&
+        analysis.substituteBehaviors.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">替代行为建议</CardTitle>
+              <CardDescription>
+                当冲动来临时，可以尝试这些替代行为
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {analysis.substituteBehaviors.map((behavior, index) => (
+                  <div
+                    key={index}
+                    className="flex items-start gap-2 rounded-lg border p-3"
+                  >
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
+                      {index + 1}
+                    </div>
+                    <p className="text-sm">{behavior}</p>
                   </div>
-                  <p className="text-sm">{behavior}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
       {/* 时间模式洞察 */}
       {stats?.temporalPatterns && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">时间模式</CardTitle>
-            <CardDescription>
-              触发冲动的高峰时段
-            </CardDescription>
+            <CardDescription>触发冲动的高峰时段</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {stats.temporalPatterns.peakHours.length > 0 && (
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Clock className="text-muted-foreground h-4 w-4" />
                 <span className="text-sm">
                   高峰时段：
-                  {stats.temporalPatterns.peakHours.map((h) => `${h}:00`).join("、")}
+                  {stats.temporalPatterns.peakHours
+                    .map((h) => `${h}:00`)
+                    .join("、")}
                 </span>
               </div>
             )}
             {stats.temporalPatterns.timeInsights.map((insight, i) => (
-              <p key={i} className="text-sm text-muted-foreground">
+              <p key={i} className="text-muted-foreground text-sm">
                 • {insight}
               </p>
             ))}

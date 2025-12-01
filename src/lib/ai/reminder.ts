@@ -17,7 +17,7 @@ import { modelMini } from "./model";
  */
 function determinePromptType(
   motivationLevel: number,
-  recentRate: number
+  recentRate: number,
 ): "SIGNAL" | "FACILITATOR" | "SPARK" {
   // 动机高（>7）且完成率高（>70%）→ 信号型
   if (motivationLevel > 7 && recentRate > 70) {
@@ -41,11 +41,11 @@ function determinePromptType(
  * @returns 生成的提醒内容
  */
 export async function generateReminder(
-  context: ReminderContext
+  context: ReminderContext,
 ): Promise<Reminder> {
   const suggestedType = determinePromptType(
     context.motivationLevel,
-    context.recentRate
+    context.recentRate,
   );
 
   const prompt = `
@@ -91,7 +91,7 @@ ${suggestedType === "SPARK" ? "（需要激励，唤起动机和愿景）" : ""}
  * 批量生成多个习惯的提醒
  */
 export async function generateRemindersForHabits(
-  contexts: ReminderContext[]
+  contexts: ReminderContext[],
 ): Promise<Map<string, Reminder>> {
   const results = new Map<string, Reminder>();
 

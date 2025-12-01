@@ -40,7 +40,10 @@ export function DifficultyChart({
   description = "各习惯的平均难度与完成率对比",
 }: DifficultyChartProps) {
   const chartData = data.map((item) => ({
-    habit: item.habitName.length > 8 ? item.habitName.slice(0, 8) + "..." : item.habitName,
+    habit:
+      item.habitName.length > 8
+        ? item.habitName.slice(0, 8) + "..."
+        : item.habitName,
     fullName: item.habitName,
     difficulty: item.avgDifficulty,
     completionRate: item.completionRate,
@@ -70,7 +73,7 @@ export function DifficultyChart({
         </CardHeader>
         <CardContent>
           <div className="flex h-64 items-center justify-center">
-            <p className="text-sm text-muted-foreground">暂无难度数据</p>
+            <p className="text-muted-foreground text-sm">暂无难度数据</p>
           </div>
         </CardContent>
       </Card>
@@ -83,10 +86,10 @@ export function DifficultyChart({
 
   // 找出最难和最简单的习惯
   const hardest = data.reduce((max, item) =>
-    item.avgDifficulty > max.avgDifficulty ? item : max
+    item.avgDifficulty > max.avgDifficulty ? item : max,
   );
   const easiest = data.reduce((min, item) =>
-    item.avgDifficulty < min.avgDifficulty ? item : min
+    item.avgDifficulty < min.avgDifficulty ? item : min,
   );
 
   return (
@@ -97,7 +100,9 @@ export function DifficultyChart({
             <CardTitle className="text-base">{title}</CardTitle>
             <CardDescription>{description}</CardDescription>
           </div>
-          <Badge variant="outline">平均难度: {avgDifficulty.toFixed(1)}/10</Badge>
+          <Badge variant="outline">
+            平均难度: {avgDifficulty.toFixed(1)}/10
+          </Badge>
         </div>
       </CardHeader>
       <CardContent>
@@ -121,18 +126,24 @@ export function DifficultyChart({
               />
               <Tooltip
                 content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const data = payload[0]?.payload as typeof chartData[0];
+                  if (active && payload?.length) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    const data = payload[0]?.payload as
+                      | (typeof chartData)[0]
+                      | undefined;
+                    if (!data) return null;
                     return (
-                      <div className="rounded-lg border bg-background p-2 shadow-sm">
-                        <div className="text-sm font-medium">{data.fullName}</div>
-                        <div className="text-xs text-muted-foreground">
+                      <div className="bg-background rounded-lg border p-2 shadow-sm">
+                        <div className="text-sm font-medium">
+                          {data.fullName}
+                        </div>
+                        <div className="text-muted-foreground text-xs">
                           平均难度: {data.difficulty.toFixed(1)}/10
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           完成率: {data.completionRate}%
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           打卡次数: {data.totalLogs}
                         </div>
                       </div>
@@ -154,21 +165,21 @@ export function DifficultyChart({
 
         {/* 洞察 */}
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-          <div className="rounded-lg bg-red-50 dark:bg-red-950/20 p-2">
-            <p className="text-xs text-muted-foreground">最难习惯</p>
+          <div className="rounded-lg bg-red-50 p-2 dark:bg-red-950/20">
+            <p className="text-muted-foreground text-xs">最难习惯</p>
             <p className="font-medium text-red-700 dark:text-red-300">
               {hardest.habitName}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               难度 {hardest.avgDifficulty.toFixed(1)}/10
             </p>
           </div>
-          <div className="rounded-lg bg-green-50 dark:bg-green-950/20 p-2">
-            <p className="text-xs text-muted-foreground">最易习惯</p>
+          <div className="rounded-lg bg-green-50 p-2 dark:bg-green-950/20">
+            <p className="text-muted-foreground text-xs">最易习惯</p>
             <p className="font-medium text-green-700 dark:text-green-300">
               {easiest.habitName}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               难度 {easiest.avgDifficulty.toFixed(1)}/10
             </p>
           </div>

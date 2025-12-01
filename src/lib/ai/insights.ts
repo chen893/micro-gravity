@@ -31,7 +31,7 @@ export function calculateBasicStats(
     difficultyRating?: number | null;
     moodBefore?: number | null;
     moodAfter?: number | null;
-  }>
+  }>,
 ): BasicStats {
   if (logs.length === 0) {
     return {
@@ -52,7 +52,7 @@ export function calculateBasicStats(
 
   // 计算连续天数
   const sortedLogs = [...logs].sort(
-    (a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime()
+    (a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime(),
   );
 
   let currentStreak = 0;
@@ -68,7 +68,7 @@ export function calculateBasicStats(
     logDate.setHours(0, 0, 0, 0);
 
     const diffDays = Math.floor(
-      (today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24)
+      (today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24),
     );
 
     if (diffDays === currentStreak && log.completed) {
@@ -81,14 +81,14 @@ export function calculateBasicStats(
   // 计算最长连续天数
   let lastDate: Date | null = null;
   for (const log of completedLogs.sort(
-    (a, b) => new Date(a.loggedAt).getTime() - new Date(b.loggedAt).getTime()
+    (a, b) => new Date(a.loggedAt).getTime() - new Date(b.loggedAt).getTime(),
   )) {
     const logDate = new Date(log.loggedAt);
     logDate.setHours(0, 0, 0, 0);
 
     if (lastDate) {
       const diffDays = Math.floor(
-        (logDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
+        (logDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24),
       );
       if (diffDays === 1) {
         tempStreak++;
@@ -110,7 +110,7 @@ export function calculateBasicStats(
   const averageDifficulty =
     difficulties.length > 0
       ? Math.round(
-          (difficulties.reduce((a, b) => a + b, 0) / difficulties.length) * 10
+          (difficulties.reduce((a, b) => a + b, 0) / difficulties.length) * 10,
         ) / 10
       : null;
 
@@ -121,7 +121,7 @@ export function calculateBasicStats(
   const moodImprovement =
     moodChanges.length > 0
       ? Math.round(
-          (moodChanges.reduce((a, b) => a + b, 0) / moodChanges.length) * 10
+          (moodChanges.reduce((a, b) => a + b, 0) / moodChanges.length) * 10,
         ) / 10
       : null;
 
@@ -151,7 +151,7 @@ export function analyzeTimeDistribution(
     loggedAt: Date;
     completed: boolean;
     completionTime?: Date | null;
-  }>
+  }>,
 ): TimeDistribution {
   if (logs.length < 7) {
     return {
@@ -218,13 +218,17 @@ export function analyzeTimeDistribution(
   const dayNames = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
   if (bestDayOfWeek !== null) {
-    insights.push(`${dayNames[bestDayOfWeek]}完成率最高 (${Math.round(bestRate * 100)}%)`);
+    insights.push(
+      `${dayNames[bestDayOfWeek]}完成率最高 (${Math.round(bestRate * 100)}%)`,
+    );
   }
   if (worstDayOfWeek !== null && worstDayOfWeek !== bestDayOfWeek) {
-    insights.push(`${dayNames[worstDayOfWeek]}完成率最低 (${Math.round(worstRate * 100)}%)`);
+    insights.push(
+      `${dayNames[worstDayOfWeek]}完成率最低 (${Math.round(worstRate * 100)}%)`,
+    );
   }
   if (bestHour !== null) {
-    insights.push(`最常在${bestHour}点完成习惯`);
+    insights.push(`最常在${String(bestHour)}点完成习惯`);
   }
 
   return { bestDayOfWeek, worstDayOfWeek, bestHour, insights };
@@ -280,7 +284,10 @@ ${basicStats.moodImprovement ? `- 情绪提升：${basicStats.moodImprovement > 
 /**
  * 生成默认洞察
  */
-function generateDefaultInsights(stats: BasicStats, habitName: string): Insight {
+function generateDefaultInsights(
+  stats: BasicStats,
+  habitName: string,
+): Insight {
   // 正向强化
   let positiveTitle: string;
   let positiveContent: string;
@@ -306,7 +313,10 @@ function generateDefaultInsights(stats: BasicStats, habitName: string): Insight 
   if (stats.moodImprovement !== null && stats.moodImprovement > 0.5) {
     patternTitle = "情绪提升";
     patternContent = `完成后情绪平均提升${stats.moodImprovement}分`;
-  } else if (stats.averageDifficulty !== null && stats.averageDifficulty <= 2.5) {
+  } else if (
+    stats.averageDifficulty !== null &&
+    stats.averageDifficulty <= 2.5
+  ) {
     patternTitle = "难度适中";
     patternContent = "当前难度合适，可以考虑提升挑战";
   } else if (stats.averageDifficulty !== null && stats.averageDifficulty >= 4) {
@@ -367,7 +377,7 @@ export function getQuickInsights(
     difficultyRating?: number | null;
     moodBefore?: number | null;
     moodAfter?: number | null;
-  }>
+  }>,
 ): string[] {
   const insights: string[] = [];
   const stats = calculateBasicStats(logs);

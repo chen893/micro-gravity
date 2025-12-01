@@ -104,11 +104,13 @@ export function HabitHeader({ habit }: HabitHeaderProps) {
             <Badge variant={habit.type === "BUILD" ? "default" : "secondary"}>
               {habit.type === "BUILD" ? "养成" : "戒除"}
             </Badge>
-            {habit.category && <Badge variant="outline">{habit.category}</Badge>}
+            {habit.category && (
+              <Badge variant="outline">{habit.category}</Badge>
+            )}
             <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
           </div>
           {habit.description && (
-            <p className="pl-11 text-muted-foreground">{habit.description}</p>
+            <p className="text-muted-foreground pl-11">{habit.description}</p>
           )}
         </div>
 

@@ -32,36 +32,49 @@ interface TriggerFormProps {
 
 type TriggerType = "TEMPORAL" | "CONTEXTUAL" | "EMOTIONAL" | "BEHAVIORAL";
 
-const triggerTypeOptions: { value: TriggerType; label: string; icon: React.ReactNode; description: string }[] = [
+const triggerTypeOptions: {
+  value: TriggerType;
+  label: string;
+  icon: React.ReactNode;
+  description: string;
+}[] = [
   {
     value: "TEMPORAL",
     label: "时间触发",
     icon: <Clock className="h-4 w-4" />,
-    description: "特定时间段容易触发"
+    description: "特定时间段容易触发",
   },
   {
     value: "CONTEXTUAL",
     label: "情境触发",
     icon: <MapPin className="h-4 w-4" />,
-    description: "特定地点或场景触发"
+    description: "特定地点或场景触发",
   },
   {
     value: "EMOTIONAL",
     label: "情绪触发",
     icon: <Brain className="h-4 w-4" />,
-    description: "特定情绪状态触发"
+    description: "特定情绪状态触发",
   },
   {
     value: "BEHAVIORAL",
     label: "行为触发",
     icon: <Zap className="h-4 w-4" />,
-    description: "其他行为连带触发"
+    description: "其他行为连带触发",
   },
 ];
 
 const emotionOptions = [
-  "焦虑", "无聊", "压力", "疲劳", "孤独",
-  "沮丧", "愤怒", "兴奋", "开心", "紧张"
+  "焦虑",
+  "无聊",
+  "压力",
+  "疲劳",
+  "孤独",
+  "沮丧",
+  "愤怒",
+  "兴奋",
+  "开心",
+  "紧张",
 ];
 
 export function TriggerForm({ habitId, onSuccess }: TriggerFormProps) {
@@ -118,9 +131,7 @@ export function TriggerForm({ habitId, onSuccess }: TriggerFormProps) {
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">记录触发时刻</CardTitle>
-        <CardDescription>
-          记录每次冲动的触发情况，帮助识别模式
-        </CardDescription>
+        <CardDescription>记录每次冲动的触发情况，帮助识别模式</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6">
@@ -139,12 +150,16 @@ export function TriggerForm({ habitId, onSuccess }: TriggerFormProps) {
                       : "border-muted hover:border-muted-foreground/50"
                   }`}
                 >
-                  <div className={`mt-0.5 ${triggerType === option.value ? "text-primary" : "text-muted-foreground"}`}>
+                  <div
+                    className={`mt-0.5 ${triggerType === option.value ? "text-primary" : "text-muted-foreground"}`}
+                  >
                     {option.icon}
                   </div>
                   <div>
-                    <div className="font-medium text-sm">{option.label}</div>
-                    <div className="text-xs text-muted-foreground">{option.description}</div>
+                    <div className="text-sm font-medium">{option.label}</div>
+                    <div className="text-muted-foreground text-xs">
+                      {option.description}
+                    </div>
                   </div>
                 </button>
               ))}
@@ -206,7 +221,7 @@ export function TriggerForm({ habitId, onSuccess }: TriggerFormProps) {
               step={1}
               className="w-full"
             />
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="text-muted-foreground flex justify-between text-xs">
               <span>轻微冲动</span>
               <span>强烈冲动</span>
             </div>
@@ -224,15 +239,12 @@ export function TriggerForm({ habitId, onSuccess }: TriggerFormProps) {
                 <div className="font-medium">
                   {resisted ? "成功抵抗" : "未能抵抗"}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   {resisted ? "这次没有执行坏习惯" : "这次执行了坏习惯"}
                 </div>
               </div>
             </div>
-            <Switch
-              checked={resisted}
-              onCheckedChange={setResisted}
-            />
+            <Switch checked={resisted} onCheckedChange={setResisted} />
           </div>
 
           {/* 使用的应对策略（如果成功抵抗） */}

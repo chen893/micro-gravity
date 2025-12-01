@@ -83,7 +83,7 @@ export function MoodChart({
         </CardHeader>
         <CardContent>
           <div className="flex h-64 items-center justify-center">
-            <p className="text-sm text-muted-foreground">暂无情绪数据</p>
+            <p className="text-muted-foreground text-sm">暂无情绪数据</p>
           </div>
         </CardContent>
       </Card>
@@ -136,21 +136,29 @@ export function MoodChart({
               />
               <Tooltip
                 content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const data = payload[0]?.payload as typeof chartData[0];
+                  if (active && payload?.length) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    const data = payload[0]?.payload as
+                      | (typeof chartData)[0]
+                      | undefined;
+                    if (!data) return null;
                     return (
-                      <div className="rounded-lg border bg-background p-2 shadow-sm">
-                        <div className="text-sm font-medium">{data.fullDate}</div>
+                      <div className="bg-background rounded-lg border p-2 shadow-sm">
+                        <div className="text-sm font-medium">
+                          {data.fullDate}
+                        </div>
                         {data.moodBefore !== null && (
                           <div className="flex items-center gap-2 text-xs">
                             <span className="h-2 w-2 rounded-full bg-amber-500" />
-                            完成前: {moodLabels[data.moodBefore] ?? data.moodBefore}
+                            完成前:{" "}
+                            {moodLabels[data.moodBefore] ?? data.moodBefore}
                           </div>
                         )}
                         {data.moodAfter !== null && (
                           <div className="flex items-center gap-2 text-xs">
                             <span className="h-2 w-2 rounded-full bg-green-500" />
-                            完成后: {moodLabels[data.moodAfter] ?? data.moodAfter}
+                            完成后:{" "}
+                            {moodLabels[data.moodAfter] ?? data.moodAfter}
                           </div>
                         )}
                       </div>
@@ -163,7 +171,7 @@ export function MoodChart({
                 verticalAlign="top"
                 height={36}
                 formatter={(value) => (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {value === "moodBefore" ? "完成前" : "完成后"}
                   </span>
                 )}

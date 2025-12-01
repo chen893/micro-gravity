@@ -8,7 +8,9 @@ interface HabitDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function HabitDetailPage({ params }: HabitDetailPageProps) {
+export default async function HabitDetailPage({
+  params,
+}: HabitDetailPageProps) {
   const { id } = await params;
 
   // 预取数据

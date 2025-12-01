@@ -41,9 +41,7 @@ interface HabitLogForAnalytics {
 /**
  * 生成时间热力图数据
  */
-export function generateTimeHeatmapData(
-  logs: HabitLogForAnalytics[]
-): Array<{
+export function generateTimeHeatmapData(logs: HabitLogForAnalytics[]): Array<{
   dayOfWeek: number;
   hourOfDay: number;
   completionRate: number;
@@ -100,7 +98,8 @@ export function generateTimeHeatmapData(
         avgDuration:
           cell.durations.length > 0
             ? Math.round(
-                cell.durations.reduce((a, b) => a + b, 0) / cell.durations.length
+                cell.durations.reduce((a, b) => a + b, 0) /
+                  cell.durations.length,
               )
             : null,
         count: cell.total,
@@ -115,7 +114,7 @@ export function generateTimeHeatmapData(
  * AI 分析时间热力图
  */
 export async function analyzeTimePatterns(
-  logs: HabitLogForAnalytics[]
+  logs: HabitLogForAnalytics[],
 ): Promise<TimeHeatmap> {
   const heatmapData = generateTimeHeatmapData(logs);
 
@@ -133,7 +132,7 @@ export async function analyzeTimePatterns(
 ${topCells
   .map(
     (cell) =>
-      `- 周${cell.dayOfWeek === 0 ? "日" : cell.dayOfWeek} ${cell.hourOfDay}:00: ${cell.completionRate}% (${cell.count}次)`
+      `- 周${cell.dayOfWeek === 0 ? "日" : cell.dayOfWeek} ${cell.hourOfDay}:00: ${cell.completionRate}% (${cell.count}次)`,
   )
   .join("\n")}
 
@@ -142,7 +141,7 @@ ${sortedByRate
   .slice(-3)
   .map(
     (cell) =>
-      `- 周${cell.dayOfWeek === 0 ? "日" : cell.dayOfWeek} ${cell.hourOfDay}:00: ${cell.completionRate}% (${cell.count}次)`
+      `- 周${cell.dayOfWeek === 0 ? "日" : cell.dayOfWeek} ${cell.hourOfDay}:00: ${cell.completionRate}% (${cell.count}次)`,
   )
   .join("\n")}
 
@@ -170,7 +169,9 @@ ${sortedByRate
       })),
       insights:
         topCells.length > 0
-          ? [`最佳执行时段：周${topCells[0]!.dayOfWeek} ${topCells[0]!.hourOfDay}:00`]
+          ? [
+              `最佳执行时段：周${topCells[0]!.dayOfWeek} ${topCells[0]!.hourOfDay}:00`,
+            ]
           : ["数据不足，继续记录"],
       optimalWindows:
         topCells.length > 0
@@ -193,10 +194,10 @@ ${sortedByRate
  * 分析情绪与习惯的关联
  */
 export async function analyzeMoodCorrelation(
-  logs: HabitLogForAnalytics[]
+  logs: HabitLogForAnalytics[],
 ): Promise<MoodCorrelation> {
   const logsWithMood = logs.filter(
-    (log) => log.moodBefore !== null && log.moodAfter !== null
+    (log) => log.moodBefore !== null && log.moodAfter !== null,
   );
 
   if (logsWithMood.length < 5) {
@@ -264,7 +265,8 @@ export async function analyzeMoodCorrelation(
         averageMoodBefore: Math.round(avgBefore * 10) / 10,
         averageMoodAfter: Math.round(avgAfter * 10) / 10,
         moodLift: Math.round(moodLift * 10) / 10,
-        significance: moodLift >= 0.5 ? "HIGH" : moodLift >= 0.2 ? "MEDIUM" : "LOW",
+        significance:
+          moodLift >= 0.5 ? "HIGH" : moodLift >= 0.2 ? "MEDIUM" : "LOW",
       },
       moodTriggers: [
         {
@@ -288,7 +290,7 @@ export async function analyzeMoodCorrelation(
  */
 export async function analyzeHabitCorrelations(
   habits: Array<{ id: string; name: string }>,
-  logs: HabitLogForAnalytics[]
+  logs: HabitLogForAnalytics[],
 ): Promise<HabitCorrelation> {
   if (habits.length < 2) {
     return {
@@ -400,8 +402,10 @@ ${correlationResults
         habit1Id: c.habit1Id,
         habit2Id: c.habit2Id,
         correlationScore: Math.round(c.score * 100) / 100,
-        relationship: c.score > 0.3 ? "POSITIVE" : c.score < -0.3 ? "NEGATIVE" : "NEUTRAL",
-        insight: c.score > 0.3 ? "这两个习惯经常一起完成" : "这两个习惯相对独立",
+        relationship:
+          c.score > 0.3 ? "POSITIVE" : c.score < -0.3 ? "NEGATIVE" : "NEUTRAL",
+        insight:
+          c.score > 0.3 ? "这两个习惯经常一起完成" : "这两个习惯相对独立",
       })),
       clusters: [],
       suggestions: [],
@@ -418,7 +422,7 @@ export async function predictBreakRisk(
   habitName: string,
   logs: HabitLogForAnalytics[],
   currentStreak: number,
-  daysSinceStart: number
+  daysSinceStart: number,
 ): Promise<BreakRisk> {
   if (logs.length < 7) {
     return {
@@ -461,7 +465,8 @@ export async function predictBreakRisk(
     .filter((d): d is number => d !== null && d !== undefined);
   const avgRecentDifficulty =
     recentDifficulties.length > 0
-      ? recentDifficulties.reduce((a, b) => a + b, 0) / recentDifficulties.length
+      ? recentDifficulties.reduce((a, b) => a + b, 0) /
+        recentDifficulties.length
       : 3;
 
   // 3. 连续天数稳定性
@@ -479,7 +484,8 @@ export async function predictBreakRisk(
   // 综合风险评估
   let riskScore = 0;
   riskScore += rateTrend < -0.2 ? 30 : rateTrend < 0 ? 15 : 0;
-  riskScore += avgRecentDifficulty > 4 ? 25 : avgRecentDifficulty > 3.5 ? 15 : 0;
+  riskScore +=
+    avgRecentDifficulty > 4 ? 25 : avgRecentDifficulty > 3.5 ? 15 : 0;
   riskScore += streakStability < 0.5 ? 20 : streakStability < 0.8 ? 10 : 0;
   riskScore += avgMood < 2.5 ? 25 : avgMood < 3 ? 15 : 0;
 
@@ -528,7 +534,9 @@ export async function predictBreakRisk(
           factor: "完成率趋势",
           weight: 30,
           currentStatus:
-            rateTrend < 0 ? `下降${Math.abs(Math.round(rateTrend * 100))}%` : "稳定",
+            rateTrend < 0
+              ? `下降${Math.abs(Math.round(rateTrend * 100))}%`
+              : "稳定",
         },
         {
           factor: "主观难度",
