@@ -26,9 +26,15 @@ export async function POST(req: Request) {
   const userId = session.user.id;
 
   // 解析请求体
-  const { messages }: { messages: UIMessage[] } = await req.json();
-  console.log('messages', JSON.stringify(messages, null, 2))
-  console.log(' convertToModelMessages(messages)',  JSON.stringify(convertToModelMessages(messages), null, 2))
+  const requestSchema = z.object({
+    messages: z.array(z.custom<UIMessage>()),
+  });
+  const { messages } = requestSchema.parse(await req.json());
+  console.log("messages", JSON.stringify(messages, null, 2));
+  console.log(
+    " convertToModelMessages(messages)",
+    JSON.stringify(convertToModelMessages(messages), null, 2),
+  );
   // 创建流式响应
   const result = streamText({
     model,

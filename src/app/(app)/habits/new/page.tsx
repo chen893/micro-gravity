@@ -32,7 +32,7 @@ const WELCOME_MESSAGE: UIMessage = {
 
 export default function NewHabitPage() {
   const [input, setInput] = useState("");
-  const [habitCreated, setHabitCreated] = useState(false);
+  const [habitCreated] = useState(false);
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
@@ -49,8 +49,7 @@ export default function NewHabitPage() {
     if (!input.trim() || isLoading) return;
     const userMessage = input.trim();
     setInput("");
-    console.log('text', userMessage)
-    sendMessage({ text: userMessage });
+    void sendMessage({ text: userMessage });
   };
 
   return (

@@ -495,7 +495,7 @@ export const analyticsRouter = createTRPCRouter({
             if (data.triggerType && data.context) {
               triggerRecords.push({
                 timestamp: log.loggedAt,
-                triggerType: data.triggerType as TriggerPatternType,
+                triggerType: data.triggerType,
                 context: data.context,
                 location: data.location,
                 emotion: data.emotion,
@@ -581,7 +581,7 @@ export const analyticsRouter = createTRPCRouter({
             if (data.triggerType && data.context) {
               triggerRecords.push({
                 timestamp: log.loggedAt,
-                triggerType: data.triggerType as TriggerPatternType,
+                triggerType: data.triggerType,
                 context: data.context,
                 location: data.location,
                 emotion: data.emotion,
@@ -676,7 +676,7 @@ export const analyticsRouter = createTRPCRouter({
             if (data.triggerType && data.context) {
               triggerRecords.push({
                 timestamp: log.loggedAt,
-                triggerType: data.triggerType as TriggerPatternType,
+                triggerType: data.triggerType,
                 context: data.context,
                 location: data.location,
                 emotion: data.emotion,

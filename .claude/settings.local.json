@@ -1,8 +1,4 @@
 {
-  "env-": {
-    "ANTHROPIC_AUTH_TOKEN": "88_34771c6e4181f46ebd78b8c36055180f9ce9406c37ca70b57bb2c8c9a24a018f",
-    "ANTHROPIC_BASE_URL": "https://www.88code.org/api"
-  },
   "permissions": {
     "allow": [
       "Bash(pnpm typecheck:*)",
@@ -13,11 +9,11 @@
       "Bash(pnpm list:*)",
       "Bash(pnpm add:*)",
       "Bash(ls:*)",
-      "Bash(find:*)",
-      "Bash(npx shadcn@latest add:*)"
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
   },
+
   "defaultMode": "acceptEdits"
 }

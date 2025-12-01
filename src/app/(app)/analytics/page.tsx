@@ -6,14 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  BarChart3,
-  TrendingUp,
-  AlertTriangle,
-  CheckCircle,
-  Calendar,
-  Flame,
-} from "lucide-react";
+import { TrendingUp, AlertTriangle, CheckCircle, Calendar, Flame } from "lucide-react";
 
 export default function AnalyticsPage() {
   const { data: dashboard, isLoading } = api.analytics.getDashboard.useQuery({ days: 30 });

@@ -62,7 +62,7 @@ export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
     );
   }
 
-  if (!analysisData || !analysisData.analysis) {
+  if (!analysisData?.analysis) {
     return (
       <Card>
         <CardHeader>

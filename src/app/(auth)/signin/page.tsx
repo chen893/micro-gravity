@@ -1,5 +1,4 @@
 import { signIn } from "@/server/auth";
-import { redirect } from "next/navigation";
 
 export default async function SignInPage({
   searchParams,

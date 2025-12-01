@@ -94,7 +94,7 @@ export default function ReportsPage() {
               <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
               <h3 className="mt-4 text-lg font-semibold">暂无报告</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                点击"生成周报"按钮，创建你的第一份习惯报告
+                点击 &quot;生成周报&quot; 按钮，创建你的第一份习惯报告
               </p>
             </Card>
           )}

@@ -470,7 +470,7 @@ export async function predictBreakRisk(
   // 4. 情绪趋势
   const recentMoods = recentLogs
     .filter((log) => log.moodAfter !== null)
-    .map((log) => log.moodAfter as number);
+    .map((log) => log.moodAfter!);
   const avgMood =
     recentMoods.length > 0
       ? recentMoods.reduce((a, b) => a + b, 0) / recentMoods.length

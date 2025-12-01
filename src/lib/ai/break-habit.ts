@@ -274,7 +274,7 @@ export interface RelapseAnalysis {
 
 export function analyzeRelapse(
   records: TriggerRecord[],
-  targetDaysClean: number = 7
+  targetDaysClean = 7
 ): RelapseAnalysis {
   const failures = records.filter((r) => !r.resisted);
 

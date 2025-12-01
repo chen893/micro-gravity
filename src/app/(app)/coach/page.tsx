@@ -56,12 +56,12 @@ export default function CoachPage() {
 
     const userMessage = input.trim();
     setInput("");
-    sendMessage({ text: userMessage });
+    void sendMessage({ text: userMessage });
   };
 
   const handleQuickPrompt = (prompt: string) => {
     if (isLoading) return;
-    sendMessage({ text: prompt });
+    void sendMessage({ text: prompt });
   };
 
   return (

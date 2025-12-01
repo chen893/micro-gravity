@@ -1,7 +1,6 @@
 "use client";
 
 import { use } from "react";
-import { useRouter } from "next/navigation";
 import { api } from "@/trpc/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,6 @@ interface ReportDetailPageProps {
 
 export default function ReportDetailPage({ params }: ReportDetailPageProps) {
   const { id } = use(params);
-  const router = useRouter();
 
   const { data: report, isLoading } = api.report.getById.useQuery({ id });
 
