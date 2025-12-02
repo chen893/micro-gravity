@@ -11,6 +11,7 @@ import {
   FileText,
   Settings,
   Target,
+  Trophy,
 } from "lucide-react";
 
 const navItems = [
@@ -38,6 +39,11 @@ const navItems = [
     title: "报告",
     href: "/reports",
     icon: FileText,
+  },
+  {
+    title: "成就",
+    href: "/achievements",
+    icon: Trophy,
   },
 ];
 
