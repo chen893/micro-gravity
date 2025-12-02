@@ -5,6 +5,7 @@
 
 import { generateObject } from "ai";
 import { z } from "zod";
+import { model } from "@/lib/ai/model";
 
 // ============ 类型定义 ============
 
@@ -92,7 +93,7 @@ export async function generateBreakFlow(params: {
   const { habitName, triggerContexts, currentEnvironment } = params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: breakFlowResultSchema,
     prompt: `作为习惯设计专家，为戒除坏习惯设计三步流程方案。
 
@@ -153,7 +154,7 @@ export async function generatePromptStrategies(params: {
   const { habitName, triggerContexts } = params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       strategies: z.array(promptStrategySchema).describe("提示策略列表"),
     }),
@@ -183,7 +184,7 @@ export async function generateAbilityBarriers(params: {
   const { habitName, currentBehavior } = params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       barriers: z.array(abilityBarrierSchema).describe("能力障碍列表"),
     }),
@@ -221,7 +222,7 @@ export async function evaluateBreakPlan(params: {
   const { habitName, selectedStrategies, selectedBarriers } = params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       feasibilityScore: z.number().min(1).max(10).describe("可行性评分"),
       strengths: z.array(z.string()).describe("方案优势"),

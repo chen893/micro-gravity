@@ -53,6 +53,9 @@ export function EasyStrategyStep({
   };
 
   const handleComplete = () => {
+    // 添加加载状态检查，防止竞态条件
+    if (isLoadingStarter || isLoadingScaled) return;
+
     if (selectedStrategy === "STARTER_STEP" && starterStep) {
       onComplete(selectedStrategy, starterStep.starterStep);
     } else if (selectedStrategy === "SCALE_DOWN" && scaledBehavior) {
@@ -61,8 +64,12 @@ export function EasyStrategyStep({
   };
 
   const isComplete =
-    (selectedStrategy === "STARTER_STEP" && starterStep !== null) ||
-    (selectedStrategy === "SCALE_DOWN" && scaledBehavior !== null);
+    (selectedStrategy === "STARTER_STEP" &&
+      starterStep !== null &&
+      !isLoadingStarter) ||
+    (selectedStrategy === "SCALE_DOWN" &&
+      scaledBehavior !== null &&
+      !isLoadingScaled);
 
   return (
     <div className="space-y-6">

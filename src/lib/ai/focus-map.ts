@@ -5,6 +5,7 @@
 
 import { generateObject } from "ai";
 import { z } from "zod";
+import { model } from "@/lib/ai/model";
 
 // 焦点地图象限
 export type FocusQuadrant = "GOLDEN" | "HIGH_IMPACT" | "EASY_WIN" | "AVOID";
@@ -69,7 +70,7 @@ export async function generateBehaviorCluster(
   clarifiedAspiration?: string,
 ): Promise<string[]> {
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       behaviors: z
         .array(z.string())
@@ -113,7 +114,7 @@ export async function generateFocusMap(
     : "";
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: focusMapResultSchema,
     prompt: `作为习惯设计专家，请评估以下行为并创建焦点地图。
 
@@ -166,7 +167,7 @@ export async function generateStarterStep(
   context?: string,
 ): Promise<{ starterStep: string; explanation: string }> {
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       starterStep: z
         .string()
@@ -201,7 +202,7 @@ export async function generateScaledBehavior(
   context?: string,
 ): Promise<{ scaledBehavior: string; explanation: string }> {
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       scaledBehavior: z.string().describe("缩小后的行为：行为本身的最小版本"),
       explanation: z.string().describe("为什么这个缩小版本有效"),
@@ -239,7 +240,7 @@ export async function generateHabitRecipe(params: {
   fullRecipe: string;
 }> {
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       anchor: z.string().describe("锚点行为（已有的日常行为）"),
       behavior: z.string().describe("微习惯（超级小的行为）"),

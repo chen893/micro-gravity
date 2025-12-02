@@ -8,6 +8,19 @@ import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { triggerRecordSchema } from "@/lib/types";
 
+// 完成级别枚举（对应 Prisma CompletionLevel）
+const completionLevelEnum = z.enum(["MINIMUM", "STANDARD", "EXCEEDED"]);
+
+// 情感标志枚举（对应 Prisma EmotionalMarker）
+const emotionalMarkerEnum = z.enum([
+  "BOREDOM",
+  "FRUSTRATION",
+  "AVOIDANCE",
+  "PAIN",
+  "JOY",
+  "PRIDE",
+]);
+
 // 创建打卡记录输入 schema
 const createLogInput = z.object({
   habitId: z.string(),
@@ -20,6 +33,12 @@ const createLogInput = z.object({
   moodAfter: z.number().min(1).max(5).optional(),
   notes: z.string().optional(),
   triggerContext: triggerRecordSchema.optional(), // 坏习惯触发记录
+  // v2.0 Phase 7: 弹性打卡字段
+  completionLevel: completionLevelEnum.optional(),
+  actualBehavior: z.string().optional(),
+  wantedToDoMore: z.boolean().optional(),
+  feltEasy: z.boolean().optional(),
+  emotionalMarker: emotionalMarkerEnum.optional(),
 });
 
 // 更新打卡记录输入 schema
@@ -33,6 +52,12 @@ const updateLogInput = z.object({
   moodAfter: z.number().min(1).max(5).optional(),
   notes: z.string().optional(),
   triggerContext: triggerRecordSchema.optional(),
+  // v2.0 Phase 7: 弹性打卡字段
+  completionLevel: completionLevelEnum.optional(),
+  actualBehavior: z.string().optional(),
+  wantedToDoMore: z.boolean().optional(),
+  feltEasy: z.boolean().optional(),
+  emotionalMarker: emotionalMarkerEnum.optional(),
 });
 
 export const logRouter = createTRPCRouter({
@@ -79,6 +104,12 @@ export const logRouter = createTRPCRouter({
           moodAfter: input.moodAfter,
           notes: input.notes,
           triggerContext: input.triggerContext ?? undefined,
+          // v2.0 Phase 7: 弹性打卡字段
+          completionLevel: input.completionLevel,
+          actualBehavior: input.actualBehavior,
+          wantedToDoMore: input.wantedToDoMore,
+          feltEasy: input.feltEasy,
+          emotionalMarker: input.emotionalMarker,
         },
         create: {
           habitId: input.habitId,
@@ -93,6 +124,12 @@ export const logRouter = createTRPCRouter({
           moodAfter: input.moodAfter,
           notes: input.notes,
           triggerContext: input.triggerContext ?? undefined,
+          // v2.0 Phase 7: 弹性打卡字段
+          completionLevel: input.completionLevel ?? "MINIMUM",
+          actualBehavior: input.actualBehavior,
+          wantedToDoMore: input.wantedToDoMore ?? false,
+          feltEasy: input.feltEasy ?? false,
+          emotionalMarker: input.emotionalMarker,
         },
         include: {
           habit: {
@@ -263,14 +300,20 @@ export const logRouter = createTRPCRouter({
       }
 
       const logs = await ctx.db.habitLog.findMany({
-        where: { habitId: input.habitId },
+        where: {
+          habitId: input.habitId,
+          userId: ctx.session.user.id,
+        },
         orderBy: { loggedAt: "desc" },
         take: input.limit,
         skip: input.offset,
       });
 
       const total = await ctx.db.habitLog.count({
-        where: { habitId: input.habitId },
+        where: {
+          habitId: input.habitId,
+          userId: ctx.session.user.id,
+        },
       });
 
       return {
@@ -415,6 +458,20 @@ export const logRouter = createTRPCRouter({
           ...(input.notes !== undefined && { notes: input.notes }),
           ...(input.triggerContext !== undefined && {
             triggerContext: input.triggerContext,
+          }),
+          // v2.0 Phase 7: 弹性打卡字段
+          ...(input.completionLevel !== undefined && {
+            completionLevel: input.completionLevel,
+          }),
+          ...(input.actualBehavior !== undefined && {
+            actualBehavior: input.actualBehavior,
+          }),
+          ...(input.wantedToDoMore !== undefined && {
+            wantedToDoMore: input.wantedToDoMore,
+          }),
+          ...(input.feltEasy !== undefined && { feltEasy: input.feltEasy }),
+          ...(input.emotionalMarker !== undefined && {
+            emotionalMarker: input.emotionalMarker,
           }),
         },
       });

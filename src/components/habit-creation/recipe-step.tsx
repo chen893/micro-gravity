@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -87,13 +87,15 @@ export function RecipeStep({
   const [showSmartMatches, setShowSmartMatches] = useState(false);
 
   // 当 recipe 变化时，初始化编辑状态
-  if (recipe && !editedRecipe) {
-    setEditedRecipe({
-      anchor: recipe.anchor,
-      behavior: recipe.behavior,
-      celebration: recipe.celebration,
-    });
-  }
+  useEffect(() => {
+    if (recipe) {
+      setEditedRecipe({
+        anchor: recipe.anchor,
+        behavior: recipe.behavior,
+        celebration: recipe.celebration,
+      });
+    }
+  }, [recipe]);
 
   const handleAnchorSelect = (text: string) => {
     setAnchor(text);

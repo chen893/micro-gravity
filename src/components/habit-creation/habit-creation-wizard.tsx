@@ -4,24 +4,28 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/trpc/react";
+import { toast } from "sonner";
 
 import { AspirationStep } from "./aspiration-step";
 import { BehaviorClusterStep } from "./behavior-cluster-step";
 import { FocusMapStep } from "./focus-map-step";
 import { EasyStrategyStep, type EasyStrategy } from "./easy-strategy-step";
+import { DemotivatorStep } from "./demotivator-step";
 import { RecipeStep } from "./recipe-step";
 import { RehearsalStep } from "./rehearsal-step";
 
 import type { BehaviorAssessment, FocusMapResult } from "@/lib/ai/focus-map";
+import type { DemotivatorAnalysis } from "@/lib/ai/demotivator-analysis";
 
 type Step =
   | "aspiration"
   | "behaviors"
   | "focusMap"
   | "easyStrategy"
+  | "demotivator"
   | "recipe"
   | "rehearsal";
 
@@ -30,6 +34,7 @@ const STEPS: Step[] = [
   "behaviors",
   "focusMap",
   "easyStrategy",
+  "demotivator",
   "recipe",
   "rehearsal",
 ];
@@ -39,6 +44,7 @@ const STEP_TITLES: Record<Step, string> = {
   behaviors: "探索行为",
   focusMap: "焦点地图",
   easyStrategy: "容易做",
+  demotivator: "移除顾虑",
   recipe: "习惯配方",
   rehearsal: "配方演练",
 };
@@ -71,6 +77,8 @@ export function HabitCreationWizard() {
     explanation: string;
   } | null>(null);
   const [easyResult, setEasyResult] = useState<string>("");
+  const [demotivatorAnalysis, setDemotivatorAnalysis] =
+    useState<DemotivatorAnalysis | null>(null);
   const [recipe, setRecipe] = useState<{
     anchor: string;
     behavior: string;
@@ -105,22 +113,27 @@ export function HabitCreationWizard() {
   // Step handlers
   const handleAspirationComplete = useCallback(
     async (asp: string, clarified?: string) => {
-      setAspiration(asp);
-      setClarifiedAspiration(clarified);
+      try {
+        setAspiration(asp);
+        setClarifiedAspiration(clarified);
 
-      const result = await createAspiration.mutateAsync({
-        description: asp,
-      });
-      setAspirationId(result.id);
-
-      if (clarified) {
-        await clarifyAspiration.mutateAsync({
-          id: result.id,
-          clarified,
+        const result = await createAspiration.mutateAsync({
+          description: asp,
         });
-      }
+        setAspirationId(result.id);
 
-      setCurrentStep("behaviors");
+        if (clarified) {
+          await clarifyAspiration.mutateAsync({
+            id: result.id,
+            clarified,
+          });
+        }
+
+        setCurrentStep("behaviors");
+      } catch (error) {
+        toast.error("保存愿望失败，请重试");
+        console.error("创建愿望失败:", error);
+      }
     },
     [createAspiration, clarifyAspiration],
   );
@@ -128,9 +141,14 @@ export function HabitCreationWizard() {
   const handleGenerateBehaviors = useCallback(async () => {
     if (!aspirationId) return;
 
-    const result = await generateBehaviors.mutateAsync({ aspirationId });
-    setBehaviors(result.behaviors);
-    setClusterId(result.clusterId);
+    try {
+      const result = await generateBehaviors.mutateAsync({ aspirationId });
+      setBehaviors(result.behaviors);
+      setClusterId(result.clusterId);
+    } catch (error) {
+      toast.error("生成行为建议失败，请重试");
+      console.error("生成行为失败:", error);
+    }
   }, [aspirationId, generateBehaviors]);
 
   const handleBehaviorsComplete = useCallback((selected: string[]) => {
@@ -141,11 +159,16 @@ export function HabitCreationWizard() {
   const handleGenerateFocusMap = useCallback(async () => {
     if (!aspirationId || !clusterId) return;
 
-    const result = await generateFocusMap.mutateAsync({
-      aspirationId,
-      clusterId,
-    });
-    setFocusMapResult(result);
+    try {
+      const result = await generateFocusMap.mutateAsync({
+        aspirationId,
+        clusterId,
+      });
+      setFocusMapResult(result);
+    } catch (error) {
+      toast.error("生成焦点地图失败，请重试");
+      console.error("生成焦点地图失败:", error);
+    }
   }, [aspirationId, clusterId, generateFocusMap]);
 
   const handleSelectBehavior = useCallback((behavior: BehaviorAssessment) => {
@@ -161,25 +184,43 @@ export function HabitCreationWizard() {
   const handleGenerateStarter = useCallback(async () => {
     if (!selectedBehavior) return;
 
-    const result = await generateStarterStepMutation.mutateAsync({
-      behavior: selectedBehavior.name,
-    });
-    setStarterStep(result);
+    try {
+      const result = await generateStarterStepMutation.mutateAsync({
+        behavior: selectedBehavior.name,
+      });
+      setStarterStep(result);
+    } catch (error) {
+      toast.error("生成入门步骤失败，请重试");
+      console.error("生成入门步骤失败:", error);
+    }
   }, [selectedBehavior, generateStarterStepMutation]);
 
   const handleGenerateScaled = useCallback(async () => {
     if (!selectedBehavior) return;
 
-    const result = await generateScaledBehaviorMutation.mutateAsync({
-      behavior: selectedBehavior.name,
-    });
-    setScaledBehavior(result);
+    try {
+      const result = await generateScaledBehaviorMutation.mutateAsync({
+        behavior: selectedBehavior.name,
+      });
+      setScaledBehavior(result);
+    } catch (error) {
+      toast.error("生成缩小版本失败，请重试");
+      console.error("生成缩小版本失败:", error);
+    }
   }, [selectedBehavior, generateScaledBehaviorMutation]);
 
   const handleEasyStrategyComplete = useCallback(
     (strategy: EasyStrategy, result: string) => {
       setEasyStrategy(strategy);
       setEasyResult(result);
+      setCurrentStep("demotivator");
+    },
+    [],
+  );
+
+  const handleDemotivatorComplete = useCallback(
+    (analysis?: DemotivatorAnalysis) => {
+      setDemotivatorAnalysis(analysis ?? null);
       setCurrentStep("recipe");
     },
     [],
@@ -190,11 +231,16 @@ export function HabitCreationWizard() {
       const behavior = easyResult || selectedBehavior?.name;
       if (!behavior) return;
 
-      const result = await generateRecipe.mutateAsync({
-        behavior,
-        anchor,
-      });
-      setRecipe(result);
+      try {
+        const result = await generateRecipe.mutateAsync({
+          behavior,
+          anchor,
+        });
+        setRecipe(result);
+      } catch (error) {
+        toast.error("生成习惯配方失败，请重试");
+        console.error("生成习惯配方失败:", error);
+      }
     },
     [easyResult, selectedBehavior, generateRecipe],
   );
@@ -214,30 +260,36 @@ export function HabitCreationWizard() {
   const handleCreateHabit = useCallback(async () => {
     if (!aspirationId || !selectedBehavior || !easyStrategy || !recipe) return;
 
-    const habit = await createHabit.mutateAsync({
-      aspirationId,
-      behaviorName: selectedBehavior.name,
-      behaviorDescription: selectedBehavior.description,
-      easyStrategy,
-      starterStep:
-        easyStrategy === "STARTER_STEP" ? starterStep?.starterStep : undefined,
-      scaledBehavior:
-        easyStrategy === "SCALE_DOWN"
-          ? scaledBehavior?.scaledBehavior
-          : undefined,
-      recipeAnchor: recipe.anchor,
-      recipeBehavior: recipe.behavior,
-      recipeCelebration: recipe.celebration,
-    });
+    try {
+      const habit = await createHabit.mutateAsync({
+        aspirationId,
+        behaviorName: selectedBehavior.name,
+        behaviorDescription: selectedBehavior.description,
+        easyStrategy,
+        starterStep:
+          easyStrategy === "STARTER_STEP" ? starterStep?.starterStep : undefined,
+        scaledBehavior:
+          easyStrategy === "SCALE_DOWN"
+            ? scaledBehavior?.scaledBehavior
+            : undefined,
+        recipeAnchor: recipe.anchor,
+        recipeBehavior: recipe.behavior,
+        recipeCelebration: recipe.celebration,
+      });
 
-    // Record rehearsals if any
-    if (rehearsalCount > 0 && habit.id) {
-      for (let i = 0; i < rehearsalCount; i++) {
-        await recordRehearsal.mutateAsync({ habitId: habit.id });
+      // Record rehearsals if any
+      if (rehearsalCount > 0 && habit.id) {
+        for (let i = 0; i < rehearsalCount; i++) {
+          await recordRehearsal.mutateAsync({ habitId: habit.id });
+        }
       }
-    }
 
-    router.push(`/habits/${habit.id}`);
+      toast.success("习惯创建成功！");
+      router.push(`/habits/${habit.id}`);
+    } catch (error) {
+      toast.error("创建习惯失败，请重试");
+      console.error("创建习惯失败:", error);
+    }
   }, [
     aspirationId,
     selectedBehavior,
@@ -336,6 +388,14 @@ export function HabitCreationWizard() {
           onGenerateStarter={handleGenerateStarter}
           onGenerateScaled={handleGenerateScaled}
           onComplete={handleEasyStrategyComplete}
+        />
+      )}
+
+      {currentStep === "demotivator" && selectedBehavior && (
+        <DemotivatorStep
+          habitName={selectedBehavior.name}
+          onComplete={handleDemotivatorComplete}
+          onBack={goBack}
         />
       )}
 

@@ -93,7 +93,7 @@ export default function AchievementsPage() {
         <AchievementOverview
           totalBadges={totalCount}
           unlockedBadges={unlockedCount}
-          recentBadges={recentUnlocks?.map((b) => ({
+          recentBadges={(recentUnlocks ?? []).map((b) => ({
             icon: b.icon,
             name: b.name,
             rarity: b.rarity,

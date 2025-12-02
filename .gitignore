@@ -45,3 +45,12 @@ yarn-error.log*
 # idea files
 .idea
 
+# Windows reserved names
+nul
+NUL
+
+# Prisma temp files
+*.tmp*
+generated/prisma/query_engine-windows.dll.node*
+generated/generated/
+

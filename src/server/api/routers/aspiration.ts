@@ -13,6 +13,7 @@ import {
   generateScaledBehavior,
   generateHabitRecipe,
 } from "@/lib/ai/focus-map";
+import { analyzeDemotivators } from "@/lib/ai/demotivator-analysis";
 
 // 行为评估 schema (保留用于未来验证)
 const _behaviorAssessmentSchema = z.object({
@@ -353,6 +354,26 @@ export const aspirationRouter = createTRPCRouter({
         behavior: input.behavior,
         anchor: input.anchor,
         celebration: input.celebration,
+      });
+      return result;
+    }),
+
+  /**
+   * 分析去激励因素
+   */
+  analyzeDemotivators: protectedProcedure
+    .input(
+      z.object({
+        habitName: z.string(),
+        userConcerns: z.string(),
+        pastAttempts: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const result = await analyzeDemotivators({
+        habitName: input.habitName,
+        userConcerns: input.userConcerns,
+        pastAttempts: input.pastAttempts,
       });
       return result;
     }),

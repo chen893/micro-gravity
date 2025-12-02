@@ -44,12 +44,18 @@ export function FlashCelebration({
   const [shineScore, setShineScore] = useState<number>();
   const [expanded, setExpanded] = useState(false);
 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const createMutation = api.celebration.createFlashCelebration.useMutation({
     onSuccess: () => {
       triggerConfetti("normal");
       setOpen(false);
       resetState();
+      setErrorMessage(null);
       onSuccess?.();
+    },
+    onError: (error) => {
+      setErrorMessage(error.message || "创建失败，请重试");
     },
   });
 
@@ -262,6 +268,12 @@ export function FlashCelebration({
                   size="lg"
                 />
               </div>
+
+              {errorMessage && (
+                <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-400">
+                  {errorMessage}
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <Button

@@ -29,6 +29,45 @@ export type TriggerType = z.infer<typeof triggerTypeEnum>;
 export const reminderStyleEnum = z.enum(["GENTLE", "FIRM", "PLAYFUL"]);
 export type ReminderStyle = z.infer<typeof reminderStyleEnum>;
 
+// ============ v2.0 弹性打卡类型 ============
+
+/**
+ * 完成级别枚举（对应 Prisma CompletionLevel）
+ */
+export const completionLevelEnum = z.enum(["MINIMUM", "STANDARD", "EXCEEDED"]);
+export type CompletionLevel = z.infer<typeof completionLevelEnum>;
+
+/**
+ * 情感标志枚举（对应 Prisma EmotionalMarker）
+ */
+export const emotionalMarkerEnum = z.enum([
+  "BOREDOM",
+  "FRUSTRATION",
+  "AVOIDANCE",
+  "PAIN",
+  "JOY",
+  "PRIDE",
+]);
+export type EmotionalMarker = z.infer<typeof emotionalMarkerEnum>;
+
+// ============ v2.0 习惯繁殖类型 ============
+
+/**
+ * 繁殖响应枚举（对应 Prisma ProliferationResponse）
+ */
+export const proliferationResponseEnum = z.enum([
+  "ACCEPTED",
+  "DISMISSED",
+  "POSTPONED",
+]);
+export type ProliferationResponse = z.infer<typeof proliferationResponseEnum>;
+
+/**
+ * 繁殖建议类型枚举
+ */
+export const proliferationTypeEnum = z.enum(["GROWTH", "SPAWN"]);
+export type ProliferationType = z.infer<typeof proliferationTypeEnum>;
+
 /**
  * 动机配置 (MAP-M)
  * 包含用户的动机类型、深层原因、愿景声明等

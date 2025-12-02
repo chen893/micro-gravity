@@ -5,6 +5,7 @@
 
 import { generateObject } from "ai";
 import { z } from "zod";
+import { model } from "@/lib/ai/model";
 
 // 活动类型定义
 export interface RoutineActivity {
@@ -82,7 +83,7 @@ export async function extractRoutineActivities(
   };
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       activities: z
         .array(routineActivitySchema)
@@ -130,7 +131,7 @@ export async function matchAnchors(params: {
   }
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       matches: z
         .array(anchorMatchSchema)
@@ -173,7 +174,7 @@ export async function validateAnchor(params: {
   const { anchorBehavior, targetBehavior, context } = params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: anchorValidationSchema,
     prompt: `作为习惯教练，验证用户选择的锚点是否可靠。
 
@@ -229,7 +230,7 @@ export async function suggestAnchorsFromRoutine(params: {
     .join("\n");
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       bestTimeSlot: z
         .enum(["MORNING", "WORK", "EVENING", "NIGHT"])
@@ -276,7 +277,7 @@ export async function designPearlHabit(params: {
   const { annoyance, desiredOutcome } = params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       pearlHabit: z.string().describe("珍珠习惯的名称"),
       trigger: z.string().describe("触发点描述"),

@@ -10,6 +10,7 @@
 
 import { generateObject } from "ai";
 import { z } from "zod";
+import { model } from "@/lib/ai/model";
 
 // ============ 类型定义 ============
 
@@ -80,7 +81,7 @@ export async function designPhasePath(params: {
   const { targetHabit, userContext } = params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: phasePathSchema,
     prompt: `你是微习惯设计专家。根据福格行为模型，将目标习惯拆解为渐进式阶段。
 
@@ -143,7 +144,7 @@ export async function designQuickPath(params: {
   const { targetHabit, targetDuration } = params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: phasePathSchema,
     prompt: `快速设计习惯阶段路径。
 

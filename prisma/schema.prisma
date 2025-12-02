@@ -59,6 +59,44 @@ enum AnalysisType {
     RISK         // 中断风险
 }
 
+// ============ v2.0 Phase 7: 弹性打卡枚举 ============
+
+// 完成级别枚举（弹性打卡）
+enum CompletionLevel {
+    MINIMUM  // 完成最低标准
+    STANDARD // 完成当前阶段标准
+    EXCEEDED // 超额完成
+}
+
+// 情感标志枚举（福格原理）
+enum EmotionalMarker {
+    BOREDOM     // 厌倦 → 可能需要提升难度
+    FRUSTRATION // 沮丧 → 难度过高
+    AVOIDANCE   // 逃避 → 行为设计问题
+    PAIN        // 痛苦 → 立即退阶
+    JOY         // 愉悦 → 继续保持
+    PRIDE       // 自豪 → 可以挑战更多
+}
+
+// 阶段变更类型
+enum PhaseChangeType {
+    ADVANCE // 进阶
+    RETREAT // 退阶
+}
+
+// 繁殖提示响应类型
+enum ProliferationResponse {
+    ACCEPTED  // 接受
+    DISMISSED // 拒绝
+    POSTPONED // 推迟
+}
+
+// 繁殖建议类型
+enum ProliferationType {
+    GROWTH // 生长类：在原习惯基础上扩展
+    SPAWN  // 繁殖类：衍生出相关新习惯
+}
+
 // ============ v2.0 庆祝系统枚举 ============
 
 // 庆祝方式分类
@@ -167,6 +205,8 @@ model User {
     dailyRoutines      DailyRoutine[]
     // v2.0 Phase 8: 成就徽章
     userBadges         UserBadge[]
+    // 繁殖提示响应
+    proliferationResponses ProliferationPromptResponse[]
     createdAt          DateTime            @default(now())
     updatedAt          DateTime            @updatedAt
 }
@@ -217,6 +257,9 @@ model Habit {
     logs          HabitLog[]
     conversations Conversation[]
     milestones    Milestone[]
+    phaseHistory  PhaseHistory[] // v2.0 Phase 7: 阶段变更历史
+    analyticsSnapshots    AnalyticsSnapshot[] // 分析快照
+    proliferationResponses ProliferationPromptResponse[] // 繁殖提示响应
     createdAt     DateTime      @default(now())
     updatedAt     DateTime      @updatedAt
 
@@ -247,8 +290,16 @@ model HabitLog {
     // v2.0 庆祝相关字段
     celebratedAt        DateTime? // 庆祝时间
     celebrationMethodId String?   // 使用的庆祝方式ID
+    celebrationMethod   CelebrationMethod? @relation(fields: [celebrationMethodId], references: [id], onDelete: SetNull)
     shineScore          Int?      // 发光感评分 1-5
-    celebrationNote     String?   // 庆祝感想（可选）
+    celebrationNote     String?   @db.VarChar(500) // 庆祝感想（可选，限制长度）
+
+    // v2.0 Phase 7: 弹性打卡字段
+    completionLevel   CompletionLevel  @default(MINIMUM) // 完成级别
+    actualBehavior    String?                            // 用户实际做了什么
+    wantedToDoMore    Boolean          @default(false)   // 用户是否想做更多（进阶信号）
+    feltEasy          Boolean          @default(false)   // 用户是否觉得很轻松（进阶信号）
+    emotionalMarker   EmotionalMarker?                   // 情感标志
 
     createdAt DateTime @default(now())
 
@@ -256,6 +307,10 @@ model HabitLog {
     @@index([habitId])
     @@index([userId])
     @@index([loggedAt])
+    @@index([createdAt])
+    @@index([celebrationMethodId])
+    @@index([userId, celebratedAt])
+    @@index([emotionalMarker])
 }
 
 // 对话模型
@@ -340,6 +395,7 @@ model AnalyticsSnapshot {
     userId  String
     user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
     habitId String?      // 可选，null 表示全局分析
+    habit   Habit?       @relation(fields: [habitId], references: [id], onDelete: Cascade)
 
     // 分析类型
     analysisType AnalysisType
@@ -353,7 +409,25 @@ model AnalyticsSnapshot {
 
     @@unique([userId, habitId, analysisType])
     @@index([userId])
+    @@index([habitId])
     @@index([analysisType])
+}
+
+// ============ v2.0 Phase 7: 阶段变更历史模型 ============
+
+// 阶段变更历史（记录进阶/退阶）
+model PhaseHistory {
+    id         String          @id @default(cuid())
+    habitId    String
+    habit      Habit           @relation(fields: [habitId], references: [id], onDelete: Cascade)
+    fromPhase  Int             // 原阶段
+    toPhase    Int             // 新阶段
+    changeType PhaseChangeType // 变更类型（进阶/退阶）
+    reason     String?         // 变更原因
+    signals    Json?           // 触发信号（用于分析）
+    changedAt  DateTime        @default(now())
+
+    @@index([habitId])
 }
 
 // ============ v2.0 Phase 2: 愿望与行为集群模型 ============
@@ -409,6 +483,7 @@ model CelebrationMethod {
     isBuiltIn Boolean             @default(true) // 是否为内置方式
 
     userFavorites UserCelebration[]
+    habitLogs     HabitLog[]        // 使用此庆祝方式的打卡记录
 
     @@index([category])
 }
@@ -508,4 +583,22 @@ model UserBadge {
     @@unique([userId, badgeId]) // 同一用户同一徽章只能获得一次
     @@index([userId])
     @@index([badgeId])
+}
+
+// ============ 习惯繁殖系统模型 ============
+
+// 繁殖提示响应记录
+model ProliferationPromptResponse {
+    id                     String                @id @default(cuid())
+    userId                 String
+    user                   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    habitId                String
+    habit                  Habit                 @relation(fields: [habitId], references: [id], onDelete: Cascade)
+    response               ProliferationResponse // 响应类型
+    selectedSuggestionType ProliferationType?    // 选择的建议类型
+    respondedAt            DateTime              @default(now())
+
+    @@index([userId])
+    @@index([habitId])
+    @@index([habitId, respondedAt])
 }

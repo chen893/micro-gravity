@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import {
   createTRPCRouter,
   publicProcedure,
@@ -182,7 +183,10 @@ export const celebrationRouter = createTRPCRouter({
       });
 
       if (!log || log.userId !== ctx.session.user.id) {
-        throw new Error("打卡记录不存在或无权限");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "打卡记录不存在或无权限",
+        });
       }
 
       // 更新打卡记录的庆祝字段
@@ -229,7 +233,10 @@ export const celebrationRouter = createTRPCRouter({
       });
 
       if (!log || log.userId !== ctx.session.user.id) {
-        throw new Error("打卡记录不存在或无权限");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "打卡记录不存在或无权限",
+        });
       }
 
       // 仅设置 celebratedAt 为 null，表示跳过

@@ -1,4 +1,8 @@
 {
+  "env": {
+    "ANTHROPIC_MODEL": "claude-4.5-opus-high",
+    "ANTHROPIC_SMALL_FAST_MODEL": "claude-4.5-opus-high"
+  },
   "permissions": {
     "allow": [
       "Bash(pnpm typecheck:*)",
@@ -11,7 +15,12 @@
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(pnpm check:*)",
-      "Bash(pnpm db:push:*)"
+      "Bash(pnpm db:push:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(cat:*)",
+      "Bash(gh pr list:*)",
+      "Bash(where:*)",
+      "Bash(del /f *.tmp*)"
     ],
     "deny": [],
     "ask": []

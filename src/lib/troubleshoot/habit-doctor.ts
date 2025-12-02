@@ -5,6 +5,7 @@
 
 import { generateObject } from "ai";
 import { z } from "zod";
+import { model } from "@/lib/ai/model";
 
 // ============ 类型定义 ============
 
@@ -122,7 +123,7 @@ export async function deepDiagnose(params: {
     params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: diagnosisReportSchema,
     prompt: `作为习惯医生，诊断这个习惯执行困难的原因。
 
@@ -217,7 +218,7 @@ ${currentSetup?.behavior ? `当前行为：${currentSetup.behavior}` : ""}
   };
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       prescriptions: z.array(prescriptionSchema).describe("处方列表"),
     }),

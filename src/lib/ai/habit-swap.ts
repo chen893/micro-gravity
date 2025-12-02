@@ -5,6 +5,7 @@
 
 import { generateObject } from "ai";
 import { z } from "zod";
+import { model } from "@/lib/ai/model";
 
 // ============ 类型定义 ============
 
@@ -112,7 +113,7 @@ export async function analyzeDeepNeeds(params: {
   const { habitName, triggerContexts, emotionalStates } = params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: needAnalysisSchema,
     prompt: `分析这个坏习惯背后的深层需求。
 
@@ -154,7 +155,7 @@ export async function generateSwapRecipe(params: {
   const { habitName, deepNeeds, userPreferences } = params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: swapRecipeSchema,
     prompt: `设计习惯替换配方，用好习惯替代坏习惯。
 
@@ -207,7 +208,7 @@ export async function quickSuggestSubstitutes(params: {
   const { needType, context, timeAvailable } = params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       substitutes: z.array(substituteBehaviorSchema).describe("替代行为列表"),
     }),
@@ -245,7 +246,7 @@ export async function generateSwapCard(params: {
   const { badHabit, substitute, triggerContext } = params;
 
   const { object } = await generateObject({
-    model: "openai/gpt-4o",
+    model,
     schema: z.object({
       cardTitle: z.string().describe("卡片标题"),
       triggerReminder: z.string().describe("触发提醒"),

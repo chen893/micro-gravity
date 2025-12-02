@@ -87,8 +87,11 @@ export const phaseRouter = createTRPCRouter({
   getCurrentPhase: protectedProcedure
     .input(z.object({ habitId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const habit = await ctx.db.habit.findUnique({
-        where: { id: input.habitId },
+      const habit = await ctx.db.habit.findFirst({
+        where: {
+          id: input.habitId,
+          userId: ctx.session.user.id,
+        },
         select: {
           id: true,
           name: true,
@@ -131,8 +134,11 @@ export const phaseRouter = createTRPCRouter({
     .input(z.object({ habitId: z.string() }))
     .query(async ({ ctx, input }) => {
       // 获取习惯和最近的日志
-      const habit = await ctx.db.habit.findUnique({
-        where: { id: input.habitId },
+      const habit = await ctx.db.habit.findFirst({
+        where: {
+          id: input.habitId,
+          userId: ctx.session.user.id,
+        },
         include: {
           logs: {
             orderBy: { loggedAt: "desc" },
@@ -155,7 +161,7 @@ export const phaseRouter = createTRPCRouter({
         difficultyRating: log.difficultyRating ?? undefined,
         moodAfter: log.moodAfter ?? undefined,
         notes: log.notes ?? undefined,
-        wantedToDoMore: false, // 需要从日志的扩展字段获取
+        wantedToDoMore: log.wantedToDoMore ?? false, // 从数据库读取真实值
       }));
 
       // 评估进阶准备度
@@ -186,8 +192,11 @@ export const phaseRouter = createTRPCRouter({
     .input(z.object({ habitId: z.string() }))
     .query(async ({ ctx, input }) => {
       // 获取习惯和最近的日志
-      const habit = await ctx.db.habit.findUnique({
-        where: { id: input.habitId },
+      const habit = await ctx.db.habit.findFirst({
+        where: {
+          id: input.habitId,
+          userId: ctx.session.user.id,
+        },
         include: {
           logs: {
             orderBy: { loggedAt: "desc" },
@@ -238,10 +247,19 @@ export const phaseRouter = createTRPCRouter({
    * 执行进阶
    */
   advance: protectedProcedure
-    .input(z.object({ habitId: z.string() }))
+    .input(
+      z.object({
+        habitId: z.string(),
+        reason: z.string().optional(),
+        signals: z.array(z.string()).optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
-      const habit = await ctx.db.habit.findUnique({
-        where: { id: input.habitId },
+      const habit = await ctx.db.habit.findFirst({
+        where: {
+          id: input.habitId,
+          userId: ctx.session.user.id,
+        },
       });
 
       if (!habit) {
@@ -261,6 +279,18 @@ export const phaseRouter = createTRPCRouter({
           message: "已经是最高阶段",
         });
       }
+
+      // 创建阶段变更历史记录
+      await ctx.db.phaseHistory.create({
+        data: {
+          habitId: input.habitId,
+          fromPhase: habit.currentPhase,
+          toPhase: habit.currentPhase + 1,
+          changeType: "ADVANCE",
+          reason: input.reason ?? "用户主动进阶",
+          signals: input.signals,
+        },
+      });
 
       // 更新习惯阶段
       const updated = await ctx.db.habit.update({
@@ -282,10 +312,18 @@ export const phaseRouter = createTRPCRouter({
    * 执行退阶
    */
   retreat: protectedProcedure
-    .input(z.object({ habitId: z.string() }))
+    .input(
+      z.object({
+        habitId: z.string(),
+        reason: z.string().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
-      const habit = await ctx.db.habit.findUnique({
-        where: { id: input.habitId },
+      const habit = await ctx.db.habit.findFirst({
+        where: {
+          id: input.habitId,
+          userId: ctx.session.user.id,
+        },
       });
 
       if (!habit) {
@@ -307,6 +345,17 @@ export const phaseRouter = createTRPCRouter({
       const previousPhase = phases.find(
         (p) => p.phase === habit.currentPhase - 1,
       );
+
+      // 创建阶段变更历史记录
+      await ctx.db.phaseHistory.create({
+        data: {
+          habitId: input.habitId,
+          fromPhase: habit.currentPhase,
+          toPhase: habit.currentPhase - 1,
+          changeType: "RETREAT",
+          reason: input.reason ?? "用户主动退阶",
+        },
+      });
 
       // 更新习惯阶段
       const updated = await ctx.db.habit.update({
@@ -337,8 +386,11 @@ export const phaseRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const habit = await ctx.db.habit.findUnique({
-        where: { id: input.habitId },
+      const habit = await ctx.db.habit.findFirst({
+        where: {
+          id: input.habitId,
+          userId: ctx.session.user.id,
+        },
       });
 
       if (!habit) {
@@ -370,8 +422,11 @@ export const phaseRouter = createTRPCRouter({
   getSuggestion: protectedProcedure
     .input(z.object({ habitId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const habit = await ctx.db.habit.findUnique({
-        where: { id: input.habitId },
+      const habit = await ctx.db.habit.findFirst({
+        where: {
+          id: input.habitId,
+          userId: ctx.session.user.id,
+        },
         include: {
           logs: {
             orderBy: { loggedAt: "desc" },
@@ -431,6 +486,12 @@ export const phaseRouter = createTRPCRouter({
         }
       }
 
+      // 计算最近是否有"想做更多"的反馈
+      const wantToDoMoreCount = recentLogs.filter(
+        (l) => l.completed && l.wantedToDoMore,
+      ).length;
+      const wantToDoMore = wantToDoMoreCount >= 2; // 最近7天有2次以上想做更多
+
       const suggestion = await suggestNextPhase({
         habitName: habit.name,
         currentPhase: currentPhaseConfig,
@@ -439,10 +500,62 @@ export const phaseRouter = createTRPCRouter({
           completionRate,
           avgDifficulty,
           consecutiveDays,
-          wantToDoMore: false, // 可以从用户反馈中获取
+          wantToDoMore,
         },
       });
 
       return suggestion;
+    }),
+
+  /**
+   * 获取阶段变更历史
+   */
+  getPhaseHistory: protectedProcedure
+    .input(
+      z.object({
+        habitId: z.string(),
+        limit: z.number().min(1).max(50).default(10),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const habit = await ctx.db.habit.findFirst({
+        where: {
+          id: input.habitId,
+          userId: ctx.session.user.id,
+        },
+        select: { id: true, name: true },
+      });
+
+      if (!habit) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "习惯不存在",
+        });
+      }
+
+      const history = await ctx.db.phaseHistory.findMany({
+        where: { habitId: input.habitId },
+        orderBy: { changedAt: "desc" },
+        take: input.limit,
+      });
+
+      // 统计进阶和退阶次数
+      const advanceCount = history.filter(
+        (h) => h.changeType === "ADVANCE",
+      ).length;
+      const retreatCount = history.filter(
+        (h) => h.changeType === "RETREAT",
+      ).length;
+
+      return {
+        habitId: habit.id,
+        habitName: habit.name,
+        history,
+        stats: {
+          totalChanges: history.length,
+          advanceCount,
+          retreatCount,
+        },
+      };
     }),
 });
