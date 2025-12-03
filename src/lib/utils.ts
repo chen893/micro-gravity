@@ -97,7 +97,7 @@ export function parsePhaseConfigs(value: unknown): PhaseConfigData[] {
 export function safeParseJson<T>(
   value: unknown,
   validator: (v: unknown) => v is T,
-  defaultValue: T
+  defaultValue: T,
 ): T {
   if (validator(value)) return value;
   return defaultValue;

@@ -11,7 +11,10 @@ import { HabitPhaseProgress } from "./habit-phase-progress";
 import { HabitLogHistory } from "./habit-log-history";
 import { ProliferationPrompt } from "@/components/habit/proliferation-prompt";
 import { HabitDoctor } from "@/components/habit/habit-doctor";
-import type { ProliferationSuggestion, HabitStability } from "@/lib/ai/habit-proliferation";
+import type {
+  ProliferationSuggestion,
+  HabitStability,
+} from "@/lib/ai/habit-proliferation";
 import type { PhaseConfig as AiPhaseConfig } from "@/lib/ai/phase-design";
 import { PhasePath as PhasePathTimeline } from "@/components/phase/phase-path";
 import {
@@ -49,15 +52,15 @@ export function HabitDetailContent({ habitId }: HabitDetailContentProps) {
 
   const [stats] = api.habit.getStats.useSuspenseQuery({ id: habitId });
 
-  const [logsData] = api.log.getByHabit.useSuspenseQuery({ habitId, limit: 10 });
+  const [logsData] = api.log.getByHabit.useSuspenseQuery({
+    habitId,
+    limit: 10,
+  });
 
   const phaseEnabled = !!habit;
 
   const { data: phaseOverview, isLoading: phaseOverviewLoading } =
-    api.phase.getCurrentPhase.useQuery(
-      { habitId },
-      { enabled: phaseEnabled },
-    );
+    api.phase.getCurrentPhase.useQuery({ habitId }, { enabled: phaseEnabled });
 
   const { data: advanceData } = api.phase.assessAdvance.useQuery(
     { habitId },
@@ -99,7 +102,8 @@ export function HabitDetailContent({ habitId }: HabitDetailContentProps) {
     },
   });
 
-  const recordResponseMutation = api.proliferation.recordPromptResponse.useMutation();
+  const recordResponseMutation =
+    api.proliferation.recordPromptResponse.useMutation();
 
   const designPathMutation = api.phase.designPath.useMutation({
     onSuccess: (data) => {
@@ -191,7 +195,9 @@ export function HabitDetailContent({ habitId }: HabitDetailContentProps) {
       });
       toast.success(`已选择：${suggestion.title}`);
       // 跳转到创建新习惯页面
-      router.push(`/habits/new?from=${habitId}&suggestion=${encodeURIComponent(suggestion.title)}`);
+      router.push(
+        `/habits/new?from=${habitId}&suggestion=${encodeURIComponent(suggestion.title)}`,
+      );
     },
     [habitId, recordResponseMutation, router],
   );
@@ -374,11 +380,7 @@ export function HabitDetailContent({ habitId }: HabitDetailContentProps) {
       />
 
       {/* 统计卡片 */}
-      <HabitStatsCard
-        stats={stats}
-        isLoading={false}
-        habitType={habit.type}
-      />
+      <HabitStatsCard stats={stats} isLoading={false} habitType={habit.type} />
 
       {/* MAP 模型配置信息 */}
       <HabitMapInfo motivation={motivation} ability={ability} prompt={prompt} />
@@ -407,14 +409,18 @@ export function HabitDetailContent({ habitId }: HabitDetailContentProps) {
                   phaseOverview.currentPhaseConfig?.name ??
                   `阶段 ${currentPhaseValue}`
                 }
-                isAdvanceReady={phaseSuggestionData.recommendation === "ADVANCE"}
-                hasRetreatSignals={phaseSuggestionData.recommendation === "RETREAT"}
+                isAdvanceReady={
+                  phaseSuggestionData.recommendation === "ADVANCE"
+                }
+                hasRetreatSignals={
+                  phaseSuggestionData.recommendation === "RETREAT"
+                }
               />
               <div>
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-foreground text-sm font-medium">
                   {phaseSuggestionData.reason}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   {phaseSuggestionData.encouragement}
                 </p>
               </div>
@@ -447,9 +453,7 @@ export function HabitDetailContent({ habitId }: HabitDetailContentProps) {
                 recommendation={
                   advanceData?.recommendation ?? "继续巩固当前阶段"
                 }
-                encouragement={
-                  advanceData?.encouragement ?? "保持当下节奏即可"
-                }
+                encouragement={advanceData?.encouragement ?? "保持当下节奏即可"}
                 nextPhaseName={advanceData?.nextPhaseConfig?.name}
                 onAdvance={() =>
                   handleAdvance({
@@ -484,7 +488,9 @@ export function HabitDetailContent({ habitId }: HabitDetailContentProps) {
           <PhasePathEmptyState
             onGenerateFull={handleDesignFullPath}
             onGenerateQuick={handleDesignQuickPath}
-            loading={designPathMutation.isPending || quickPathMutation.isPending}
+            loading={
+              designPathMutation.isPending || quickPathMutation.isPending
+            }
           />
         )}
 
@@ -573,7 +579,8 @@ function PhasePathEmptyState({
           <CardTitle className="text-base">尚未创建阶段路径</CardTitle>
         </div>
         <CardDescription>
-          使用 AI 一键拆解习惯，生成 3-8 个循序渐进的阶段，并自动接入进阶/退阶判断。
+          使用 AI 一键拆解习惯，生成 3-8
+          个循序渐进的阶段，并自动接入进阶/退阶判断。
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-wrap gap-3">
@@ -581,11 +588,7 @@ function PhasePathEmptyState({
           <Wand2 className="mr-2 h-4 w-4" />
           AI 生成完整路径
         </Button>
-        <Button
-          variant="outline"
-          onClick={onGenerateQuick}
-          disabled={loading}
-        >
+        <Button variant="outline" onClick={onGenerateQuick} disabled={loading}>
           <Clock3 className="mr-2 h-4 w-4" />
           快速 3-5 阶段
         </Button>
@@ -614,7 +617,7 @@ function PhaseHistoryCard({
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <History className="h-5 w-5 text-muted-foreground" />
+          <History className="text-muted-foreground h-5 w-5" />
           <CardTitle className="text-base">阶段变更记录</CardTitle>
           {stats && (
             <Badge variant="secondary" className="ml-auto">
@@ -632,14 +635,14 @@ function PhaseHistoryCard({
           >
             <div>
               <p className="text-sm font-medium">
-                {item.changeType === "ADVANCE" ? "进阶" : "退阶"}：{item.fromPhase}
-                →{item.toPhase}
+                {item.changeType === "ADVANCE" ? "进阶" : "退阶"}：
+                {item.fromPhase}→{item.toPhase}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {item.reason ?? "无特别说明"}
               </p>
             </div>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">
               {formatter.format(new Date(item.changedAt))}
             </span>
           </div>

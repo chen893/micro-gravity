@@ -290,7 +290,9 @@ export function HabitLogHistory({
                       <div className="flex items-center gap-1">
                         {getMoodIcon(log.moodBefore)}
                         {log.moodBefore !== null && log.moodAfter !== null && (
-                          <span className="text-muted-foreground text-xs">→</span>
+                          <span className="text-muted-foreground text-xs">
+                            →
+                          </span>
                         )}
                         {getMoodIcon(log.moodAfter)}
                       </div>
@@ -431,7 +433,7 @@ export function HabitLogHistory({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>难度评分</Label>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   {editForm.difficultyRating}/5
                 </span>
               </div>
@@ -451,7 +453,7 @@ export function HabitLogHistory({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>完成前情绪</Label>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {editForm.moodBefore}/5
                   </span>
                 </div>
@@ -468,7 +470,7 @@ export function HabitLogHistory({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>完成后情绪</Label>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {editForm.moodAfter}/5
                   </span>
                 </div>

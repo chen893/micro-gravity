@@ -110,9 +110,7 @@ export function CelebrationSettings() {
           <Sparkles className="h-5 w-5 text-yellow-500" />
           <CardTitle className="text-base">庆祝方式</CardTitle>
         </div>
-        <CardDescription>
-          管理你的庆祝方式偏好，收藏喜欢的方式
-        </CardDescription>
+        <CardDescription>管理你的庆祝方式偏好，收藏喜欢的方式</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* 统计信息 */}

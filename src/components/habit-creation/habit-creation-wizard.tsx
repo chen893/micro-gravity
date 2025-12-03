@@ -257,7 +257,9 @@ export function HabitCreationWizard() {
       setSmartMatches(matches);
     } catch (error) {
       // 如果没有日程数据，显示友好提示
-      if ((error as { message?: string })?.message?.includes("请先填写日程清单")) {
+      if (
+        (error as { message?: string })?.message?.includes("请先填写日程清单")
+      ) {
         toast.info("提示：填写日程清单后可获得更精准的锚点推荐");
       } else {
         toast.error("智能匹配失败，请手动选择锚点");

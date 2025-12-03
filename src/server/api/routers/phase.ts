@@ -67,7 +67,10 @@ export const phaseRouter = createTRPCRouter({
         console.error("designPath error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: error instanceof Error ? error.message : "AI 生成阶段路径失败，请稍后重试",
+          message:
+            error instanceof Error
+              ? error.message
+              : "AI 生成阶段路径失败，请稍后重试",
         });
       }
     }),
@@ -94,7 +97,10 @@ export const phaseRouter = createTRPCRouter({
         console.error("designQuickPath error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: error instanceof Error ? error.message : "AI 生成快速路径失败，请稍后重试",
+          message:
+            error instanceof Error
+              ? error.message
+              : "AI 生成快速路径失败，请稍后重试",
         });
       }
     }),
@@ -508,7 +514,8 @@ export const phaseRouter = createTRPCRouter({
       const wantToDoMoreCount = recentLogs.filter(
         (l) => l.completed && l.wantedToDoMore,
       ).length;
-      const wantToDoMore = wantToDoMoreCount >= ADVANCE_THRESHOLDS.WANT_MORE_COUNT_READY;
+      const wantToDoMore =
+        wantToDoMoreCount >= ADVANCE_THRESHOLDS.WANT_MORE_COUNT_READY;
 
       const suggestion = await suggestNextPhase({
         habitName: habit.name,

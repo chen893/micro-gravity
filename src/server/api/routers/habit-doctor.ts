@@ -65,7 +65,8 @@ export const habitDoctorRouter = createTRPCRouter({
 
       const completedLogs = recentLogs.filter((log) => log.completed);
       const missedDays = TIME_RANGES.RECENT_DAYS - completedLogs.length;
-      const recentCompletionRate = completedLogs.length / TIME_RANGES.RECENT_DAYS;
+      const recentCompletionRate =
+        completedLogs.length / TIME_RANGES.RECENT_DAYS;
 
       // 计算平均难度
       const logsWithDifficulty = recentLogs.filter(
@@ -102,7 +103,8 @@ export const habitDoctorRouter = createTRPCRouter({
         category,
         symptoms,
         needsDeepDiagnosis:
-          recentCompletionRate < DIAGNOSIS_THRESHOLDS.COMPLETION_RATE_CRITICAL ||
+          recentCompletionRate <
+            DIAGNOSIS_THRESHOLDS.COMPLETION_RATE_CRITICAL ||
           missedDays >= DIAGNOSIS_THRESHOLDS.MISSED_DAYS_CRITICAL,
       };
     }),
@@ -166,10 +168,12 @@ export const habitDoctorRouter = createTRPCRouter({
         .slice(0, 5);
 
       const symptoms: SymptomData = {
-        recentCompletionRate: recentLogs.length > 0
-          ? completedLogs.length / recentLogs.length
-          : 0,
-        missedDays: Math.min(TIME_RANGES.RECENT_DAYS, recentLogs.filter((log) => !log.completed).length),
+        recentCompletionRate:
+          recentLogs.length > 0 ? completedLogs.length / recentLogs.length : 0,
+        missedDays: Math.min(
+          TIME_RANGES.RECENT_DAYS,
+          recentLogs.filter((log) => !log.completed).length,
+        ),
         avgDifficulty,
         commonMissReasons: missReasons,
         streakBroken: true,
@@ -273,14 +277,15 @@ export const habitDoctorRouter = createTRPCRouter({
     const habitStatuses = habits.map((habit) => {
       const habitLogs = recentLogs.filter((log) => log.habitId === habit.id);
       const completedCount = habitLogs.filter((log) => log.completed).length;
-      const completionRate = habitLogs.length > 0
-        ? completedCount / TIME_RANGES.RECENT_DAYS
-        : 0;
+      const completionRate =
+        habitLogs.length > 0 ? completedCount / TIME_RANGES.RECENT_DAYS : 0;
 
       let status: "HEALTHY" | "NEEDS_ATTENTION" | "CRITICAL";
       if (completionRate >= DIAGNOSIS_THRESHOLDS.COMPLETION_RATE_HEALTHY) {
         status = "HEALTHY";
-      } else if (completionRate >= DIAGNOSIS_THRESHOLDS.COMPLETION_RATE_ATTENTION) {
+      } else if (
+        completionRate >= DIAGNOSIS_THRESHOLDS.COMPLETION_RATE_ATTENTION
+      ) {
         status = "NEEDS_ATTENTION";
       } else {
         status = "CRITICAL";
@@ -303,7 +308,9 @@ export const habitDoctorRouter = createTRPCRouter({
     return {
       totalHabits: habits.length,
       healthyHabits: habitStatuses.filter((h) => h.status === "HEALTHY").length,
-      needsAttention: habitStatuses.filter((h) => h.status === "NEEDS_ATTENTION").length,
+      needsAttention: habitStatuses.filter(
+        (h) => h.status === "NEEDS_ATTENTION",
+      ).length,
       critical: habitStatuses.filter((h) => h.status === "CRITICAL").length,
       habitStatuses,
     };

@@ -15,10 +15,7 @@
 import { generateObject } from "ai";
 import { z } from "zod";
 import { modelMini } from "@/lib/ai/model";
-import {
-  PROLIFERATION_THRESHOLDS,
-  STABILITY_WEIGHTS,
-} from "@/lib/constants";
+import { PROLIFERATION_THRESHOLDS, STABILITY_WEIGHTS } from "@/lib/constants";
 
 // 繁殖类型
 export type ProliferationType = "GROWTH" | "SPAWN";
@@ -88,8 +85,12 @@ export function assessHabitStability(data: {
   } = data;
 
   // 计算稳定性分数（加权）
-  const completionScore = Math.min(completionRate * 100, 100) * STABILITY_WEIGHTS.COMPLETION_RATE;
-  const streakScore = Math.min(consecutiveDays / PROLIFERATION_THRESHOLDS.TOTAL_DAYS_MINIMUM, 1) * 100 * STABILITY_WEIGHTS.STREAK;
+  const completionScore =
+    Math.min(completionRate * 100, 100) * STABILITY_WEIGHTS.COMPLETION_RATE;
+  const streakScore =
+    Math.min(consecutiveDays / PROLIFERATION_THRESHOLDS.TOTAL_DAYS_MINIMUM, 1) *
+    100 *
+    STABILITY_WEIGHTS.STREAK;
   const difficultyScore =
     avgDifficulty <= 2
       ? 100
@@ -101,7 +102,10 @@ export function assessHabitStability(data: {
   const emotionScore = positiveEmotionRate * 100 * STABILITY_WEIGHTS.EMOTION;
 
   const stabilityScore = Math.round(
-    completionScore + streakScore + difficultyScore * STABILITY_WEIGHTS.DIFFICULTY + emotionScore,
+    completionScore +
+      streakScore +
+      difficultyScore * STABILITY_WEIGHTS.DIFFICULTY +
+      emotionScore,
   );
 
   // 繁殖条件：

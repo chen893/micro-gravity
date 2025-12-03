@@ -96,10 +96,12 @@ export const celebrationRouter = createTRPCRouter({
     ]);
 
     // 计算默认方式
-    const defaultMethod = favorites.find((f) => f.isDefault)?.celebrationMethod ?? null;
+    const defaultMethod =
+      favorites.find((f) => f.isDefault)?.celebrationMethod ?? null;
 
     // 计算庆祝率
-    const celebrationRate = totalLogs > 0 ? (totalCelebrations / totalLogs) * 100 : 0;
+    const celebrationRate =
+      totalLogs > 0 ? (totalCelebrations / totalLogs) * 100 : 0;
 
     // 计算推荐方式
     const categoryCount: Record<string, number> = {};
@@ -152,8 +154,12 @@ export const celebrationRouter = createTRPCRouter({
 
     const recommended = recommendations
       .sort((a, b) => {
-        const scoreA = userHistory.find(h => h.celebrationMethod.content === a.content)?.useCount ?? 0;
-        const scoreB = userHistory.find(h => h.celebrationMethod.content === b.content)?.useCount ?? 0;
+        const scoreA =
+          userHistory.find((h) => h.celebrationMethod.content === a.content)
+            ?.useCount ?? 0;
+        const scoreB =
+          userHistory.find((h) => h.celebrationMethod.content === b.content)
+            ?.useCount ?? 0;
         return scoreB - scoreA;
       })
       .slice(0, 8);

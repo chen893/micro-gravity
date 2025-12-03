@@ -196,10 +196,7 @@ export default function AspirationsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setCreateOpen(false)}
-              >
+              <Button variant="outline" onClick={() => setCreateOpen(false)}>
                 取消
               </Button>
               <Button
@@ -221,7 +218,7 @@ export default function AspirationsPage() {
       {/* 愿望列表 */}
       {!aspirations || aspirations.length === 0 ? (
         <Card className="flex flex-col items-center justify-center py-12">
-          <Star className="h-12 w-12 text-muted-foreground" />
+          <Star className="text-muted-foreground h-12 w-12" />
           <h3 className="mt-4 text-lg font-semibold">还没有愿望</h3>
           <p className="text-muted-foreground mt-2 text-sm">
             添加你的第一个愿望，开始探索实现的方法
@@ -284,14 +281,14 @@ function AspirationCard({
   return (
     <Card
       className={`cursor-pointer transition-all ${
-        isSelected ? "ring-2 ring-primary" : "hover:shadow-md"
+        isSelected ? "ring-primary ring-2" : "hover:shadow-md"
       }`}
       onClick={onSelect}
     >
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-base line-clamp-2">
+            <CardTitle className="line-clamp-2 text-base">
               {aspiration.description}
             </CardTitle>
             {aspiration.category && (
@@ -305,7 +302,7 @@ function AspirationCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-destructive"
+                className="text-destructive h-8 w-8"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Trash2 className="h-4 w-4" />
@@ -339,11 +336,11 @@ function AspirationCard({
       </CardHeader>
       <CardContent>
         {aspiration.clarified && (
-          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+          <p className="text-muted-foreground mb-2 line-clamp-2 text-sm">
             {aspiration.clarified}
           </p>
         )}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-4 text-xs">
           <span>
             {format(new Date(aspiration.createdAt), "M月d日", { locale: zhCN })}
           </span>
@@ -374,15 +371,14 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
   });
 
   // 生成行为集群
-  const generateBehaviorsMutation = api.aspiration.generateBehaviors.useMutation(
-    {
+  const generateBehaviorsMutation =
+    api.aspiration.generateBehaviors.useMutation({
       onSuccess: () => {
         toast.success("行为集群已生成");
         void utils.aspiration.getById.invalidate({ id: aspirationId });
       },
       onError: () => toast.error("生成失败"),
-    },
-  );
+    });
 
   // 生成焦点地图
   const generateFocusMapMutation = api.aspiration.generateFocusMap.useMutation({
@@ -411,15 +407,17 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
   }
 
   const latestCluster = aspiration.behaviorClusters[0];
-  const behaviors = latestCluster?.behaviors as Array<{
-    name: string;
-    description?: string;
-    impactScore?: number;
-    feasibilityScore?: number;
-    quadrant?: string;
-    recommendation?: string;
-    isSelected?: boolean;
-  }> | undefined;
+  const behaviors = latestCluster?.behaviors as
+    | Array<{
+        name: string;
+        description?: string;
+        impactScore?: number;
+        feasibilityScore?: number;
+        quadrant?: string;
+        recommendation?: string;
+        isSelected?: boolean;
+      }>
+    | undefined;
 
   const focusMapData = latestCluster?.focusMapData as {
     goldenBehavior?: string;
@@ -439,9 +437,9 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
         {/* 步骤 1: 生成行为集群 */}
         {!latestCluster && (
           <div className="rounded-lg border border-dashed p-6 text-center">
-            <Wand2 className="mx-auto h-8 w-8 text-muted-foreground" />
+            <Wand2 className="text-muted-foreground mx-auto h-8 w-8" />
             <p className="mt-2 font-medium">魔法棒探索</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               AI 会根据你的愿望生成一系列可能的行为
             </p>
             <Button
@@ -489,7 +487,7 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
             {/* 黄金行为推荐 */}
             {focusMapData?.goldenBehavior && (
               <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="mb-2 flex items-center gap-2">
                   <Star className="h-5 w-5 text-amber-600" />
                   <span className="font-medium text-amber-800 dark:text-amber-200">
                     推荐黄金行为
@@ -497,7 +495,7 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
                 </div>
                 <p className="text-sm">{focusMapData.goldenBehavior}</p>
                 {focusMapData.summary && (
-                  <p className="mt-2 text-xs text-muted-foreground">
+                  <p className="text-muted-foreground mt-2 text-xs">
                     {focusMapData.summary}
                   </p>
                 )}
@@ -519,12 +517,14 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
                         <div
                           key={index}
                           className={`flex items-center justify-between rounded-lg border p-3 ${
-                            behavior.isSelected ? "ring-2 ring-primary" : ""
+                            behavior.isSelected ? "ring-primary ring-2" : ""
                           }`}
                         >
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{behavior.name}</span>
+                              <span className="font-medium">
+                                {behavior.name}
+                              </span>
                               {behavior.quadrant && (
                                 <Badge
                                   variant="outline"
@@ -538,12 +538,12 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
                               )}
                             </div>
                             {behavior.recommendation && (
-                              <p className="text-xs text-muted-foreground mt-1">
+                              <p className="text-muted-foreground mt-1 text-xs">
                                 {behavior.recommendation}
                               </p>
                             )}
                             {behavior.impactScore !== undefined && (
-                              <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+                              <div className="text-muted-foreground mt-2 flex gap-4 text-xs">
                                 <span>影响力: {behavior.impactScore}/10</span>
                                 <span>
                                   可行性: {behavior.feasibilityScore}/10
@@ -609,10 +609,10 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
                 <Link
                   key={habit.id}
                   href={`/habits/${habit.id}`}
-                  className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50"
+                  className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3"
                 >
                   <span>{habit.name}</span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <ChevronRight className="text-muted-foreground h-4 w-4" />
                 </Link>
               ))}
             </div>

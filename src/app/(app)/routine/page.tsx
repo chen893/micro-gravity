@@ -152,7 +152,10 @@ export default function RoutinePage() {
       const targetSlot = variables.timeSlot as TimeSlot;
       setEditingActivities((prev) => ({
         ...prev,
-        [targetSlot]: [...prev[targetSlot], ...(activities as RoutineActivity[])],
+        [targetSlot]: [
+          ...prev[targetSlot],
+          ...(activities as RoutineActivity[]),
+        ],
       }));
       setHasChanges(true);
       setAiExtractOpen(false);
@@ -314,7 +317,11 @@ export default function RoutinePage() {
       >
         <TabsList className="grid w-full grid-cols-4">
           {(Object.keys(TIME_SLOT_CONFIG) as TimeSlot[]).map((slot) => (
-            <TabsTrigger key={slot} value={slot} className="flex items-center gap-2">
+            <TabsTrigger
+              key={slot}
+              value={slot}
+              className="flex items-center gap-2"
+            >
               {TIME_SLOT_CONFIG[slot].icon}
               <span className="hidden sm:inline">
                 {TIME_SLOT_CONFIG[slot].label}
@@ -340,7 +347,10 @@ export default function RoutinePage() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Dialog open={aiExtractOpen} onOpenChange={setAiExtractOpen}>
+                    <Dialog
+                      open={aiExtractOpen}
+                      onOpenChange={setAiExtractOpen}
+                    >
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm">
                           <Wand2 className="mr-2 h-4 w-4" />
@@ -391,7 +401,7 @@ export default function RoutinePage() {
               <CardContent>
                 {editingActivities[slot].length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <Anchor className="mb-4 h-12 w-12 text-muted-foreground" />
+                    <Anchor className="text-muted-foreground mb-4 h-12 w-12" />
                     <p className="text-muted-foreground">
                       还没有添加{TIME_SLOT_CONFIG[slot].label}活动
                     </p>
@@ -466,7 +476,11 @@ export default function RoutinePage() {
                                 placeholder="例如：卫生间"
                                 value={activity.location ?? ""}
                                 onChange={(e) =>
-                                  updateActivity(index, "location", e.target.value)
+                                  updateActivity(
+                                    index,
+                                    "location",
+                                    e.target.value,
+                                  )
                                 }
                               />
                             </div>
@@ -540,7 +554,9 @@ function AnchorSuggestions() {
             {/* 最佳时段 */}
             <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-950/20">
               <p className="font-medium text-blue-800 dark:text-blue-200">
-                推荐时段：{TIME_SLOT_CONFIG[suggestMutation.data.bestTimeSlot]?.label ?? suggestMutation.data.bestTimeSlot}
+                推荐时段：
+                {TIME_SLOT_CONFIG[suggestMutation.data.bestTimeSlot]?.label ??
+                  suggestMutation.data.bestTimeSlot}
               </p>
               <p className="mt-1 text-sm text-blue-600 dark:text-blue-400">
                 {suggestMutation.data.reasoning}
@@ -565,10 +581,10 @@ function AnchorSuggestions() {
                           匹配度 {anchor.matchScore}/10
                         </Badge>
                       </div>
-                      <p className="mt-1 text-muted-foreground">
+                      <p className="text-muted-foreground mt-1">
                         {anchor.recipePreview}
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="text-muted-foreground mt-1 text-xs">
                         {anchor.tips}
                       </p>
                     </div>

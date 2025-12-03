@@ -80,7 +80,6 @@ export async function designPhasePath(params: {
 }): Promise<PhasePath> {
   const { targetHabit, userContext } = params;
 
-  
   const { object } = await generateObject({
     model,
     schema: phasePathSchema,

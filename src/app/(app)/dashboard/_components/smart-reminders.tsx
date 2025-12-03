@@ -12,13 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Bell,
-  RefreshCw,
-  Sparkles,
-  ChevronRight,
-  Loader2,
-} from "lucide-react";
+import { Bell, RefreshCw, Sparkles, ChevronRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface Reminder {
@@ -88,7 +82,13 @@ export function SmartReminders() {
             </p>
             {styleData && (
               <Badge variant="secondary" className="mt-2">
-                当前推荐：{styleData.suggestedStyle === "GENTLE" ? "温和" : styleData.suggestedStyle === "FIRM" ? "坚定" : "有趣"}风格
+                当前推荐：
+                {styleData.suggestedStyle === "GENTLE"
+                  ? "温和"
+                  : styleData.suggestedStyle === "FIRM"
+                    ? "坚定"
+                    : "有趣"}
+                风格
               </Badge>
             )}
           </div>
@@ -97,14 +97,15 @@ export function SmartReminders() {
             {reminders.map((reminder) => (
               <div
                 key={reminder.habitId}
-                className="rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                className="hover:bg-muted/50 rounded-lg border p-4 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{reminder.habitName}</span>
                       <Badge variant="outline" className="text-xs">
-                        {promptTypeLabels[reminder.promptType] ?? reminder.promptType}
+                        {promptTypeLabels[reminder.promptType] ??
+                          reminder.promptType}
                       </Badge>
                     </div>
                     <p className="text-sm">{reminder.content}</p>

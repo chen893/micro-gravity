@@ -110,7 +110,10 @@ export function HabitPhaseProgress({
               </Badge>
             )}
             {retreatData?.shouldRetreat && (
-              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+              <Badge
+                variant="secondary"
+                className="bg-yellow-100 text-yellow-800"
+              >
                 <AlertTriangle className="mr-1 h-3 w-3" />
                 需关注
               </Badge>
@@ -210,14 +213,14 @@ export function HabitPhaseProgress({
                       <Circle className="text-muted-foreground h-5 w-5" />
                     )}
                     <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{phase.name}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {phase.duration ?? phase.estimatedDuration ?? "—"}
-                      </Badge>
-                      {isCurrent && <Badge className="text-xs">当前</Badge>}
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{phase.name}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {phase.duration ?? phase.estimatedDuration ?? "—"}
+                        </Badge>
+                        {isCurrent && <Badge className="text-xs">当前</Badge>}
+                      </div>
                     </div>
-                  </div>
                   </div>
                   <ChevronDown
                     className={`text-muted-foreground h-4 w-4 transition-transform ${
@@ -258,14 +261,16 @@ export function HabitPhaseProgress({
         {/* 进阶评估详情 */}
         {advanceData?.signals && advanceData.signals.length > 0 && (
           <div className="rounded-lg border border-green-200 bg-green-50/50 p-3 dark:border-green-800 dark:bg-green-950/20">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="mb-2 flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
               <span className="text-sm font-medium">进阶评估</span>
               {advanceData.isReady && (
-                <Badge className="bg-green-100 text-green-800 text-xs">准备就绪</Badge>
+                <Badge className="bg-green-100 text-xs text-green-800">
+                  准备就绪
+                </Badge>
               )}
             </div>
-            <div className="flex flex-wrap gap-1.5 mb-2">
+            <div className="mb-2 flex flex-wrap gap-1.5">
               {advanceData.signals.map((signal, index) => (
                 <Badge key={index} variant="secondary" className="text-xs">
                   {signal.type === "CONSISTENCY" && "📆 稳定完成"}
@@ -273,11 +278,13 @@ export function HabitPhaseProgress({
                   {signal.type === "DESIRE" && "🔥 想做更多"}
                   {signal.type === "OVERFLOW" && "⭐ 超额完成"}
                   {signal.type === "MOMENTUM" && "📈 越做越多"}
-                  <span className="ml-1 opacity-70">{Math.round(signal.strength * 100)}%</span>
+                  <span className="ml-1 opacity-70">
+                    {Math.round(signal.strength * 100)}%
+                  </span>
                 </Badge>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {advanceData.isReady
                 ? advanceData.nextPhaseConfig
                   ? `可以进阶到「${advanceData.nextPhaseConfig.name}」`
@@ -290,14 +297,17 @@ export function HabitPhaseProgress({
         {/* 退阶保护提示 */}
         {retreatData && retreatData.shouldRetreat && (
           <div className="rounded-lg border border-yellow-200 bg-yellow-50/50 p-3 dark:border-yellow-800 dark:bg-yellow-950/20">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="mb-2 flex items-center gap-2">
               <Shield className="h-4 w-4 text-yellow-600" />
               <span className="text-sm font-medium">退阶保护</span>
-              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+              <Badge
+                variant="secondary"
+                className="bg-yellow-100 text-xs text-yellow-800"
+              >
                 {retreatData.urgency === "URGENT" ? "需要关注" : "轻微提醒"}
               </Badge>
             </div>
-            <div className="flex flex-wrap gap-1.5 mb-2">
+            <div className="mb-2 flex flex-wrap gap-1.5">
               {retreatData.signals?.map((signal, index) => (
                 <Badge key={index} variant="secondary" className="text-xs">
                   {signal.type === "STRUGGLE" && "💦 执行吃力"}
@@ -309,18 +319,19 @@ export function HabitPhaseProgress({
                 </Badge>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {retreatData.recommendation}
             </p>
-            {retreatData.alternativeActions && retreatData.alternativeActions.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {retreatData.alternativeActions.map((action, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {action}
-                  </Badge>
-                ))}
-              </div>
-            )}
+            {retreatData.alternativeActions &&
+              retreatData.alternativeActions.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {retreatData.alternativeActions.map((action, index) => (
+                    <Badge key={index} variant="outline" className="text-xs">
+                      {action}
+                    </Badge>
+                  ))}
+                </div>
+              )}
           </div>
         )}
       </CardContent>
