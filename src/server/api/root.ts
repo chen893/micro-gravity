@@ -11,6 +11,7 @@ import { routineRouter } from "@/server/api/routers/routine";
 import { phaseRouter } from "@/server/api/routers/phase";
 import { badgeRouter } from "@/server/api/routers/badge";
 import { proliferationRouter } from "@/server/api/routers/proliferation";
+import { habitDoctorRouter } from "@/server/api/routers/habit-doctor";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 
 /**
@@ -32,6 +33,7 @@ export const appRouter = createTRPCRouter({
   phase: phaseRouter,
   badge: badgeRouter,
   proliferation: proliferationRouter,
+  habitDoctor: habitDoctorRouter,
 });
 
 // export type definition of API

@@ -15,6 +15,10 @@
 import { generateObject } from "ai";
 import { z } from "zod";
 import { modelMini } from "@/lib/ai/model";
+import {
+  PROLIFERATION_THRESHOLDS,
+  STABILITY_WEIGHTS,
+} from "@/lib/constants";
 
 // 繁殖类型
 export type ProliferationType = "GROWTH" | "SPAWN";
@@ -55,7 +59,7 @@ const proliferationSuggestionsSchema = z.object({
       anchor: z.string().describe("建议的锚点习惯"),
       estimatedDifficulty: z.number().min(1).max(10),
       reason: z.string().describe("为什么推荐这个习惯"),
-    })
+    }),
   ),
   overallRecommendation: z.string().describe("总体建议"),
 });
@@ -84,14 +88,20 @@ export function assessHabitStability(data: {
   } = data;
 
   // 计算稳定性分数（加权）
-  const completionScore = Math.min(completionRate * 100, 100) * 0.4;
-  const streakScore = Math.min(consecutiveDays / 14, 1) * 100 * 0.25;
+  const completionScore = Math.min(completionRate * 100, 100) * STABILITY_WEIGHTS.COMPLETION_RATE;
+  const streakScore = Math.min(consecutiveDays / PROLIFERATION_THRESHOLDS.TOTAL_DAYS_MINIMUM, 1) * 100 * STABILITY_WEIGHTS.STREAK;
   const difficultyScore =
-    avgDifficulty <= 2 ? 100 : avgDifficulty <= 3 ? 80 : avgDifficulty <= 4 ? 50 : 20;
-  const emotionScore = positiveEmotionRate * 100 * 0.15;
+    avgDifficulty <= 2
+      ? 100
+      : avgDifficulty <= PROLIFERATION_THRESHOLDS.AVG_DIFFICULTY_EASY
+        ? 80
+        : avgDifficulty <= 4
+          ? 50
+          : 20;
+  const emotionScore = positiveEmotionRate * 100 * STABILITY_WEIGHTS.EMOTION;
 
   const stabilityScore = Math.round(
-    completionScore + streakScore + difficultyScore * 0.2 + emotionScore
+    completionScore + streakScore + difficultyScore * STABILITY_WEIGHTS.DIFFICULTY + emotionScore,
   );
 
   // 繁殖条件：
@@ -100,24 +110,21 @@ export function assessHabitStability(data: {
   // 3. 平均难度 <= 3（感觉轻松）
   // 4. 总天数 >= 14（至少两周）
   const readyForProliferation =
-    completionRate >= 0.8 &&
-    consecutiveDays >= 7 &&
-    avgDifficulty <= 3 &&
-    totalDays >= 14;
+    completionRate >= PROLIFERATION_THRESHOLDS.COMPLETION_RATE_STABLE &&
+    consecutiveDays >= PROLIFERATION_THRESHOLDS.CONSECUTIVE_DAYS_STABLE &&
+    avgDifficulty <= PROLIFERATION_THRESHOLDS.AVG_DIFFICULTY_EASY &&
+    totalDays >= PROLIFERATION_THRESHOLDS.TOTAL_DAYS_MINIMUM;
 
   let recommendation: string;
   if (readyForProliferation) {
     recommendation =
       "这个习惯已经很稳定了！你可以考虑扩展它或者尝试相关的新习惯。";
   } else if (completionRate < 0.8) {
-    recommendation =
-      "先专注于提高完成率，让当前习惯更稳固。不急着扩展。";
+    recommendation = "先专注于提高完成率，让当前习惯更稳固。不急着扩展。";
   } else if (avgDifficulty > 3) {
-    recommendation =
-      "当前习惯还有些挑战性，建议先让它变得更轻松再考虑扩展。";
+    recommendation = "当前习惯还有些挑战性，建议先让它变得更轻松再考虑扩展。";
   } else if (totalDays < 14) {
-    recommendation =
-      "再坚持几天，让习惯更加稳固后再考虑扩展。";
+    recommendation = "再坚持几天，让习惯更加稳固后再考虑扩展。";
   } else {
     recommendation = "继续保持当前习惯，等它更稳定后再考虑繁殖。";
   }
@@ -187,7 +194,7 @@ ${input.userGoals ? `用户的目标：${input.userGoals}` : ""}
   } catch (error) {
     console.error("习惯繁殖建议生成失败:", error);
     throw new Error(
-      `无法生成习惯繁殖建议: ${error instanceof Error ? error.message : "未知错误"}`
+      `无法生成习惯繁殖建议: ${error instanceof Error ? error.message : "未知错误"}`,
     );
   }
 }
@@ -200,15 +207,19 @@ export function shouldPromptProliferation(data: {
   daysSinceLastPrompt?: number;
   userDismissedCount?: number;
 }): boolean {
-  const { stabilityScore, daysSinceLastPrompt = 999, userDismissedCount = 0 } = data;
+  const {
+    stabilityScore,
+    daysSinceLastPrompt = 999,
+    userDismissedCount = 0,
+  } = data;
 
   // 条件：
   // 1. 稳定性分数 >= 80
   // 2. 距离上次提示至少 7 天
   // 3. 用户没有连续拒绝超过 3 次
   return (
-    stabilityScore >= 80 &&
-    daysSinceLastPrompt >= 7 &&
-    userDismissedCount < 3
+    stabilityScore >= PROLIFERATION_THRESHOLDS.STABILITY_SCORE_READY &&
+    daysSinceLastPrompt >= PROLIFERATION_THRESHOLDS.DAYS_BETWEEN_PROMPTS &&
+    userDismissedCount < PROLIFERATION_THRESHOLDS.MAX_DISMISS_COUNT
   );
 }

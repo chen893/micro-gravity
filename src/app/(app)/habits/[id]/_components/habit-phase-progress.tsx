@@ -1,6 +1,5 @@
 "use client";
 
-import { api } from "@/trpc/react";
 import {
   Card,
   CardContent,
@@ -17,40 +16,53 @@ import {
   PlayCircle,
   ChevronUp,
   ChevronDown,
+  Sparkles,
+  AlertTriangle,
+  TrendingUp,
+  Shield,
 } from "lucide-react";
 import { useState } from "react";
+import type { RouterOutputs } from "@/trpc/react";
+
+type AdvanceAssessment = RouterOutputs["phase"]["assessAdvance"];
+type RetreatAssessment = RouterOutputs["phase"]["assessRetreat"];
 
 interface Phase {
   phase: number;
   name: string;
-  duration: string;
+  duration?: string;
+  estimatedDuration?: string;
   microHabit: string;
   successCriteria: string;
-  difficultyScore: number;
+  difficultyScore?: number;
 }
 
 interface HabitPhaseProgressProps {
   currentPhase: number;
   phases: Phase[] | null;
   habitId: string;
+  advanceData?: AdvanceAssessment;
+  retreatData?: RetreatAssessment;
+  onAdvance?: (params?: { reason?: string; signals?: string[] }) => void;
+  onRetreat?: (params?: { reason?: string }) => void;
+  isAdvancePending?: boolean;
+  isRetreatPending?: boolean;
 }
 
 export function HabitPhaseProgress({
   currentPhase,
   phases,
-  habitId,
+  habitId: _habitId,
+  advanceData,
+  retreatData,
+  onAdvance,
+  onRetreat,
+  isAdvancePending = false,
+  isRetreatPending = false,
 }: HabitPhaseProgressProps) {
   const [expandedPhase, setExpandedPhase] = useState<number | null>(
     currentPhase,
   );
-  const utils = api.useUtils();
-
-  const updatePhaseMutation = api.habit.updatePhase.useMutation({
-    onSuccess: () => {
-      void utils.habit.getById.invalidate({ id: habitId });
-    },
-  });
-
   // 如果没有阶段配置，显示简单的进度
   if (!phases || phases.length === 0) {
     return (
@@ -77,6 +89,7 @@ export function HabitPhaseProgress({
 
   const totalPhases = phases.length;
   const progressPercent = ((currentPhase - 1) / (totalPhases - 1 || 1)) * 100;
+  const isActionDisabled = isAdvancePending || isRetreatPending;
 
   return (
     <Card>
@@ -88,35 +101,54 @@ export function HabitPhaseProgress({
               当前处于第 {currentPhase}/{totalPhases} 阶段
             </CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {/* 进阶状态指示 */}
+            {advanceData?.isReady && (
+              <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                <Sparkles className="mr-1 h-3 w-3" />
+                可进阶
+              </Badge>
+            )}
+            {retreatData?.shouldRetreat && (
+              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                <AlertTriangle className="mr-1 h-3 w-3" />
+                需关注
+              </Badge>
+            )}
+
+            {/* 退阶按钮 */}
             {currentPhase > 1 && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  updatePhaseMutation.mutate({
-                    id: habitId,
-                    currentPhase: currentPhase - 1,
+                  onRetreat?.({
+                    reason:
+                      retreatData?.signals?.[0]?.evidence ?? "用户主动退阶",
                   })
                 }
-                disabled={updatePhaseMutation.isPending}
+                disabled={isActionDisabled}
               >
                 <ChevronDown className="mr-1 h-4 w-4" />
-                降级
+                退阶
               </Button>
             )}
+            {/* 进阶按钮 */}
             {currentPhase < totalPhases && (
               <Button
                 size="sm"
                 onClick={() =>
-                  updatePhaseMutation.mutate({
-                    id: habitId,
-                    currentPhase: currentPhase + 1,
+                  onAdvance?.({
+                    reason: advanceData?.isReady
+                      ? "系统评估可进阶"
+                      : "用户主动进阶",
+                    signals: advanceData?.signals?.map((s) => s.type) ?? [],
                   })
                 }
-                disabled={updatePhaseMutation.isPending}
+                disabled={isActionDisabled}
+                variant={advanceData?.isReady ? "default" : "outline"}
               >
-                升级
+                进阶
                 <ChevronUp className="ml-1 h-4 w-4" />
               </Button>
             )}
@@ -178,14 +210,14 @@ export function HabitPhaseProgress({
                       <Circle className="text-muted-foreground h-5 w-5" />
                     )}
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{phase.name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {phase.duration}
-                        </Badge>
-                        {isCurrent && <Badge className="text-xs">当前</Badge>}
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{phase.name}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {phase.duration ?? phase.estimatedDuration ?? "—"}
+                      </Badge>
+                      {isCurrent && <Badge className="text-xs">当前</Badge>}
                     </div>
+                  </div>
                   </div>
                   <ChevronDown
                     className={`text-muted-foreground h-4 w-4 transition-transform ${
@@ -209,11 +241,11 @@ export function HabitPhaseProgress({
                         难度:
                       </span>
                       <Progress
-                        value={phase.difficultyScore * 10}
+                        value={(phase.difficultyScore ?? 5) * 10}
                         className="h-1.5 flex-1"
                       />
                       <span className="text-xs">
-                        {phase.difficultyScore}/10
+                        {phase.difficultyScore ?? 5}/10
                       </span>
                     </div>
                   </div>
@@ -222,6 +254,75 @@ export function HabitPhaseProgress({
             );
           })}
         </div>
+
+        {/* 进阶评估详情 */}
+        {advanceData?.signals && advanceData.signals.length > 0 && (
+          <div className="rounded-lg border border-green-200 bg-green-50/50 p-3 dark:border-green-800 dark:bg-green-950/20">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              <span className="text-sm font-medium">进阶评估</span>
+              {advanceData.isReady && (
+                <Badge className="bg-green-100 text-green-800 text-xs">准备就绪</Badge>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {advanceData.signals.map((signal, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {signal.type === "CONSISTENCY" && "📆 稳定完成"}
+                  {signal.type === "EASE" && "😌 轻松完成"}
+                  {signal.type === "DESIRE" && "🔥 想做更多"}
+                  {signal.type === "OVERFLOW" && "⭐ 超额完成"}
+                  {signal.type === "MOMENTUM" && "📈 越做越多"}
+                  <span className="ml-1 opacity-70">{Math.round(signal.strength * 100)}%</span>
+                </Badge>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {advanceData.isReady
+                ? advanceData.nextPhaseConfig
+                  ? `可以进阶到「${advanceData.nextPhaseConfig.name}」`
+                  : "已达到最高阶段！"
+                : `置信度 ${Math.round(advanceData.confidence * 100)}%，继续保持！`}
+            </p>
+          </div>
+        )}
+
+        {/* 退阶保护提示 */}
+        {retreatData && retreatData.shouldRetreat && (
+          <div className="rounded-lg border border-yellow-200 bg-yellow-50/50 p-3 dark:border-yellow-800 dark:bg-yellow-950/20">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="h-4 w-4 text-yellow-600" />
+              <span className="text-sm font-medium">退阶保护</span>
+              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                {retreatData.urgency === "URGENT" ? "需要关注" : "轻微提醒"}
+              </Badge>
+            </div>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {retreatData.signals?.map((signal, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {signal.type === "STRUGGLE" && "💦 执行吃力"}
+                  {signal.type === "INCONSISTENT" && "📉 完成不稳定"}
+                  {signal.type === "NEGATIVE" && "😔 情绪低落"}
+                  {signal.type === "AVOIDANCE" && "🚫 连续未完成"}
+                  {signal.type === "DECLINING" && "⬇️ 状态下滑"}
+                  {signal.type === "BURNOUT" && "🔥 可能倦怠"}
+                </Badge>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {retreatData.recommendation}
+            </p>
+            {retreatData.alternativeActions && retreatData.alternativeActions.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {retreatData.alternativeActions.map((action, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {action}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

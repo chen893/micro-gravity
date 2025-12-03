@@ -20,7 +20,7 @@ import {
   analyzeRelapse,
   generateInterruptionStrategies,
 } from "@/lib/ai/break-habit";
-import type { TriggerRecord, TriggerPatternType } from "@/lib/types";
+import type { TriggerRecord } from "@/lib/types";
 
 export const analyticsRouter = createTRPCRouter({
   /**

@@ -25,6 +25,156 @@ const celebrationCategoryEnum = z.enum([
 ]);
 
 export const celebrationRouter = createTRPCRouter({
+  // ============ 组合查询（优化性能） ============
+
+  /**
+   * 获取设置页面所需的所有数据
+   * 合并多个查询以减少网络请求
+   */
+  getSettingsData: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    // 并行执行所有查询
+    const [
+      methods,
+      favorites,
+      totalCelebrations,
+      avgShineResult,
+      topMethods,
+      totalLogs,
+      userHistory,
+    ] = await Promise.all([
+      // 获取所有庆祝方式
+      (async () => {
+        const count = await ctx.db.celebrationMethod.count();
+        if (count === 0) {
+          await ctx.db.celebrationMethod.createMany({
+            data: CELEBRATION_METHODS.map((m) => ({
+              category: m.category,
+              content: m.content,
+              emoji: m.emoji,
+              isBuiltIn: true,
+            })),
+          });
+        }
+        return ctx.db.celebrationMethod.findMany({
+          orderBy: { category: "asc" },
+        });
+      })(),
+      // 获取用户收藏
+      ctx.db.userCelebration.findMany({
+        where: { userId },
+        include: { celebrationMethod: true },
+        orderBy: [{ isDefault: "desc" }, { useCount: "desc" }],
+      }),
+      // 总庆祝次数
+      ctx.db.habitLog.count({
+        where: { userId, shineScore: { not: null } },
+      }),
+      // 平均发光感
+      ctx.db.habitLog.aggregate({
+        where: { userId, shineScore: { not: null } },
+        _avg: { shineScore: true },
+      }),
+      // 最常用方式
+      ctx.db.userCelebration.findMany({
+        where: { userId },
+        orderBy: { useCount: "desc" },
+        take: 5,
+        include: { celebrationMethod: true },
+      }),
+      // 总打卡数
+      ctx.db.habitLog.count({
+        where: { userId, completed: true },
+      }),
+      // 用户历史（用于推荐计算）
+      ctx.db.userCelebration.findMany({
+        where: { userId },
+        include: { celebrationMethod: true },
+        orderBy: { useCount: "desc" },
+      }),
+    ]);
+
+    // 计算默认方式
+    const defaultMethod = favorites.find((f) => f.isDefault)?.celebrationMethod ?? null;
+
+    // 计算庆祝率
+    const celebrationRate = totalLogs > 0 ? (totalCelebrations / totalLogs) * 100 : 0;
+
+    // 计算推荐方式
+    const categoryCount: Record<string, number> = {};
+    for (const item of userHistory) {
+      const cat = item.celebrationMethod.category;
+      categoryCount[cat] = (categoryCount[cat] ?? 0) + item.useCount;
+    }
+    const preferredCategories = Object.entries(categoryCount)
+      .sort((a, b) => b[1] - a[1])
+      .map(([cat]) => cat);
+
+    const recommendations: Array<{
+      content: string;
+      emoji: string;
+      category: string;
+      reason: string;
+    }> = [];
+
+    for (const method of CELEBRATION_METHODS) {
+      let score = 0;
+      let reason = "";
+
+      const userFav = userHistory.find(
+        (h) => h.celebrationMethod.content === method.content,
+      );
+
+      if (userFav) {
+        score += userFav.useCount * 2;
+        reason = "常用方式";
+      }
+
+      const categoryRank = preferredCategories.indexOf(method.category);
+      if (categoryRank !== -1) {
+        score += (4 - categoryRank) * 3;
+        if (!reason) reason = "符合你的风格";
+      }
+
+      if (preferredCategories[0] === method.category) {
+        score += 5;
+        if (!reason) reason = "高发光感分类";
+      }
+
+      if (score > 0) {
+        recommendations.push({
+          ...method,
+          reason: reason || "推荐尝试",
+        });
+      }
+    }
+
+    const recommended = recommendations
+      .sort((a, b) => {
+        const scoreA = userHistory.find(h => h.celebrationMethod.content === a.content)?.useCount ?? 0;
+        const scoreB = userHistory.find(h => h.celebrationMethod.content === b.content)?.useCount ?? 0;
+        return scoreB - scoreA;
+      })
+      .slice(0, 8);
+
+    return {
+      methods,
+      favorites,
+      defaultMethod,
+      recommended,
+      stats: {
+        totalCelebrations,
+        avgShineScore: avgShineResult._avg.shineScore ?? 0,
+        celebrationRate: Math.round(celebrationRate),
+        topMethods: topMethods.map((m) => ({
+          method: m.celebrationMethod,
+          useCount: m.useCount,
+        })),
+      },
+    };
+  }),
+
   // ============ 庆祝方式库 ============
 
   /**

@@ -16,6 +16,7 @@ import {
 import { analyzeDemotivators } from "@/lib/ai/demotivator-analysis";
 
 // 行为评估 schema (保留用于未来验证)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _behaviorAssessmentSchema = z.object({
   name: z.string(),
   description: z.string(),

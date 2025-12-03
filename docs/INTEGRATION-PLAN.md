@@ -340,3 +340,16 @@ src/components/habit/
 **文档版本**: v1.0
 **生成工具**: Claude Code
 **下一步**: 按优先级开始 P0 功能集成
+
+
+
+
+
+
+2.0
+  保留但标记的代码（添加 eslint-disable）：
+  - routine/page.tsx - saveTimeSlotMutation（未来功能）
+  - habit-doctor.tsx - _prescriptionMutation（未来功能）
+  - habit-creation-wizard.tsx - 三个状态变量（_clarifiedAspiration, _selectedBehaviors, _demotivatorAnalysis）
+  - aspiration.ts - _behaviorAssessmentSchema
+  - habit-doctor.ts - _symptomDataSchema

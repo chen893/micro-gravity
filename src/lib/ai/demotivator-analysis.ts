@@ -83,7 +83,7 @@ export const DEMOTIVATOR_DEFINITIONS: Record<
     ],
     strategies: [
       "完成比完美更重要",
-      "允许自己有\"最低版本\"的一天",
+      '允许自己有"最低版本"的一天',
       "记住：70%的执行胜过0%的完美",
     ],
   },
@@ -95,7 +95,7 @@ export const DEMOTIVATOR_DEFINITIONS: Record<
       "你是否感到来自家人或朋友的压力？",
     ],
     strategies: [
-      "找到属于你自己的\"为什么\"",
+      '找到属于你自己的"为什么"',
       "即使是他人建议的，也要找到对你的意义",
       "可以调整习惯的形式，让它更符合你的需求",
     ],
@@ -103,10 +103,7 @@ export const DEMOTIVATOR_DEFINITIONS: Record<
   TIME_CONCERN: {
     label: "时间顾虑",
     description: "觉得没有时间",
-    questions: [
-      "你觉得自己没有时间做这个习惯吗？",
-      "你的日程是否已经很满了？",
-    ],
+    questions: ["你觉得自己没有时间做这个习惯吗？", "你的日程是否已经很满了？"],
     strategies: [
       "微习惯只需要2分钟，每个人都有2分钟",
       "可以绑定在你已有的习惯上，不需要额外找时间",
@@ -116,10 +113,7 @@ export const DEMOTIVATOR_DEFINITIONS: Record<
   ENERGY_CONCERN: {
     label: "精力顾虑",
     description: "觉得自己没有精力",
-    questions: [
-      "你是否觉得自己精力不足？",
-      "你担心这个习惯会让你更累吗？",
-    ],
+    questions: ["你是否觉得自己精力不足？", "你担心这个习惯会让你更累吗？"],
     strategies: [
       "微习惯设计得足够小，不会消耗太多精力",
       "选择精力最好的时段来做",
@@ -157,7 +151,7 @@ const demotivatorAnalysisSchema = z.object({
       ]),
       confidence: z.number().min(0).max(1),
       evidence: z.string().describe("用户输入中体现这个因素的证据"),
-    })
+    }),
   ),
   primaryDemotivator: z
     .enum([
@@ -171,7 +165,9 @@ const demotivatorAnalysisSchema = z.object({
       "SELF_DOUBT",
     ])
     .optional(),
-  personalizedStrategies: z.array(z.string()).describe("针对用户情况的个性化建议"),
+  personalizedStrategies: z
+    .array(z.string())
+    .describe("针对用户情况的个性化建议"),
   encouragement: z.string().describe("鼓励的话语"),
 });
 
@@ -219,7 +215,7 @@ ${input.pastAttempts ? `用户过去的尝试经历：${input.pastAttempts}` : "
   } catch (error) {
     console.error("去激励因素分析失败:", error);
     throw new Error(
-      `无法分析去激励因素: ${error instanceof Error ? error.message : "未知错误"}`
+      `无法分析去激励因素: ${error instanceof Error ? error.message : "未知错误"}`,
     );
   }
 }
@@ -227,17 +223,13 @@ ${input.pastAttempts ? `用户过去的尝试经历：${input.pastAttempts}` : "
 /**
  * 获取去激励因素的应对策略
  */
-export function getStrategiesForDemotivator(
-  type: DemotivatorType
-): string[] {
+export function getStrategiesForDemotivator(type: DemotivatorType): string[] {
   return DEMOTIVATOR_DEFINITIONS[type]?.strategies ?? [];
 }
 
 /**
  * 获取去激励因素的探索问题
  */
-export function getQuestionsForDemotivator(
-  type: DemotivatorType
-): string[] {
+export function getQuestionsForDemotivator(type: DemotivatorType): string[] {
   return DEMOTIVATOR_DEFINITIONS[type]?.questions ?? [];
 }

@@ -20,6 +20,8 @@ import {
   assessRetreatNeed,
   type HabitLogData as RetreatLogData,
 } from "@/lib/habit/retreat-detection";
+import { parsePhaseConfigs, type PhaseConfigData } from "@/lib/utils";
+import { ADVANCE_THRESHOLDS, TIME_RANGES } from "@/lib/constants";
 
 // ============ 输入 Schema ============
 
@@ -54,12 +56,20 @@ export const phaseRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      const result = await designPhasePath({
-        targetHabit: input.targetHabit,
-        userContext: input.userContext,
-      });
+      try {
+        const result = await designPhasePath({
+          targetHabit: input.targetHabit,
+          userContext: input.userContext,
+        });
 
-      return result;
+        return result;
+      } catch (error) {
+        console.error("designPath error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "AI 生成阶段路径失败，请稍后重试",
+        });
+      }
     }),
 
   /**
@@ -73,12 +83,20 @@ export const phaseRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      const result = await designQuickPath({
-        targetHabit: input.targetHabit,
-        targetDuration: input.targetDuration,
-      });
+      try {
+        const result = await designQuickPath({
+          targetHabit: input.targetHabit,
+          targetDuration: input.targetDuration,
+        });
 
-      return result;
+        return result;
+      } catch (error) {
+        console.error("designQuickPath error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "AI 生成快速路径失败，请稍后重试",
+        });
+      }
     }),
 
   /**
@@ -107,8 +125,8 @@ export const phaseRouter = createTRPCRouter({
         });
       }
 
-      // 从 phases 字段中提取阶段信息
-      const phases = (habit.phases as unknown as PhaseConfig[] | null) ?? [];
+      // 从 phases 字段中提取阶段信息（使用类型守卫安全解析）
+      const phases = parsePhaseConfigs(habit.phases);
       const currentPhaseConfig = phases.find(
         (p) => p.phase === habit.currentPhase,
       );
@@ -120,10 +138,10 @@ export const phaseRouter = createTRPCRouter({
         habitId: habit.id,
         habitName: habit.name,
         currentPhase: habit.currentPhase,
-        currentPhaseConfig,
-        nextPhaseConfig,
+        currentPhaseConfig: currentPhaseConfig as PhaseConfig | undefined,
+        nextPhaseConfig: nextPhaseConfig as PhaseConfig | undefined,
         totalPhases: phases.length,
-        phases,
+        phases: phases as PhaseConfig[],
       };
     }),
 
@@ -167,8 +185,8 @@ export const phaseRouter = createTRPCRouter({
       // 评估进阶准备度
       const assessment = assessAdvanceReadiness(logData);
 
-      // 获取阶段信息
-      const phases = (habit.phases as unknown as PhaseConfig[] | null) ?? [];
+      // 获取阶段信息（使用类型守卫安全解析）
+      const phases = parsePhaseConfigs(habit.phases);
       const currentPhaseConfig = phases.find(
         (p) => p.phase === habit.currentPhase,
       );
@@ -225,8 +243,8 @@ export const phaseRouter = createTRPCRouter({
       // 评估退阶需求
       const assessment = assessRetreatNeed(logData);
 
-      // 获取阶段信息
-      const phases = (habit.phases as unknown as PhaseConfig[] | null) ?? [];
+      // 获取阶段信息（使用类型守卫安全解析）
+      const phases = parsePhaseConfigs(habit.phases);
       const currentPhaseConfig = phases.find(
         (p) => p.phase === habit.currentPhase,
       );
@@ -269,7 +287,7 @@ export const phaseRouter = createTRPCRouter({
         });
       }
 
-      const phases = (habit.phases as unknown as PhaseConfig[] | null) ?? [];
+      const phases = parsePhaseConfigs(habit.phases);
 
       // 检查是否有下一阶段
       const nextPhase = phases.find((p) => p.phase === habit.currentPhase + 1);
@@ -341,7 +359,7 @@ export const phaseRouter = createTRPCRouter({
         });
       }
 
-      const phases = (habit.phases as unknown as PhaseConfig[] | null) ?? [];
+      const phases = parsePhaseConfigs(habit.phases);
       const previousPhase = phases.find(
         (p) => p.phase === habit.currentPhase - 1,
       );
@@ -442,7 +460,7 @@ export const phaseRouter = createTRPCRouter({
         });
       }
 
-      const phases = (habit.phases as unknown as PhaseConfig[] | null) ?? [];
+      const phases = parsePhaseConfigs(habit.phases);
       const currentPhaseConfig = phases.find(
         (p) => p.phase === habit.currentPhase,
       );
@@ -459,7 +477,7 @@ export const phaseRouter = createTRPCRouter({
       }
 
       // 计算统计数据
-      const recentLogs = habit.logs.slice(0, 7);
+      const recentLogs = habit.logs.slice(0, TIME_RANGES.RECENT_DAYS);
       const completedCount = recentLogs.filter((l) => l.completed).length;
       const completionRate =
         recentLogs.length > 0 ? completedCount / recentLogs.length : 0;
@@ -490,7 +508,7 @@ export const phaseRouter = createTRPCRouter({
       const wantToDoMoreCount = recentLogs.filter(
         (l) => l.completed && l.wantedToDoMore,
       ).length;
-      const wantToDoMore = wantToDoMoreCount >= 2; // 最近7天有2次以上想做更多
+      const wantToDoMore = wantToDoMoreCount >= ADVANCE_THRESHOLDS.WANT_MORE_COUNT_READY;
 
       const suggestion = await suggestNextPhase({
         habitName: habit.name,

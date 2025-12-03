@@ -73,6 +73,7 @@ ${suggestedType === "SPARK" ? "（需要激励，唤起动机和愿景）" : ""}
       system: REMINDER_GENERATOR_PROMPT,
       prompt,
       schema: reminderSchema,
+      mode: 'json',
     });
 
     return object;

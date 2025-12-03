@@ -20,7 +20,8 @@
       "Bash(cat:*)",
       "Bash(gh pr list:*)",
       "Bash(where:*)",
-      "Bash(del /f *.tmp*)"
+      "Bash(del /f *.tmp*)",
+      "Bash(powershell -Command \"gh pr list\")"
     ],
     "deny": [],
     "ask": []

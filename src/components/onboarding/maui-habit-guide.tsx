@@ -44,7 +44,8 @@ export function MauiHabitGuide({ onComplete, onSkip }: MauiHabitGuideProps) {
   useEffect(() => {
     return () => {
       if (tryTimeoutRef.current) clearTimeout(tryTimeoutRef.current);
-      if (celebrateTimeoutRef.current) clearTimeout(celebrateTimeoutRef.current);
+      if (celebrateTimeoutRef.current)
+        clearTimeout(celebrateTimeoutRef.current);
     };
   }, []);
 
@@ -100,7 +101,9 @@ export function MauiHabitGuide({ onComplete, onSkip }: MauiHabitGuideProps) {
         return (
           <div className="space-y-6">
             <div className="space-y-2 text-center">
-              <h2 className="text-xl font-bold">什么是&ldquo;毛伊习惯&rdquo;？</h2>
+              <h2 className="text-xl font-bold">
+                什么是&ldquo;毛伊习惯&rdquo;？
+              </h2>
               <p className="text-muted-foreground text-sm">
                 这是一个超简单的练习习惯，只需3秒钟
               </p>
@@ -158,7 +161,7 @@ export function MauiHabitGuide({ onComplete, onSkip }: MauiHabitGuideProps) {
                 "mx-auto flex h-24 w-24 items-center justify-center rounded-full transition-all duration-500",
                 hasTried
                   ? "scale-110 bg-green-500"
-                  : "bg-gradient-to-br from-amber-400 to-orange-500"
+                  : "bg-gradient-to-br from-amber-400 to-orange-500",
               )}
             >
               {hasTried ? (
@@ -197,13 +200,13 @@ export function MauiHabitGuide({ onComplete, onSkip }: MauiHabitGuideProps) {
           <div className="space-y-6 text-center">
             {showConfetti && (
               <div className="pointer-events-none fixed inset-0 z-50">
-                <div className="animate-bounce-slow absolute left-1/4 top-1/4 text-4xl">
+                <div className="animate-bounce-slow absolute top-1/4 left-1/4 text-4xl">
                   🎉
                 </div>
-                <div className="animate-bounce-slow absolute right-1/4 top-1/3 text-4xl delay-100">
+                <div className="animate-bounce-slow absolute top-1/3 right-1/4 text-4xl delay-100">
                   ✨
                 </div>
-                <div className="animate-bounce-slow absolute left-1/3 top-1/2 text-4xl delay-200">
+                <div className="animate-bounce-slow absolute top-1/2 left-1/3 text-4xl delay-200">
                   🌟
                 </div>
                 <div className="animate-bounce-slow absolute right-1/3 bottom-1/3 text-4xl delay-300">
@@ -217,7 +220,7 @@ export function MauiHabitGuide({ onComplete, onSkip }: MauiHabitGuideProps) {
                 "mx-auto flex h-24 w-24 items-center justify-center rounded-full transition-all duration-500",
                 hasCelebrated
                   ? "animate-pulse bg-gradient-to-br from-pink-500 to-purple-600"
-                  : "bg-gradient-to-br from-purple-400 to-pink-500"
+                  : "bg-gradient-to-br from-purple-400 to-pink-500",
               )}
             >
               <PartyPopper className="h-12 w-12 text-white" />
@@ -265,9 +268,7 @@ export function MauiHabitGuide({ onComplete, onSkip }: MauiHabitGuideProps) {
               <p className="text-muted-foreground">
                 你刚刚完成了第一个微习惯循环：
                 <br />
-                <span className="font-medium">
-                  行为 → 庆祝 → 感觉良好
-                </span>
+                <span className="font-medium">行为 → 庆祝 → 感觉良好</span>
               </p>
             </div>
 
@@ -281,10 +282,7 @@ export function MauiHabitGuide({ onComplete, onSkip }: MauiHabitGuideProps) {
             </div>
 
             <div className="space-y-3">
-              <Button
-                onClick={() => onComplete(true)}
-                className="w-full gap-2"
-              >
+              <Button onClick={() => onComplete(true)} className="w-full gap-2">
                 将&ldquo;毛伊习惯&rdquo;添加为我的第一个习惯
               </Button>
               <Button
@@ -303,7 +301,7 @@ export function MauiHabitGuide({ onComplete, onSkip }: MauiHabitGuideProps) {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between text-sm font-normal text-muted-foreground">
+        <CardTitle className="text-muted-foreground flex items-center justify-between text-sm font-normal">
           <span className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-amber-500" />
             新手引导

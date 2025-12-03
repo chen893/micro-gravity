@@ -16,7 +16,6 @@ import {
   ChevronRight,
   X,
   Loader2,
-  Check,
 } from "lucide-react";
 import {
   type ProliferationType,
@@ -44,7 +43,7 @@ export function ProliferationPrompt({
   onLoadSuggestions,
 }: ProliferationPromptProps) {
   const [selectedType, setSelectedType] = useState<ProliferationType | null>(
-    null
+    null,
   );
 
   const growthSuggestions = suggestions.filter((s) => s.type === "GROWTH");
@@ -235,7 +234,7 @@ export function ProliferationBadge({
       onClick={onClick}
       className={cn(
         "flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700 transition-all hover:bg-emerald-200",
-        className
+        className,
       )}
     >
       <Sparkles className="h-3 w-3" />

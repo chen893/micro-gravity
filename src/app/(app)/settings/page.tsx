@@ -45,6 +45,7 @@ import {
   Monitor,
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { CelebrationSettings } from "./_components/celebration-settings";
 
 export default function SettingsPage() {
   const { data: session } = useSession();
@@ -235,6 +236,9 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 庆祝方式设置 */}
+      <CelebrationSettings />
 
       {/* 外观设置 */}
       <Card>

@@ -11,6 +11,8 @@ import {
   generateProliferationSuggestions,
   shouldPromptProliferation,
 } from "@/lib/ai/habit-proliferation";
+import { getDaysAgo, getToday, daysBetween } from "@/lib/utils";
+import { PROLIFERATION_THRESHOLDS, TIME_RANGES } from "@/lib/constants";
 
 export const proliferationRouter = createTRPCRouter({
   /**
@@ -40,11 +42,10 @@ export const proliferationRouter = createTRPCRouter({
       }
 
       // 计算最近14天的完成率
-      const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      const twoWeeksAgo = getDaysAgo(TIME_RANGES.MEDIUM_DAYS);
 
       const recentLogs = habit.logs.filter(
-        (log) => log.loggedAt >= twoWeeksAgo
+        (log) => log.loggedAt >= twoWeeksAgo,
       );
       const completedLogs = recentLogs.filter((log) => log.completed);
       const completionRate =
@@ -52,11 +53,10 @@ export const proliferationRouter = createTRPCRouter({
 
       // 计算连续天数
       let consecutiveDays = 0;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const today = getToday();
 
       const sortedLogs = [...habit.logs].sort(
-        (a, b) => b.loggedAt.getTime() - a.loggedAt.getTime()
+        (a, b) => b.loggedAt.getTime() - a.loggedAt.getTime(),
       );
 
       for (let i = 0; i < sortedLogs.length; i++) {
@@ -76,23 +76,23 @@ export const proliferationRouter = createTRPCRouter({
 
       // 计算平均难度
       const logsWithDifficulty = recentLogs.filter(
-        (log) => log.completed && log.difficultyRating !== null
+        (log) => log.completed && log.difficultyRating !== null,
       );
       const avgDifficulty =
         logsWithDifficulty.length > 0
           ? logsWithDifficulty.reduce(
               (sum, log) => sum + (log.difficultyRating ?? 3),
-              0
+              0,
             ) / logsWithDifficulty.length
           : 3;
 
       // 计算正面情绪比例
       const logsWithEmotion = recentLogs.filter(
-        (log) => log.emotionalMarker !== null
+        (log) => log.emotionalMarker !== null,
       );
       const positiveEmotions = ["JOY", "PRIDE"];
       const positiveCount = logsWithEmotion.filter((log) =>
-        positiveEmotions.includes(log.emotionalMarker ?? "")
+        positiveEmotions.includes(log.emotionalMarker ?? ""),
       ).length;
       const positiveEmotionRate =
         logsWithEmotion.length > 0
@@ -100,10 +100,7 @@ export const proliferationRouter = createTRPCRouter({
           : 0.5; // 默认中性
 
       // 计算习惯总天数
-      const createdAt = new Date(habit.createdAt);
-      const totalDays = Math.floor(
-        (today.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)
-      );
+      const totalDays = daysBetween(habit.createdAt, today);
 
       const stability = assessHabitStability({
         completionRate,
@@ -128,7 +125,7 @@ export const proliferationRouter = createTRPCRouter({
       z.object({
         habitId: z.string(),
         userGoals: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const habit = await ctx.db.habit.findFirst({
@@ -152,10 +149,9 @@ export const proliferationRouter = createTRPCRouter({
       }
 
       // 先评估稳定性
-      const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      const twoWeeksAgo = getDaysAgo(TIME_RANGES.MEDIUM_DAYS);
       const recentLogs = habit.logs.filter(
-        (log) => log.loggedAt >= twoWeeksAgo
+        (log) => log.loggedAt >= twoWeeksAgo,
       );
       const completedLogs = recentLogs.filter((log) => log.completed);
       const completionRate =
@@ -214,10 +210,9 @@ export const proliferationRouter = createTRPCRouter({
       }
 
       // 计算稳定性分数
-      const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      const twoWeeksAgo = getDaysAgo(TIME_RANGES.MEDIUM_DAYS);
       const recentLogs = habit.logs.filter(
-        (log) => log.loggedAt >= twoWeeksAgo
+        (log) => log.loggedAt >= twoWeeksAgo,
       );
       const completedLogs = recentLogs.filter((log) => log.completed);
       const completionRate =
@@ -228,14 +223,11 @@ export const proliferationRouter = createTRPCRouter({
       // 从数据库读取上次提示时间和拒绝次数
       const lastResponse = habit.proliferationResponses[0];
       const daysSinceLastPrompt = lastResponse
-        ? Math.floor(
-            (Date.now() - lastResponse.respondedAt.getTime()) /
-              (1000 * 60 * 60 * 24)
-          )
+        ? daysBetween(new Date(), lastResponse.respondedAt)
         : 999;
 
       const userDismissedCount = habit.proliferationResponses.filter(
-        (r) => r.response === "DISMISSED"
+        (r) => r.response === "DISMISSED",
       ).length;
 
       const shouldPrompt = shouldPromptProliferation({
@@ -258,9 +250,9 @@ export const proliferationRouter = createTRPCRouter({
     .input(
       z.object({
         habitId: z.string(),
-        response: z.enum(["ACCEPTED", "DISMISSED", "POSTPONED"]) as z.ZodEnum<["ACCEPTED", "DISMISSED", "POSTPONED"]>,
-        selectedSuggestionType: (z.enum(["GROWTH", "SPAWN"]) as z.ZodEnum<["GROWTH", "SPAWN"]>).optional(),
-      })
+        response: z.enum(["ACCEPTED", "DISMISSED", "POSTPONED"]),
+        selectedSuggestionType: z.enum(["GROWTH", "SPAWN"]).optional(),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // 验证习惯属于当前用户

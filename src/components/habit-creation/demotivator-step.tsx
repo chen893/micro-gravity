@@ -31,11 +31,27 @@ import { api } from "@/trpc/react";
 // 常见顾虑选项
 const COMMON_CONCERNS = [
   { id: "time", label: "没有时间", type: "TIME_CONCERN" as DemotivatorType },
-  { id: "energy", label: "没有精力", type: "ENERGY_CONCERN" as DemotivatorType },
-  { id: "failed", label: "之前失败过", type: "PAST_FAILURE" as DemotivatorType },
+  {
+    id: "energy",
+    label: "没有精力",
+    type: "ENERGY_CONCERN" as DemotivatorType,
+  },
+  {
+    id: "failed",
+    label: "之前失败过",
+    type: "PAST_FAILURE" as DemotivatorType,
+  },
   { id: "doubt", label: "不确定能坚持", type: "SELF_DOUBT" as DemotivatorType },
-  { id: "perfect", label: "怕做不好", type: "PERFECTIONISM" as DemotivatorType },
-  { id: "pressure", label: "感到压力", type: "EXTERNAL_PRESSURE" as DemotivatorType },
+  {
+    id: "perfect",
+    label: "怕做不好",
+    type: "PERFECTIONISM" as DemotivatorType,
+  },
+  {
+    id: "pressure",
+    label: "感到压力",
+    type: "EXTERNAL_PRESSURE" as DemotivatorType,
+  },
 ];
 
 interface DemotivatorStepProps {
@@ -72,7 +88,7 @@ export function DemotivatorStep({
 
   const toggleConcern = (id: string) => {
     setSelectedConcerns((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
     );
   };
 
@@ -88,10 +104,7 @@ export function DemotivatorStep({
       .map((id) => COMMON_CONCERNS.find((c) => c.id === id)?.label)
       .filter(Boolean);
 
-    const userConcerns = [
-      ...concernLabels,
-      additionalConcerns.trim(),
-    ]
+    const userConcerns = [...concernLabels, additionalConcerns.trim()]
       .filter(Boolean)
       .join("、");
 
@@ -131,7 +144,10 @@ export function DemotivatorStep({
                 <div>
                   <p className="font-medium text-amber-800">
                     主要顾虑：
-                    {DEMOTIVATOR_DEFINITIONS[analysis.primaryDemotivator]?.label}
+                    {
+                      DEMOTIVATOR_DEFINITIONS[analysis.primaryDemotivator]
+                        ?.label
+                    }
                   </p>
                   <p className="mt-1 text-sm text-amber-700">
                     {
@@ -212,7 +228,7 @@ export function DemotivatorStep({
                   "rounded-full border-2 px-4 py-2 text-sm transition-all",
                   selectedConcerns.includes(concern.id)
                     ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : "border-gray-200 hover:border-gray-300"
+                    : "border-gray-200 hover:border-gray-300",
                 )}
               >
                 {concern.label}

@@ -9,7 +9,6 @@ import {
   taskBreakdownSchema,
   type TaskBreakdown,
   type PhaseConfig,
-  type Ability,
 } from "@/lib/types";
 import { modelMini } from "./model";
 

@@ -173,9 +173,7 @@ export function FlexibleCheckin({
           {habitName}
           {currentPhase && ` (阶段 ${currentPhase})`}
         </p>
-        <p className="text-muted-foreground text-xs">
-          微习惯：{microHabit}
-        </p>
+        <p className="text-muted-foreground text-xs">微习惯：{microHabit}</p>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -192,7 +190,7 @@ export function FlexibleCheckin({
                   "flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-all",
                   completionLevel === level.value
                     ? level.color
-                    : "border-gray-200 hover:border-gray-300"
+                    : "border-gray-200 hover:border-gray-300",
                 )}
               >
                 <div
@@ -200,7 +198,7 @@ export function FlexibleCheckin({
                     "flex h-8 w-8 items-center justify-center rounded-full",
                     completionLevel === level.value
                       ? "bg-white/50"
-                      : "bg-gray-100"
+                      : "bg-gray-100",
                   )}
                 >
                   {level.icon}
@@ -240,7 +238,7 @@ export function FlexibleCheckin({
                 "flex items-center gap-2 rounded-full border-2 px-4 py-2 text-sm transition-all",
                 wantedToDoMore
                   ? "border-purple-500 bg-purple-50 text-purple-700"
-                  : "border-gray-200 hover:border-gray-300"
+                  : "border-gray-200 hover:border-gray-300",
               )}
             >
               <Sparkles className="h-4 w-4" />
@@ -253,7 +251,7 @@ export function FlexibleCheckin({
                 "flex items-center gap-2 rounded-full border-2 px-4 py-2 text-sm transition-all",
                 feltEasy
                   ? "border-teal-500 bg-teal-50 text-teal-700"
-                  : "border-gray-200 hover:border-gray-300"
+                  : "border-gray-200 hover:border-gray-300",
               )}
             >
               <Check className="h-4 w-4" />
@@ -277,14 +275,14 @@ export function FlexibleCheckin({
                 type="button"
                 onClick={() =>
                   setEmotionalMarker(
-                    emotionalMarker === marker.value ? undefined : marker.value
+                    emotionalMarker === marker.value ? undefined : marker.value,
                   )
                 }
                 className={cn(
                   "flex flex-col items-center gap-1 rounded-lg border-2 p-2 text-xs transition-all",
                   emotionalMarker === marker.value
                     ? marker.color
-                    : "border-gray-200 hover:border-gray-300"
+                    : "border-gray-200 hover:border-gray-300",
                 )}
               >
                 {marker.icon}
@@ -292,26 +290,27 @@ export function FlexibleCheckin({
               </button>
             ))}
           </div>
-          {emotionalMarker && (() => {
-            const marker = EMOTIONAL_MARKERS.find(
-              (m) => m.value === emotionalMarker
-            );
-            if (!marker) return null;
-            return (
-              <p
-                className={cn(
-                  "text-xs",
-                  marker.signal === "retreat"
-                    ? "text-orange-600"
-                    : marker.signal === "advance"
-                      ? "text-emerald-600"
-                      : "text-gray-600"
-                )}
-              >
-                {marker.description}
-              </p>
-            );
-          })()}
+          {emotionalMarker &&
+            (() => {
+              const marker = EMOTIONAL_MARKERS.find(
+                (m) => m.value === emotionalMarker,
+              );
+              if (!marker) return null;
+              return (
+                <p
+                  className={cn(
+                    "text-xs",
+                    marker.signal === "retreat"
+                      ? "text-orange-600"
+                      : marker.signal === "advance"
+                        ? "text-emerald-600"
+                        : "text-gray-600",
+                  )}
+                >
+                  {marker.description}
+                </p>
+              );
+            })()}
         </div>
 
         {/* 操作按钮 */}

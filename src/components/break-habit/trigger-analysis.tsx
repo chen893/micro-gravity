@@ -54,7 +54,7 @@ const triggerTypeConfig: Record<
   },
 };
 
-export function TriggerAnalysis({ habitId, habitName }: TriggerAnalysisProps) {
+export function TriggerAnalysis({ habitId, habitName: _habitName }: TriggerAnalysisProps) {
   const {
     data: analysisData,
     isLoading,

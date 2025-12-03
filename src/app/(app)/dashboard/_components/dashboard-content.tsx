@@ -26,13 +26,10 @@ import {
   CelebrationSuccessModal,
   FloatingFlashCelebration,
 } from "@/components/celebration";
+import { SmartReminders } from "./smart-reminders";
 
 export function DashboardContent() {
-  const { data: habits, isLoading } = api.habit.getActive.useQuery();
-
-  if (isLoading) {
-    return <div>加载中...</div>;
-  }
+  const [habits] = api.habit.getActive.useSuspenseQuery();
 
   if (!habits || habits.length === 0) {
     return <EmptyState />;
@@ -112,6 +109,9 @@ export function DashboardContent() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 智能提醒 */}
+      <SmartReminders />
 
       {/* 浮动闪电庆祝按钮 */}
       <FloatingFlashCelebration />

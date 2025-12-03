@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
@@ -19,6 +19,7 @@ import { RehearsalStep } from "./rehearsal-step";
 
 import type { BehaviorAssessment, FocusMapResult } from "@/lib/ai/focus-map";
 import type { DemotivatorAnalysis } from "@/lib/ai/demotivator-analysis";
+import type { AnchorMatch, AnchorValidation } from "@/lib/ai/anchor-matching";
 
 type Step =
   | "aspiration"
@@ -56,11 +57,13 @@ export function HabitCreationWizard() {
   // 数据状态
   const [aspirationId, setAspirationId] = useState<string | null>(null);
   const [aspiration, setAspiration] = useState<string>("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_clarifiedAspiration, setClarifiedAspiration] = useState<
     string | undefined
   >();
   const [clusterId, setClusterId] = useState<string | null>(null);
   const [behaviors, setBehaviors] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_selectedBehaviors, setSelectedBehaviors] = useState<string[]>([]);
   const [focusMapResult, setFocusMapResult] = useState<FocusMapResult | null>(
     null,
@@ -77,7 +80,8 @@ export function HabitCreationWizard() {
     explanation: string;
   } | null>(null);
   const [easyResult, setEasyResult] = useState<string>("");
-  const [demotivatorAnalysis, setDemotivatorAnalysis] =
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_demotivatorAnalysis, setDemotivatorAnalysis] =
     useState<DemotivatorAnalysis | null>(null);
   const [recipe, setRecipe] = useState<{
     anchor: string;
@@ -86,6 +90,21 @@ export function HabitCreationWizard() {
     fullRecipe: string;
   } | null>(null);
   const [rehearsalCount, setRehearsalCount] = useState(0);
+
+  // 锚点匹配相关状态
+  const [smartMatches, setSmartMatches] = useState<AnchorMatch[]>([]);
+  const [anchorValidation, setAnchorValidation] =
+    useState<AnchorValidation | null>(null);
+
+  // tRPC queries - 获取用户日程数据
+  const { data: routineData } = api.routine.getAll.useQuery();
+  const hasRoutineData =
+    routineData &&
+    Object.values(routineData).some((activities) => activities.length > 0);
+
+  // tRPC mutations - 锚点匹配
+  const matchAnchorsMutation = api.routine.matchAnchors.useMutation();
+  const validateAnchorMutation = api.routine.validateAnchor.useMutation();
 
   // tRPC mutations
   const createAspiration = api.aspiration.create.useMutation();
@@ -226,6 +245,45 @@ export function HabitCreationWizard() {
     [],
   );
 
+  // 锚点匹配处理函数
+  const handleGenerateSmartMatches = useCallback(async () => {
+    const behavior = easyResult || selectedBehavior?.name;
+    if (!behavior) return;
+
+    try {
+      const matches = await matchAnchorsMutation.mutateAsync({
+        targetBehavior: behavior,
+      });
+      setSmartMatches(matches);
+    } catch (error) {
+      // 如果没有日程数据，显示友好提示
+      if ((error as { message?: string })?.message?.includes("请先填写日程清单")) {
+        toast.info("提示：填写日程清单后可获得更精准的锚点推荐");
+      } else {
+        toast.error("智能匹配失败，请手动选择锚点");
+      }
+      console.error("智能匹配失败:", error);
+    }
+  }, [easyResult, selectedBehavior, matchAnchorsMutation]);
+
+  const handleValidateAnchor = useCallback(
+    async (anchor: string) => {
+      const behavior = easyResult || selectedBehavior?.name;
+      if (!behavior || !anchor) return;
+
+      try {
+        const validation = await validateAnchorMutation.mutateAsync({
+          anchorBehavior: anchor,
+          targetBehavior: behavior,
+        });
+        setAnchorValidation(validation);
+      } catch (error) {
+        console.error("验证锚点失败:", error);
+      }
+    },
+    [easyResult, selectedBehavior, validateAnchorMutation],
+  );
+
   const handleGenerateRecipe = useCallback(
     async (anchor: string) => {
       const behavior = easyResult || selectedBehavior?.name;
@@ -267,7 +325,9 @@ export function HabitCreationWizard() {
         behaviorDescription: selectedBehavior.description,
         easyStrategy,
         starterStep:
-          easyStrategy === "STARTER_STEP" ? starterStep?.starterStep : undefined,
+          easyStrategy === "STARTER_STEP"
+            ? starterStep?.starterStep
+            : undefined,
         scaledBehavior:
           easyStrategy === "SCALE_DOWN"
             ? scaledBehavior?.scaledBehavior
@@ -311,7 +371,9 @@ export function HabitCreationWizard() {
     generateStarterStepMutation.isPending ||
     generateScaledBehaviorMutation.isPending ||
     generateRecipe.isPending ||
-    createHabit.isPending;
+    createHabit.isPending ||
+    matchAnchorsMutation.isPending ||
+    validateAnchorMutation.isPending;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -406,6 +468,13 @@ export function HabitCreationWizard() {
           isLoading={generateRecipe.isPending}
           onGenerate={handleGenerateRecipe}
           onComplete={handleRecipeComplete}
+          smartMatches={smartMatches}
+          validation={anchorValidation}
+          isLoadingMatches={matchAnchorsMutation.isPending}
+          isLoadingValidation={validateAnchorMutation.isPending}
+          onGenerateSmartMatches={handleGenerateSmartMatches}
+          onValidateAnchor={handleValidateAnchor}
+          hasRoutineData={!!hasRoutineData}
         />
       )}
 

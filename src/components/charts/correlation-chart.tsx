@@ -1,16 +1,7 @@
 "use client";
 
-import {
-  Scatter,
-  ScatterChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  ZAxis,
-  Cell,
-} from "recharts";
+// Note: These recharts imports are reserved for future scatter chart implementation
+// import { Scatter, ScatterChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, ZAxis, Cell } from "recharts";
 import {
   Card,
   CardContent,
@@ -42,17 +33,6 @@ export function CorrelationChart({
   title = "习惯相关性",
   description = "不同习惯之间的相关性分析",
 }: CorrelationChartProps) {
-  // 转换数据为散点图格式
-  const chartData = data.map((item, index) => ({
-    x: index % 5,
-    y: Math.floor(index / 5),
-    z: Math.abs(item.correlation) * 100,
-    habit1: item.habit1,
-    habit2: item.habit2,
-    correlation: item.correlation,
-    coOccurrence: item.coOccurrence,
-  }));
-
   if (isLoading) {
     return (
       <Card>

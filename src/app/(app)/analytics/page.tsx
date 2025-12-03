@@ -18,13 +18,42 @@ import {
   CheckCircle,
   Calendar,
   Flame,
+  Clock,
+  Heart,
+  Link2,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState } from "react";
 
 export default function AnalyticsPage() {
+  const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
+
   const { data: dashboard, isLoading } = api.analytics.getDashboard.useQuery({
     days: 30,
   });
   const { data: insights } = api.insights.getDashboard.useQuery({ days: 30 });
+
+  // 额外的分析查询
+  const { data: timePatterns } = api.analytics.getTimePatterns.useQuery(
+    { habitId: selectedHabitId ?? undefined, days: 30 },
+    { enabled: !!dashboard },
+  );
+
+  const { data: moodCorrelation } = api.analytics.getMoodCorrelation.useQuery(
+    { habitId: selectedHabitId ?? "", days: 30 },
+    { enabled: !!selectedHabitId },
+  );
+
+  const { data: habitCorrelations } = api.analytics.getHabitCorrelations.useQuery(
+    { days: 30 },
+    { enabled: !!dashboard && (dashboard.habits?.length ?? 0) >= 2 },
+  );
 
   if (isLoading) {
     return <AnalyticsSkeleton />;
@@ -108,6 +137,8 @@ export default function AnalyticsPage() {
         <TabsList>
           <TabsTrigger value="overview">总览</TabsTrigger>
           <TabsTrigger value="habits">习惯表现</TabsTrigger>
+          <TabsTrigger value="patterns">模式分析</TabsTrigger>
+          <TabsTrigger value="correlations">关联分析</TabsTrigger>
           <TabsTrigger value="risk">风险预警</TabsTrigger>
         </TabsList>
 
@@ -176,6 +207,221 @@ export default function AnalyticsPage() {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="patterns" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    时间模式分析
+                  </CardTitle>
+                  <CardDescription>
+                    发现你的最佳习惯执行时间
+                  </CardDescription>
+                </div>
+                <Select
+                  value={selectedHabitId ?? "all"}
+                  onValueChange={(v) => setSelectedHabitId(v === "all" ? null : v)}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="选择习惯" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">所有习惯</SelectItem>
+                    {dashboard?.habits.map((habit) => (
+                      <SelectItem key={habit.id} value={habit.id}>
+                        {habit.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {timePatterns && timePatterns.optimalWindows.length > 0 ? (
+                <div className="space-y-4">
+                  {/* 最佳时间窗口 */}
+                  <div className="space-y-3">
+                    <p className="font-medium">最佳执行时间窗口</p>
+                    {timePatterns.optimalWindows.slice(0, 3).map((window, i) => (
+                      <div key={i} className="flex items-center justify-between rounded-lg border p-3">
+                        <div>
+                          <p className="font-medium">
+                            {["周日", "周一", "周二", "周三", "周四", "周五", "周六"][window.dayOfWeek]} {window.startHour}:00 - {window.endHour}:00
+                          </p>
+                          <p className="text-muted-foreground text-sm">{window.reason}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* AI 洞察 */}
+                  {timePatterns.insights && timePatterns.insights.length > 0 && (
+                    <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-950/20">
+                      <p className="mb-2 font-medium">时间优化建议</p>
+                      <ul className="list-inside list-disc space-y-1 text-sm">
+                        {timePatterns.insights.map((insight, i) => (
+                          <li key={i}>{insight}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-8">
+                  需要更多数据才能分析时间模式
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 情绪相关性分析 */}
+          {selectedHabitId && moodCorrelation && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-red-500" />
+                  情绪相关性
+                </CardTitle>
+                <CardDescription>
+                  习惯完成与情绪变化的关联
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="rounded-lg border p-4">
+                    <p className="text-muted-foreground text-sm">完成前平均情绪</p>
+                    <p className="text-2xl font-bold">
+                      {moodCorrelation.beforeAfterCorrelation.averageMoodBefore.toFixed(1)}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border p-4">
+                    <p className="text-muted-foreground text-sm">完成后平均情绪</p>
+                    <p className="text-2xl font-bold">
+                      {moodCorrelation.beforeAfterCorrelation.averageMoodAfter.toFixed(1)}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border p-4">
+                    <p className="text-muted-foreground text-sm">情绪提升</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      +{moodCorrelation.beforeAfterCorrelation.moodLift.toFixed(1)}
+                    </p>
+                    <Badge variant="outline" className="mt-1 text-xs">
+                      {moodCorrelation.beforeAfterCorrelation.significance === "HIGH" ? "显著" :
+                       moodCorrelation.beforeAfterCorrelation.significance === "MEDIUM" ? "中等" : "轻微"}
+                    </Badge>
+                  </div>
+                </div>
+                {moodCorrelation.recommendations && moodCorrelation.recommendations.length > 0 && (
+                  <div className="mt-4 rounded-lg bg-green-50 p-4 dark:bg-green-950/20">
+                    <p className="mb-2 font-medium">建议</p>
+                    <ul className="list-inside list-disc space-y-1 text-sm">
+                      {moodCorrelation.recommendations.map((rec, i) => (
+                        <li key={i}>{rec}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="correlations" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Link2 className="h-5 w-5" />
+                习惯关联分析
+              </CardTitle>
+              <CardDescription>
+                发现习惯之间的相互影响
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {habitCorrelations && habitCorrelations.correlations.length > 0 ? (
+                <div className="space-y-4">
+                  {/* 相关性列表 */}
+                  <div className="space-y-3">
+                    {habitCorrelations.correlations.slice(0, 5).map((corr, i) => {
+                      const habit1Name = dashboard?.habits.find(h => h.id === corr.habit1Id)?.name ?? corr.habit1Id;
+                      const habit2Name = dashboard?.habits.find(h => h.id === corr.habit2Id)?.name ?? corr.habit2Id;
+                      return (
+                        <div
+                          key={i}
+                          className="rounded-lg border p-3"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{habit1Name}</span>
+                              <span className="text-muted-foreground">↔</span>
+                              <span className="font-medium">{habit2Name}</span>
+                            </div>
+                            <Badge
+                              variant={
+                                corr.relationship === "POSITIVE"
+                                  ? "default"
+                                  : corr.relationship === "NEGATIVE"
+                                    ? "destructive"
+                                    : "outline"
+                              }
+                            >
+                              {corr.relationship === "POSITIVE"
+                                ? "正相关"
+                                : corr.relationship === "NEGATIVE"
+                                  ? "负相关"
+                                  : "无明显关联"}
+                            </Badge>
+                          </div>
+                          <p className="text-muted-foreground text-sm">{corr.insight}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* 习惯群组 */}
+                  {habitCorrelations.clusters && habitCorrelations.clusters.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="font-medium">习惯群组</p>
+                      {habitCorrelations.clusters.map((cluster, i) => (
+                        <div key={i} className="rounded-lg border p-3">
+                          <p className="font-medium">{cluster.name}</p>
+                          <p className="text-muted-foreground text-sm">{cluster.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 建议 */}
+                  {habitCorrelations.suggestions && habitCorrelations.suggestions.length > 0 && (
+                    <div className="rounded-lg bg-purple-50 p-4 dark:bg-purple-950/20">
+                      <p className="mb-2 font-medium">优化建议</p>
+                      <div className="space-y-2">
+                        {habitCorrelations.suggestions.map((s, i) => (
+                          <div key={i} className="text-sm">
+                            <Badge variant="outline" className="mr-2">
+                              {s.type === "STACK" ? "堆叠" : s.type === "SEPARATE" ? "分开" : "顺序"}
+                            </Badge>
+                            <span>{s.reason}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <p className="text-muted-foreground">
+                    {(dashboard?.habits?.length ?? 0) < 2
+                      ? "需要至少2个活跃习惯才能分析关联性"
+                      : "暂无足够数据进行关联分析"}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="risk" className="space-y-4">

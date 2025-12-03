@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -21,7 +20,6 @@ import {
 } from "@/components/ui/accordion";
 import {
   Home,
-  Briefcase,
   Smartphone,
   Users,
   Clock,
@@ -95,7 +93,7 @@ type CategoryKey = keyof typeof defaultStrategies;
 
 export function EnvironmentDesign({
   habitId,
-  habitName,
+  habitName: _habitName,
 }: EnvironmentDesignProps) {
   const [completedStrategies, setCompletedStrategies] = useState<Set<string>>(
     new Set(),
