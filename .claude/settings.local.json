@@ -1,5 +1,5 @@
 {
-  "env": {
+  "env0": {
     "ANTHROPIC_MODEL": "claude-4.5-opus-high",
     "ANTHROPIC_SMALL_FAST_MODEL": "claude-4.5-opus-high"
   },

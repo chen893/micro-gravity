@@ -141,6 +141,10 @@ export const aspirationRouter = createTRPCRouter({
   generateBehaviors: protectedProcedure
     .input(z.object({ aspirationId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+
+      try {
+
+
       const aspiration = await ctx.db.aspiration.findFirst({
         where: {
           id: input.aspirationId,
@@ -176,10 +180,19 @@ export const aspirationRouter = createTRPCRouter({
         },
       });
 
+
       return {
         clusterId: cluster.id,
         behaviors,
       };
+            }
+            catch(error) {
+              console.log('err', error)
+              throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: "生成行为集群失败",
+              });
+            }
     }),
 
   /**

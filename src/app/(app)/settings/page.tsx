@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { CelebrationSettings } from "./_components/celebration-settings";
+import { SoundSettings } from "./_components/sound-settings";
 
 export default function SettingsPage() {
   const { data: session } = useSession();
@@ -239,6 +240,9 @@ export default function SettingsPage() {
 
       {/* 庆祝方式设置 */}
       <CelebrationSettings />
+
+      {/* 音效设置 */}
+      <SoundSettings />
 
       {/* 外观设置 */}
       <Card>

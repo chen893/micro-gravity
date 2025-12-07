@@ -3,9 +3,8 @@
  * 基于福格行为模型，通过影响力 × 可行性矩阵筛选黄金行为
  */
 
-import { generateObject } from "ai";
 import { z } from "zod";
-import { model } from "@/lib/ai/model";
+import { runStructuredTool } from "@/lib/ai/utils";
 
 // 焦点地图象限
 export type FocusQuadrant = "GOLDEN" | "HIGH_IMPACT" | "EASY_WIN" | "AVOID";
@@ -69,8 +68,10 @@ export async function generateBehaviorCluster(
   aspiration: string,
   clarifiedAspiration?: string,
 ): Promise<string[]> {
-  const { object } = await generateObject({
-    model,
+
+  const { behaviors } = await runStructuredTool({
+    toolName: "generate_behavior_cluster",
+    description: "根据用户愿望列出多样化候选行为。",
     schema: z.object({
       behaviors: z
         .array(z.string())
@@ -89,7 +90,7 @@ ${clarifiedAspiration ? `明确后的愿望：${clarifiedAspiration}` : ""}
 不要考虑是否现实，尽量多样化。`,
   });
 
-  return object.behaviors;
+  return behaviors;
 }
 
 /**
@@ -113,8 +114,9 @@ export async function generateFocusMap(
 - 环境条件：${userContext.environment ?? "未知"}`
     : "";
 
-  const { object } = await generateObject({
-    model,
+  return  runStructuredTool({
+    toolName: "generate_focus_map",
+    description: "根据影响力与可行性生成焦点地图。",
     schema: focusMapResultSchema,
     prompt: `作为习惯设计专家，请评估以下行为并创建焦点地图。
 
@@ -138,8 +140,6 @@ ${contextInfo}
 - 影响力：考虑长期效果、与愿望的关联度
 - 可行性：考虑时间、精力、资源、习惯养成难度`,
   });
-
-  return object;
 }
 
 /**
@@ -166,8 +166,9 @@ export async function generateStarterStep(
   behavior: string,
   context?: string,
 ): Promise<{ starterStep: string; explanation: string }> {
-  const { object } = await generateObject({
-    model,
+  return runStructuredTool({
+    toolName: "generate_starter_step",
+    description: "围绕目标行为输出超小的入门动作。",
     schema: z.object({
       starterStep: z
         .string()
@@ -189,8 +190,6 @@ ${context ? `背景：${context}` : ""}
 - 目标"每天阅读" → 入门步骤"打开书放在桌上"
 - 目标"早起" → 入门步骤"把闹钟放在床边"`,
   });
-
-  return object;
 }
 
 /**
@@ -201,8 +200,9 @@ export async function generateScaledBehavior(
   behavior: string,
   context?: string,
 ): Promise<{ scaledBehavior: string; explanation: string }> {
-  const { object } = await generateObject({
-    model,
+  return runStructuredTool({
+    toolName: "generate_scaled_behavior",
+    description: "把目标行为缩到最轻量版本。",
     schema: z.object({
       scaledBehavior: z.string().describe("缩小后的行为：行为本身的最小版本"),
       explanation: z.string().describe("为什么这个缩小版本有效"),
@@ -222,8 +222,6 @@ ${context ? `背景：${context}` : ""}
 - 目标"每天阅读" → 缩小版本"读1页书"
 - 目标"喝8杯水" → 缩小版本"喝1小口水"`,
   });
-
-  return object;
 }
 
 /**
@@ -239,8 +237,9 @@ export async function generateHabitRecipe(params: {
   celebration: string;
   fullRecipe: string;
 }> {
-  const { object } = await generateObject({
-    model,
+  return runStructuredTool({
+    toolName: "generate_habit_recipe",
+    description: "生成锚点、微习惯、庆祝三部分的完整配方。",
     schema: z.object({
       anchor: z.string().describe("锚点行为（已有的日常行为）"),
       behavior: z.string().describe("微习惯（超级小的行为）"),
@@ -261,6 +260,4 @@ ${params.celebration ? `偏好的庆祝方式：${params.celebration}` : ""}
 - 微习惯：非常小，30秒内能完成
 - 庆祝：即时、真诚的情绪表达（如：对自己点头说"不错"）`,
   });
-
-  return object;
 }

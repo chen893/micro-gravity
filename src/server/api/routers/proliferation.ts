@@ -12,7 +12,7 @@ import {
   shouldPromptProliferation,
 } from "@/lib/ai/habit-proliferation";
 import { getDaysAgo, getToday, daysBetween } from "@/lib/utils";
-import { PROLIFERATION_THRESHOLDS, TIME_RANGES } from "@/lib/constants";
+import { TIME_RANGES } from "@/lib/constants";
 
 export const proliferationRouter = createTRPCRouter({
   /**

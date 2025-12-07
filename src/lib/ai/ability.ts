@@ -3,7 +3,7 @@
  * 基于福格行为模型的能力链设计微习惯
  */
 
-import { generateObject } from "ai";
+import { generateObject, Output } from "ai";
 import { ABILITY_ANALYZER_PROMPT } from "./prompts";
 import {
   taskBreakdownSchema,

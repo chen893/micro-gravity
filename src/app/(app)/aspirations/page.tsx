@@ -420,9 +420,20 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
     | undefined;
 
   const focusMapData = latestCluster?.focusMapData as {
-    goldenBehavior?: string;
+    goldenBehavior?:
+      | {
+          name: string;
+          reason?: string;
+          microVersion?: string;
+        }
+      | string;
     summary?: string;
   } | null;
+
+  const goldenBehavior =
+    typeof focusMapData?.goldenBehavior === "string"
+      ? { name: focusMapData.goldenBehavior }
+      : focusMapData?.goldenBehavior;
 
   return (
     <Card>
@@ -485,7 +496,7 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
             )}
 
             {/* 黄金行为推荐 */}
-            {focusMapData?.goldenBehavior && (
+            {goldenBehavior && (
               <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
                 <div className="mb-2 flex items-center gap-2">
                   <Star className="h-5 w-5 text-amber-600" />
@@ -493,10 +504,20 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
                     推荐黄金行为
                   </span>
                 </div>
-                <p className="text-sm">{focusMapData.goldenBehavior}</p>
-                {focusMapData.summary && (
+                <p className="text-sm font-medium">{goldenBehavior.name}</p>
+                {goldenBehavior.microVersion && (
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {goldenBehavior.microVersion}
+                  </p>
+                )}
+                {goldenBehavior.reason && (
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {goldenBehavior.reason}
+                  </p>
+                )}
+                {focusMapData?.summary && (
                   <p className="text-muted-foreground mt-2 text-xs">
-                    {focusMapData.summary}
+                    {focusMapData?.summary}
                   </p>
                 )}
               </div>

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useChat, type UIMessage } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { useSearchParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -21,17 +22,48 @@ import {
   User,
   Loader2,
   CheckCircle2,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const WELCOME_MESSAGE: UIMessage = {
-  id: "1",
-  role: "assistant",
-  parts: [
-    {
-      type: "text",
-      text: `你好！我是你的习惯教练。我会帮助你设计一个科学有效的习惯计划。
+const getWelcomeMessage = (
+  goldenBehavior?: string | null,
+): UIMessage => {
+  if (goldenBehavior) {
+    return {
+      id: "welcome",
+      role: "assistant",
+      parts: [
+        {
+          type: "text",
+          text: `太棒了！你已经选择了黄金行为：
+
+**「${goldenBehavior}」**
+
+这是一个高影响力且可行的行为。现在，让我们把它变成一个**超级容易开始**的微习惯！
+
+根据福格行为模型，有两种方式可以让习惯变得容易做到：
+
+**1. 入门步骤** - 只做准备动作
+   例如："穿上运动鞋" → 比完整运动更容易开始
+
+**2. 缩小规模** - 减少时间/次数/难度
+   例如："做1个俯卧撑" → 比"做50个"更容易坚持
+
+你更倾向于选择哪种方式？或者告诉我你的具体情况，我来帮你设计最合适的微习惯版本。`,
+        },
+      ],
+    };
+  }
+
+  return {
+    id: "welcome",
+    role: "assistant",
+    parts: [
+      {
+        type: "text",
+        text: `你好！我是你的习惯教练。我会帮助你设计一个科学有效的习惯计划。
 
 首先，告诉我：**你想要养成什么习惯，或者戒除什么坏习惯？**
 
@@ -39,23 +71,43 @@ const WELCOME_MESSAGE: UIMessage = {
 - 我想养成每天阅读的习惯
 - 我想戒掉熬夜刷手机的习惯
 - 我想养成早起运动的习惯`,
-    },
-  ],
+      },
+    ],
+  };
 };
 
 export default function NewHabitPage() {
+  const searchParams = useSearchParams();
+  const aspirationId = searchParams.get("aspirationId");
+  const goldenBehavior = searchParams.get("behavior");
+
   const [input, setInput] = useState("");
   const [habitCreated] = useState(false);
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/chat",
+      prepareSendMessagesRequest: ({ messages }) => ({
+        body: {
+          messages,
+          aspirationId,
+          goldenBehavior,
+        },
+      }),
     }),
   });
 
   const isLoading = status === "streaming" || status === "submitted";
 
-  const allMessages = useMemo(() => [WELCOME_MESSAGE, ...messages], [messages]);
+  const welcomeMessage = useMemo(
+    () => getWelcomeMessage(goldenBehavior),
+    [goldenBehavior],
+  );
+
+  const allMessages = useMemo(
+    () => [welcomeMessage, ...messages],
+    [welcomeMessage, messages],
+  );
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,10 +125,20 @@ export default function NewHabitPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">创建新习惯</h2>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold tracking-tight">创建新习惯</h2>
+            {goldenBehavior && (
+              <Badge variant="outline" className="bg-amber-100 text-amber-700 dark:bg-amber-900/30">
+                <Star className="mr-1 h-3 w-3" />
+                黄金行为
+              </Badge>
+            )}
+          </div>
           <p className="text-muted-foreground">
-            与 AI 教练对话，设计适合你的习惯方案
+            {goldenBehavior
+              ? "基于你选择的黄金行为，设计微习惯方案"
+              : "与 AI 教练对话，设计适合你的习惯方案"}
           </p>
         </div>
       </div>

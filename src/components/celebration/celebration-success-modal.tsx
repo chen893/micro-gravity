@@ -17,6 +17,7 @@ import { ConfettiEffect, triggerConfetti } from "./confetti-effect";
 import { CelebrationTimingTip } from "./celebration-timing-guide";
 import { type CelebrationMethod } from "@/lib/celebration/methods";
 import { cn } from "@/lib/utils";
+import { playCelebrationSound } from "@/hooks/use-celebration-sound";
 
 interface CelebrationSuccessModalProps {
   /**
@@ -108,7 +109,7 @@ export function CelebrationSuccessModal({
   const [showConfetti, setShowConfetti] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  // 弹窗打开时触发彩纸动画
+  // 弹窗打开时触发彩纸动画和音效
   useEffect(() => {
     if (open) {
       setShowConfetti(true);
@@ -116,14 +117,17 @@ export function CelebrationSuccessModal({
       setSelectedMethod(undefined);
       setShineScore(undefined);
       setNote("");
+      // 播放庆祝音效（里程碑用不同音效）
+      playCelebrationSound(isMilestone ? "milestone" : "checkin");
     }
-  }, [open]);
+  }, [open, isMilestone]);
 
   // 选择庆祝方式后进入评分步骤
   const handleSelectMethod = useCallback((method: CelebrationMethod) => {
     setSelectedMethod(method);
-    // 再次触发小型彩纸
+    // 再次触发小型彩纸和庆祝音效
     triggerConfetti("normal");
+    playCelebrationSound("celebration");
     // 短暂延迟后进入评分步骤
     setTimeout(() => setStep("rate"), 500);
   }, []);

@@ -13,7 +13,7 @@ import {
 import { z } from "zod";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
-import { HABIT_COACH_SYSTEM_PROMPT } from "@/lib/ai/prompts";
+import { getHabitCoachPrompt } from "@/lib/ai/prompts";
 import { model } from "@/lib/ai/model";
 
 export async function POST(req: Request) {
@@ -28,18 +28,33 @@ export async function POST(req: Request) {
   // 解析请求体
   const requestSchema = z.object({
     messages: z.array(z.custom<UIMessage>()),
+    aspirationId: z.string().optional(),
+    goldenBehavior: z.string().optional(),
   });
-  const { messages } = requestSchema.parse(await req.json());
+  const { messages, aspirationId, goldenBehavior } = requestSchema.parse(
+    await req.json(),
+  );
   console.log("messages", JSON.stringify(messages, null, 2));
   console.log(
     " convertToModelMessages(messages)",
     JSON.stringify(convertToModelMessages(messages), null, 2),
   );
+  console.log("aspirationId:", aspirationId);
+  console.log("goldenBehavior:", goldenBehavior);
+
+  // 根据是否有黄金行为选择不同的系统提示词
+  const systemPrompt = getHabitCoachPrompt(goldenBehavior);
+
   // 创建流式响应
   const result = streamText({
     model,
-    system: HABIT_COACH_SYSTEM_PROMPT,
+    system: systemPrompt,
     messages: convertToModelMessages(messages),
+    providerOptions: {
+      openai: {
+        reasoningEffort : 'none'
+      }, 
+    },
     tools: {
       /**
        * 创建习惯工具

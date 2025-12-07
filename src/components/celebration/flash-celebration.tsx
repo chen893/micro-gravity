@@ -17,6 +17,7 @@ import { ShineScorePicker } from "./shine-score-picker";
 import { triggerConfetti } from "./confetti-effect";
 import { type CelebrationMethod } from "@/lib/celebration/methods";
 import { api } from "@/trpc/react";
+import { playCelebrationSound } from "@/hooks/use-celebration-sound";
 
 interface FlashCelebrationProps {
   /**
@@ -49,6 +50,7 @@ export function FlashCelebration({
   const createMutation = api.celebration.createFlashCelebration.useMutation({
     onSuccess: () => {
       triggerConfetti("normal");
+      playCelebrationSound("checkin");
       setOpen(false);
       resetState();
       setErrorMessage(null);
@@ -82,6 +84,7 @@ export function FlashCelebration({
   const handleSelectMethod = (method: CelebrationMethod) => {
     setSelectedMethod(method);
     triggerConfetti("normal");
+    playCelebrationSound("celebration");
     setTimeout(() => setStep("rate"), 500);
   };
 

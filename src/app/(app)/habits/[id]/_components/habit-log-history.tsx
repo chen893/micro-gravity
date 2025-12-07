@@ -138,7 +138,7 @@ export function HabitLogHistory({
       ? [...initialLogs, ...moreLogsData.logs]
       : initialLogs;
   const hasMore = moreLogsData ? moreLogsData.hasMore : initialHasMore;
-
+  console.log('allLogs', allLogs)
   const loadMore = () => {
     setOffset((prev) => prev + 10);
   };

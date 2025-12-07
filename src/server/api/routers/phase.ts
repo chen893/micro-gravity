@@ -20,7 +20,7 @@ import {
   assessRetreatNeed,
   type HabitLogData as RetreatLogData,
 } from "@/lib/habit/retreat-detection";
-import { parsePhaseConfigs, type PhaseConfigData } from "@/lib/utils";
+import { parsePhaseConfigs } from "@/lib/utils";
 import { ADVANCE_THRESHOLDS, TIME_RANGES } from "@/lib/constants";
 
 // ============ 输入 Schema ============
