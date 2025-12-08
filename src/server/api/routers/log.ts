@@ -6,58 +6,37 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { triggerRecordSchema } from "@/lib/types";
 
 // 完成级别枚举（对应 Prisma CompletionLevel）
 const completionLevelEnum = z.enum(["MINIMUM", "STANDARD", "EXCEEDED"]);
-
-// 情感标志枚举（对应 Prisma EmotionalMarker）
-const emotionalMarkerEnum = z.enum([
-  "BOREDOM",
-  "FRUSTRATION",
-  "AVOIDANCE",
-  "PAIN",
-  "JOY",
-  "PRIDE",
-]);
 
 // 创建打卡记录输入 schema
 const createLogInput = z.object({
   habitId: z.string(),
   loggedAt: z.date().optional(), // 默认今天
   completed: z.boolean(),
-  completionTime: z.date().optional(),
-  durationMinutes: z.number().min(0).optional(),
-  difficultyRating: z.number().min(1).max(5).optional(),
-  moodBefore: z.number().min(1).max(5).optional(),
-  moodAfter: z.number().min(1).max(5).optional(),
-  notes: z.string().optional(),
-  triggerContext: triggerRecordSchema.optional(), // 坏习惯触发记录
-  // v2.0 Phase 7: 弹性打卡字段
   completionLevel: completionLevelEnum.optional(),
   actualBehavior: z.string().optional(),
-  wantedToDoMore: z.boolean().optional(),
+  wantedMore: z.boolean().optional(),
   feltEasy: z.boolean().optional(),
-  emotionalMarker: emotionalMarkerEnum.optional(),
+  shineScore: z.number().min(1).max(5).optional(),
+  moodBefore: z.number().min(1).max(5).optional(),
+  moodAfter: z.number().min(1).max(5).optional(),
+  note: z.string().optional(),
 });
 
 // 更新打卡记录输入 schema
 const updateLogInput = z.object({
   id: z.string(),
   completed: z.boolean().optional(),
-  completionTime: z.date().optional(),
-  durationMinutes: z.number().min(0).optional(),
-  difficultyRating: z.number().min(1).max(5).optional(),
-  moodBefore: z.number().min(1).max(5).optional(),
-  moodAfter: z.number().min(1).max(5).optional(),
-  notes: z.string().optional(),
-  triggerContext: triggerRecordSchema.optional(),
-  // v2.0 Phase 7: 弹性打卡字段
   completionLevel: completionLevelEnum.optional(),
   actualBehavior: z.string().optional(),
-  wantedToDoMore: z.boolean().optional(),
+  wantedMore: z.boolean().optional(),
   feltEasy: z.boolean().optional(),
-  emotionalMarker: emotionalMarkerEnum.optional(),
+  shineScore: z.number().min(1).max(5).optional(),
+  moodBefore: z.number().min(1).max(5).optional(),
+  moodAfter: z.number().min(1).max(5).optional(),
+  note: z.string().optional(),
 });
 
 export const logRouter = createTRPCRouter({
@@ -96,40 +75,28 @@ export const logRouter = createTRPCRouter({
         },
         update: {
           completed: input.completed,
-          completionTime:
-            input.completionTime ?? (input.completed ? new Date() : null),
-          durationMinutes: input.durationMinutes,
-          difficultyRating: input.difficultyRating,
-          moodBefore: input.moodBefore,
-          moodAfter: input.moodAfter,
-          notes: input.notes,
-          triggerContext: input.triggerContext ?? undefined,
-          // v2.0 Phase 7: 弹性打卡字段
           completionLevel: input.completionLevel,
           actualBehavior: input.actualBehavior,
-          wantedToDoMore: input.wantedToDoMore,
+          wantedMore: input.wantedMore,
           feltEasy: input.feltEasy,
-          emotionalMarker: input.emotionalMarker,
+          shineScore: input.shineScore,
+          moodBefore: input.moodBefore,
+          moodAfter: input.moodAfter,
+          note: input.note,
         },
         create: {
           habitId: input.habitId,
           userId: ctx.session.user.id,
           loggedAt: logDate,
           completed: input.completed,
-          completionTime:
-            input.completionTime ?? (input.completed ? new Date() : null),
-          durationMinutes: input.durationMinutes,
-          difficultyRating: input.difficultyRating,
-          moodBefore: input.moodBefore,
-          moodAfter: input.moodAfter,
-          notes: input.notes,
-          triggerContext: input.triggerContext ?? undefined,
-          // v2.0 Phase 7: 弹性打卡字段
           completionLevel: input.completionLevel ?? "MINIMUM",
           actualBehavior: input.actualBehavior,
-          wantedToDoMore: input.wantedToDoMore ?? false,
+          wantedMore: input.wantedMore ?? false,
           feltEasy: input.feltEasy ?? false,
-          emotionalMarker: input.emotionalMarker,
+          shineScore: input.shineScore,
+          moodBefore: input.moodBefore,
+          moodAfter: input.moodAfter,
+          note: input.note,
         },
         include: {
           habit: {
@@ -152,6 +119,7 @@ export const logRouter = createTRPCRouter({
       z.object({
         habitId: z.string(),
         completed: z.boolean().default(true),
+        completionLevel: completionLevelEnum.optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -182,14 +150,14 @@ export const logRouter = createTRPCRouter({
         },
         update: {
           completed: input.completed,
-          completionTime: input.completed ? new Date() : null,
+          completionLevel: input.completionLevel ?? "MINIMUM",
         },
         create: {
           habitId: input.habitId,
           userId: ctx.session.user.id,
           loggedAt: today,
           completed: input.completed,
-          completionTime: input.completed ? new Date() : null,
+          completionLevel: input.completionLevel ?? "MINIMUM",
         },
       });
 
@@ -222,21 +190,21 @@ export const logRouter = createTRPCRouter({
 
       // 检测里程碑
       const MILESTONES = [7, 21, 66, 100] as const;
-      type MilestoneType = "DAY_7" | "DAY_21" | "DAY_66" | "DAY_100";
       let isMilestone = false;
-      let milestoneType: MilestoneType | undefined;
+      let milestoneDay: number | undefined;
 
       if (MILESTONES.includes(streakDays as 7 | 21 | 66 | 100)) {
         isMilestone = true;
-        milestoneType = `DAY_${streakDays}` as MilestoneType;
+        milestoneDay = streakDays;
       }
 
       return {
         log,
         habitName: habit.name,
+        celebration: habit.celebration,
         streakDays,
         isMilestone,
-        milestoneType,
+        milestoneDay,
       };
     }),
 
@@ -380,6 +348,9 @@ export const logRouter = createTRPCRouter({
         id: true,
         name: true,
         type: true,
+        anchor: true,
+        behavior: true,
+        celebration: true,
       },
     });
 
@@ -400,6 +371,9 @@ export const logRouter = createTRPCRouter({
       habitId: habit.id,
       habitName: habit.name,
       habitType: habit.type,
+      anchor: habit.anchor,
+      behavior: habit.behavior,
+      celebration: habit.celebration,
       log: logMap.get(habit.id) ?? null,
       completed: logMap.get(habit.id)?.completed ?? false,
     }));
@@ -418,7 +392,7 @@ export const logRouter = createTRPCRouter({
   }),
 
   /**
-   * 更新打卡记录
+   * 更新打卡记录（添加庆祝信息）
    */
   update: protectedProcedure
     .input(updateLogInput)
@@ -442,37 +416,24 @@ export const logRouter = createTRPCRouter({
         where: { id: input.id },
         data: {
           ...(input.completed !== undefined && { completed: input.completed }),
-          ...(input.completionTime !== undefined && {
-            completionTime: input.completionTime,
-          }),
-          ...(input.durationMinutes !== undefined && {
-            durationMinutes: input.durationMinutes,
-          }),
-          ...(input.difficultyRating !== undefined && {
-            difficultyRating: input.difficultyRating,
-          }),
-          ...(input.moodBefore !== undefined && {
-            moodBefore: input.moodBefore,
-          }),
-          ...(input.moodAfter !== undefined && { moodAfter: input.moodAfter }),
-          ...(input.notes !== undefined && { notes: input.notes }),
-          ...(input.triggerContext !== undefined && {
-            triggerContext: input.triggerContext,
-          }),
-          // v2.0 Phase 7: 弹性打卡字段
           ...(input.completionLevel !== undefined && {
             completionLevel: input.completionLevel,
           }),
           ...(input.actualBehavior !== undefined && {
             actualBehavior: input.actualBehavior,
           }),
-          ...(input.wantedToDoMore !== undefined && {
-            wantedToDoMore: input.wantedToDoMore,
+          ...(input.wantedMore !== undefined && {
+            wantedMore: input.wantedMore,
           }),
           ...(input.feltEasy !== undefined && { feltEasy: input.feltEasy }),
-          ...(input.emotionalMarker !== undefined && {
-            emotionalMarker: input.emotionalMarker,
+          ...(input.shineScore !== undefined && {
+            shineScore: input.shineScore,
           }),
+          ...(input.moodBefore !== undefined && {
+            moodBefore: input.moodBefore,
+          }),
+          ...(input.moodAfter !== undefined && { moodAfter: input.moodAfter }),
+          ...(input.note !== undefined && { note: input.note }),
         },
       });
 
@@ -562,17 +523,12 @@ export const logRouter = createTRPCRouter({
             ) / logsWithMood.length
           : 0;
 
-      // 计算平均难度
-      const logsWithDifficulty = logs.filter(
-        (log) => log.difficultyRating !== null,
-      );
-      const avgDifficulty =
-        logsWithDifficulty.length > 0
-          ? logsWithDifficulty.reduce(
-              (sum, log) => sum + (log.difficultyRating ?? 0),
-              0,
-            ) / logsWithDifficulty.length
-          : 0;
+      // 计算完成级别分布
+      const levelCounts = {
+        MINIMUM: logs.filter((l) => l.completionLevel === "MINIMUM").length,
+        STANDARD: logs.filter((l) => l.completionLevel === "STANDARD").length,
+        EXCEEDED: logs.filter((l) => l.completionLevel === "EXCEEDED").length,
+      };
 
       return {
         period: input.days,
@@ -585,7 +541,7 @@ export const logRouter = createTRPCRouter({
           ...stats,
         })),
         avgMoodChange: Math.round(avgMoodChange * 100) / 100,
-        avgDifficulty: Math.round(avgDifficulty * 100) / 100,
+        levelCounts,
       };
     }),
 });

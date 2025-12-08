@@ -1,8 +1,4 @@
 {
-  "env0": {
-    "ANTHROPIC_MODEL": "claude-4.5-opus-high",
-    "ANTHROPIC_SMALL_FAST_MODEL": "claude-4.5-opus-high"
-  },
   "permissions": {
     "allow": [
       "Bash(pnpm typecheck:*)",
@@ -21,10 +17,17 @@
       "Bash(gh pr list:*)",
       "Bash(where:*)",
       "Bash(del /f *.tmp*)",
-      "Bash(powershell -Command \"gh pr list\")"
+      "Bash(powershell -Command \"gh pr list\")",
+      "WebFetch(domain:python.langchain.com)",
+      "WebSearch",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []
+  },
+  "env0": {
+    "ANTHROPIC_MODEL": "claude-4.5-opus-high",
+    "ANTHROPIC_SMALL_FAST_MODEL": "claude-4.5-opus-high"
   },
   "defaultMode": "acceptEdits"
 }

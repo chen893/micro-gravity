@@ -1,10 +1,11 @@
 /**
  * 日程管理 tRPC 路由
- * 处理日程清单、锚点匹配等 Phase 3 功能
+ * 处理日程清单、锚点匹配等功能
  */
 
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { type Prisma } from "generated/prisma";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import {
   extractRoutineActivities,
@@ -21,6 +22,7 @@ const routineActivitySchema = z.object({
   time: z.string().optional(),
   frequency: z.enum(["DAILY", "WEEKDAYS", "WEEKENDS", "OCCASIONAL"]),
   location: z.string().optional(),
+  timeSlot: z.enum(["MORNING", "WORK", "EVENING", "NIGHT"]).optional(),
 });
 
 // 时段枚举
@@ -31,11 +33,24 @@ export const routineRouter = createTRPCRouter({
    * 获取用户的日程清单
    */
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    const routines = await ctx.db.dailyRoutine.findMany({
+    const routine = await ctx.db.dailyRoutine.findUnique({
       where: { userId: ctx.session.user.id },
     });
 
-    // 转换为按时段分组的格式
+    if (!routine) {
+      return {
+        MORNING: [],
+        WORK: [],
+        EVENING: [],
+        NIGHT: [],
+      };
+    }
+
+    // 从 JSON 转换为按时段分组的格式
+    const activities = routine.activities as unknown as Array<
+      RoutineActivity & { timeSlot?: string }
+    >;
+
     const result: Record<string, RoutineActivity[]> = {
       MORNING: [],
       WORK: [],
@@ -43,9 +58,11 @@ export const routineRouter = createTRPCRouter({
       NIGHT: [],
     };
 
-    for (const routine of routines) {
-      result[routine.timeSlot] =
-        routine.activities as unknown as RoutineActivity[];
+    for (const activity of activities) {
+      const slot = activity.timeSlot ?? "MORNING";
+      if (result[slot]) {
+        result[slot].push(activity);
+      }
     }
 
     return result;
@@ -62,24 +79,41 @@ export const routineRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const routine = await ctx.db.dailyRoutine.upsert({
-        where: {
-          userId_timeSlot: {
-            userId: ctx.session.user.id,
-            timeSlot: input.timeSlot,
-          },
-        },
-        create: {
-          userId: ctx.session.user.id,
-          timeSlot: input.timeSlot,
-          activities: input.activities,
-        },
-        update: {
-          activities: input.activities,
-        },
+      // 获取现有数据
+      const existing = await ctx.db.dailyRoutine.findUnique({
+        where: { userId: ctx.session.user.id },
       });
 
-      return routine;
+      let allActivities: Array<RoutineActivity & { timeSlot?: string }> = [];
+
+      if (existing) {
+        allActivities = existing.activities as unknown as Array<
+          RoutineActivity & { timeSlot?: string }
+        >;
+        // 移除该时段的现有活动
+        allActivities = allActivities.filter(
+          (a) => a.timeSlot !== input.timeSlot,
+        );
+      }
+
+      // 添加新活动，带上时段标记
+      const newActivities = input.activities.map((a) => ({
+        ...a,
+        timeSlot: input.timeSlot,
+      }));
+      allActivities.push(...newActivities);
+
+      // 更新或创建
+      return ctx.db.dailyRoutine.upsert({
+        where: { userId: ctx.session.user.id },
+        create: {
+          userId: ctx.session.user.id,
+          activities: allActivities as unknown as Prisma.InputJsonValue,
+        },
+        update: {
+          activities: allActivities as unknown as Prisma.InputJsonValue,
+        },
+      });
     }),
 
   /**
@@ -92,27 +126,29 @@ export const routineRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const operations = Object.entries(input.routines).map(
-        ([timeSlot, activities]) =>
-          ctx.db.dailyRoutine.upsert({
-            where: {
-              userId_timeSlot: {
-                userId: ctx.session.user.id,
-                timeSlot: timeSlot as "MORNING" | "WORK" | "EVENING" | "NIGHT",
-              },
-            },
-            create: {
-              userId: ctx.session.user.id,
-              timeSlot: timeSlot as "MORNING" | "WORK" | "EVENING" | "NIGHT",
-              activities: activities,
-            },
-            update: {
-              activities: activities,
-            },
-          }),
-      );
+      // 合并所有活动，添加时段标记
+      const allActivities: Array<RoutineActivity & { timeSlot: string }> = [];
 
-      await ctx.db.$transaction(operations);
+      for (const [timeSlot, activities] of Object.entries(input.routines)) {
+        for (const activity of activities) {
+          allActivities.push({
+            ...activity,
+            timeSlot,
+          });
+        }
+      }
+
+      await ctx.db.dailyRoutine.upsert({
+        where: { userId: ctx.session.user.id },
+        create: {
+          userId: ctx.session.user.id,
+          activities: allActivities as unknown as Prisma.InputJsonValue,
+        },
+        update: {
+          activities: allActivities as unknown as Prisma.InputJsonValue,
+        },
+      });
+
       return { success: true };
     }),
 
@@ -146,18 +182,19 @@ export const routineRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // 获取用户的所有日程
-      const routines = await ctx.db.dailyRoutine.findMany({
+      // 获取用户的日程
+      const routine = await ctx.db.dailyRoutine.findUnique({
         where: { userId: ctx.session.user.id },
       });
 
-      // 合并所有活动
-      const allActivities: RoutineActivity[] = [];
-      for (const routine of routines) {
-        allActivities.push(
-          ...(routine.activities as unknown as RoutineActivity[]),
-        );
+      if (!routine) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "请先填写日程清单，才能进行锚点匹配",
+        });
       }
+
+      const allActivities = routine.activities as unknown as RoutineActivity[];
 
       if (allActivities.length === 0) {
         throw new TRPCError({
@@ -207,9 +244,21 @@ export const routineRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const routines = await ctx.db.dailyRoutine.findMany({
+      const routine = await ctx.db.dailyRoutine.findUnique({
         where: { userId: ctx.session.user.id },
       });
+
+      if (!routine) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "请先填写日程清单",
+        });
+      }
+
+      // 按时段分组活动
+      const activities = routine.activities as unknown as Array<
+        RoutineActivity & { timeSlot?: string }
+      >;
 
       const allActivities: Record<string, RoutineActivity[]> = {
         MORNING: [],
@@ -218,9 +267,11 @@ export const routineRouter = createTRPCRouter({
         NIGHT: [],
       };
 
-      for (const routine of routines) {
-        allActivities[routine.timeSlot] =
-          routine.activities as unknown as RoutineActivity[];
+      for (const activity of activities) {
+        const slot = activity.timeSlot ?? "MORNING";
+        if (allActivities[slot]) {
+          allActivities[slot].push(activity);
+        }
       }
 
       const suggestion = await suggestAnchorsFromRoutine({

@@ -22,11 +22,7 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
-import {
-  CelebrationSuccessModal,
-  FloatingFlashCelebration,
-} from "@/components/celebration";
-import { SmartReminders } from "./smart-reminders";
+import { CelebrationSuccessModal } from "@/components/celebration";
 
 export function DashboardContent() {
   const [habits] = api.habit.getActive.useSuspenseQuery();
@@ -110,11 +106,6 @@ export function DashboardContent() {
         </CardContent>
       </Card>
 
-      {/* 智能提醒 */}
-      <SmartReminders />
-
-      {/* 浮动闪电庆祝按钮 */}
-      <FloatingFlashCelebration />
     </div>
   );
 }
@@ -137,7 +128,7 @@ interface CelebrationState {
   habitName: string;
   streakDays: number;
   isMilestone: boolean;
-  milestoneType?: "DAY_7" | "DAY_21" | "DAY_66" | "DAY_100";
+  milestoneDay?: number;
 }
 
 function HabitItem({ habit }: HabitItemProps) {
@@ -162,7 +153,7 @@ function HabitItem({ habit }: HabitItemProps) {
         habitName: data.habitName,
         streakDays: data.streakDays,
         isMilestone: data.isMilestone,
-        milestoneType: data.milestoneType,
+        milestoneDay: data.milestoneDay,
       });
     },
   });
@@ -256,7 +247,7 @@ function HabitItem({ habit }: HabitItemProps) {
         habitName={celebration.habitName}
         streakDays={celebration.streakDays}
         isMilestone={celebration.isMilestone}
-        milestoneType={celebration.milestoneType}
+        milestoneDay={celebration.milestoneDay}
         _logId={celebration.logId}
         onSubmit={handleCelebrationSubmit}
         onSkip={handleCelebrationSkip}

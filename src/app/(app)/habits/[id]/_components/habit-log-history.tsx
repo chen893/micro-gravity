@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
@@ -53,39 +52,38 @@ import {
   Pencil,
   Trash2,
   Loader2,
+  Sparkles,
+  Star,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { toast } from "sonner";
+import { type CompletionLevel } from "generated/prisma";
 
 interface Log {
   id: string;
   loggedAt: Date;
   completed: boolean;
-  completionTime: Date | null;
-  durationMinutes: number | null;
-  difficultyRating: number | null;
+  completionLevel: CompletionLevel;
+  actualBehavior: string | null;
+  wantedMore: boolean | null;
+  feltEasy: boolean | null;
+  shineScore: number | null;
   moodBefore: number | null;
   moodAfter: number | null;
-  notes: string | null;
+  note: string | null;
 }
 
 interface HabitLogHistoryProps {
   logs: Log[];
-  total: number;
   hasMore: boolean;
-  isLoading: boolean;
   habitId: string;
-  habitType: "BUILD" | "BREAK";
 }
 
 export function HabitLogHistory({
   logs: initialLogs,
-  total,
   hasMore: initialHasMore,
-  isLoading,
   habitId,
-  habitType,
 }: HabitLogHistoryProps) {
   const utils = api.useUtils();
   const [offset, setOffset] = useState(10);
@@ -95,11 +93,10 @@ export function HabitLogHistory({
   // 编辑表单状态
   const [editForm, setEditForm] = useState({
     completed: true,
-    durationMinutes: 0,
-    difficultyRating: 3,
+    completionLevel: "STANDARD" as CompletionLevel,
     moodBefore: 3,
     moodAfter: 3,
-    notes: "",
+    note: "",
   });
 
   const { data: moreLogsData, isFetching } = api.log.getByHabit.useQuery(
@@ -138,7 +135,7 @@ export function HabitLogHistory({
       ? [...initialLogs, ...moreLogsData.logs]
       : initialLogs;
   const hasMore = moreLogsData ? moreLogsData.hasMore : initialHasMore;
-  console.log('allLogs', allLogs)
+
   const loadMore = () => {
     setOffset((prev) => prev + 10);
   };
@@ -147,11 +144,10 @@ export function HabitLogHistory({
     setEditingLog(log);
     setEditForm({
       completed: log.completed,
-      durationMinutes: log.durationMinutes ?? 0,
-      difficultyRating: log.difficultyRating ?? 3,
+      completionLevel: log.completionLevel ?? "STANDARD",
       moodBefore: log.moodBefore ?? 3,
       moodAfter: log.moodAfter ?? 3,
-      notes: log.notes ?? "",
+      note: log.note ?? "",
     });
   };
 
@@ -160,11 +156,10 @@ export function HabitLogHistory({
     updateMutation.mutate({
       id: editingLog.id,
       completed: editForm.completed,
-      durationMinutes: editForm.durationMinutes || undefined,
-      difficultyRating: editForm.difficultyRating,
+      completionLevel: editForm.completionLevel,
       moodBefore: editForm.moodBefore,
       moodAfter: editForm.moodAfter,
-      notes: editForm.notes || undefined,
+      note: editForm.note || undefined,
     });
   };
 
@@ -180,35 +175,31 @@ export function HabitLogHistory({
     return <Frown className="h-4 w-4 text-red-500" />;
   };
 
-  const getDifficultyColor = (rating: number | null) => {
-    if (rating === null) return "";
-    if (rating <= 2) return "text-green-600";
-    if (rating <= 3) return "text-amber-600";
-    return "text-red-600";
+  const getCompletionLevelLabel = (level: CompletionLevel) => {
+    switch (level) {
+      case "MINIMUM":
+        return "最小版";
+      case "STANDARD":
+        return "标准版";
+      case "EXCEEDED":
+        return "超额完成";
+      default:
+        return "标准版";
+    }
   };
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">打卡历史</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center justify-between py-2">
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-                <Skeleton className="h-5 w-16" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const getCompletionLevelColor = (level: CompletionLevel) => {
+    switch (level) {
+      case "MINIMUM":
+        return "bg-blue-100 text-blue-700";
+      case "STANDARD":
+        return "bg-green-100 text-green-700";
+      case "EXCEEDED":
+        return "bg-amber-100 text-amber-700";
+      default:
+        return "";
+    }
+  };
 
   if (allLogs.length === 0) {
     return (
@@ -221,9 +212,7 @@ export function HabitLogHistory({
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Calendar className="text-muted-foreground h-12 w-12" />
             <p className="text-muted-foreground mt-4 text-sm">
-              {habitType === "BUILD"
-                ? "完成今天的习惯，开启你的记录之旅"
-                : "记录每一次抵抗冲动的时刻"}
+              完成今天的习惯，开启你的记录之旅
             </p>
           </div>
         </CardContent>
@@ -236,7 +225,7 @@ export function HabitLogHistory({
       <Card>
         <CardHeader>
           <CardTitle className="text-base">打卡历史</CardTitle>
-          <CardDescription>共 {total} 条记录</CardDescription>
+          <CardDescription>最近的打卡记录</CardDescription>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[400px] pr-4">
@@ -267,17 +256,14 @@ export function HabitLogHistory({
                         </span>
                       </div>
                       <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                        {log.completionTime && (
-                          <span>
-                            {format(new Date(log.completionTime), "HH:mm")}
+                        {log.actualBehavior && (
+                          <span className="max-w-[150px] truncate">
+                            {log.actualBehavior}
                           </span>
                         )}
-                        {log.durationMinutes && (
-                          <span>耗时 {log.durationMinutes} 分钟</span>
-                        )}
-                        {log.notes && (
+                        {log.note && (
                           <span className="max-w-[150px] truncate">
-                            {log.notes}
+                            {log.note}
                           </span>
                         )}
                       </div>
@@ -285,6 +271,14 @@ export function HabitLogHistory({
                   </div>
 
                   <div className="flex items-center gap-3">
+                    {/* 发光感评分 */}
+                    {log.shineScore && (
+                      <div className="flex items-center gap-1">
+                        <Sparkles className="h-4 w-4 text-amber-500" />
+                        <span className="text-xs">{log.shineScore}</span>
+                      </div>
+                    )}
+
                     {/* 情绪变化 */}
                     {(log.moodBefore !== null || log.moodAfter !== null) && (
                       <div className="flex items-center gap-1">
@@ -298,25 +292,19 @@ export function HabitLogHistory({
                       </div>
                     )}
 
-                    {/* 难度评分 */}
-                    {log.difficultyRating !== null && (
+                    {/* 完成程度 */}
+                    {log.completed && (
                       <Badge
                         variant="outline"
-                        className={getDifficultyColor(log.difficultyRating)}
+                        className={getCompletionLevelColor(log.completionLevel)}
                       >
-                        难度 {log.difficultyRating}
+                        {getCompletionLevelLabel(log.completionLevel)}
                       </Badge>
                     )}
 
                     {/* 完成状态 */}
                     <Badge variant={log.completed ? "default" : "secondary"}>
-                      {log.completed
-                        ? habitType === "BUILD"
-                          ? "已完成"
-                          : "已坚持"
-                        : habitType === "BUILD"
-                          ? "未完成"
-                          : "复发"}
+                      {log.completed ? "已完成" : "未完成"}
                     </Badge>
 
                     {/* 操作菜单 */}
@@ -398,7 +386,7 @@ export function HabitLogHistory({
                   }
                 >
                   <CheckCircle2 className="mr-1 h-4 w-4" />
-                  {habitType === "BUILD" ? "已完成" : "已坚持"}
+                  已完成
                 </Button>
                 <Button
                   size="sm"
@@ -408,44 +396,37 @@ export function HabitLogHistory({
                   }
                 >
                   <XCircle className="mr-1 h-4 w-4" />
-                  {habitType === "BUILD" ? "未完成" : "复发"}
+                  未完成
                 </Button>
               </div>
             </div>
 
-            {/* 耗时 */}
+            {/* 完成程度 */}
             <div className="space-y-2">
-              <Label>耗时（分钟）</Label>
-              <Input
-                type="number"
-                min={0}
-                value={editForm.durationMinutes}
-                onChange={(e) =>
-                  setEditForm((prev) => ({
-                    ...prev,
-                    durationMinutes: parseInt(e.target.value) || 0,
-                  }))
-                }
-              />
-            </div>
-
-            {/* 难度评分 */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>难度评分</Label>
-                <span className="text-muted-foreground text-sm">
-                  {editForm.difficultyRating}/5
-                </span>
+              <Label>完成程度</Label>
+              <div className="flex gap-2">
+                {(["MINIMUM", "STANDARD", "EXCEEDED"] as CompletionLevel[]).map(
+                  (level) => (
+                    <Button
+                      key={level}
+                      size="sm"
+                      variant={
+                        editForm.completionLevel === level
+                          ? "default"
+                          : "outline"
+                      }
+                      onClick={() =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          completionLevel: level,
+                        }))
+                      }
+                    >
+                      {getCompletionLevelLabel(level)}
+                    </Button>
+                  ),
+                )}
               </div>
-              <Slider
-                value={[editForm.difficultyRating]}
-                onValueChange={([v]) =>
-                  setEditForm((prev) => ({ ...prev, difficultyRating: v ?? 3 }))
-                }
-                min={1}
-                max={5}
-                step={1}
-              />
             </div>
 
             {/* 情绪 */}
@@ -490,9 +471,9 @@ export function HabitLogHistory({
             <div className="space-y-2">
               <Label>备注</Label>
               <Textarea
-                value={editForm.notes}
+                value={editForm.note}
                 onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, notes: e.target.value }))
+                  setEditForm((prev) => ({ ...prev, note: e.target.value }))
                 }
                 placeholder="记录一些心得或感受..."
               />

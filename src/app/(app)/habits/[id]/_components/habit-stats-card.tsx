@@ -1,48 +1,21 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Flame, Target, TrendingUp, Calendar } from "lucide-react";
 
 interface HabitStatsCardProps {
-  stats?: {
+  stats: {
     totalDays: number;
     completedDays: number;
     currentStreak: number;
     longestStreak: number;
     recentRate: number;
-    averageDifficulty: number | null;
     completionRate: number;
   };
-  isLoading: boolean;
-  habitType: "BUILD" | "BREAK";
 }
 
-export function HabitStatsCard({
-  stats,
-  isLoading,
-  habitType,
-}: HabitStatsCardProps) {
-  if (isLoading || !stats) {
-    return (
-      <div className="grid gap-4 md:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-4" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-16" />
-              <Skeleton className="mt-1 h-3 w-24" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  const streakLabel = habitType === "BUILD" ? "连续完成" : "连续坚持";
+export function HabitStatsCard({ stats }: HabitStatsCardProps) {
+  const streakLabel = "连续完成";
 
   const statCards = [
     {

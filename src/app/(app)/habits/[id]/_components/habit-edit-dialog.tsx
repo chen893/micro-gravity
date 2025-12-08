@@ -27,7 +27,7 @@ interface HabitEditDialogProps {
     id: string;
     name: string;
     type: "BUILD" | "BREAK";
-    status: "ACTIVE" | "PAUSED" | "COMPLETED" | "ARCHIVED";
+    status: "ACTIVE" | "PAUSED" | "GRADUATED" | "ARCHIVED";
     description: string | null;
     category: string | null;
   };

@@ -52,81 +52,36 @@ export async function POST(req: Request) {
     messages: convertToModelMessages(messages),
     providerOptions: {
       openai: {
-        reasoningEffort : 'none'
-      }, 
+        reasoningEffort: "none",
+      },
     },
     tools: {
       /**
        * 创建习惯工具
-       * 当 AI 收集完所有必要信息后调用此工具创建习惯
+       * 使用简化的 abc 配方：Anchor + Behavior + Celebration
        */
       createHabit: tool({
         description:
-          "当收集完习惯信息后，创建习惯配置。需要包含名称、类型、动机、能力和提示信息。",
+          "当收集完习惯信息后，创建习惯配置。使用 abc 配方：锚点 + 微行为 + 庆祝。",
         inputSchema: z.object({
           name: z.string().describe("习惯名称"),
           type: z.enum(["BUILD", "BREAK"]).describe("养成(BUILD)或戒除(BREAK)"),
+          description: z.string().optional().describe("习惯描述"),
           category: z
             .string()
             .optional()
             .describe("习惯分类，如健康、学习、工作等"),
-          motivation: z.object({
-            primaryType: z
-              .enum(["PLEASURE", "HOPE", "SOCIAL"])
-              .describe(
-                "主要动机类型：愉悦(PLEASURE)、希望(HOPE)、社会认同(SOCIAL)",
-              ),
-            deepReason: z.string().describe("深层原因：用户为什么想要这个习惯"),
-            visionStatement: z
-              .string()
-              .describe("愿景声明：达成目标后的场景描述"),
-            painPoints: z
-              .array(z.string())
-              .optional()
-              .describe("痛点：当前困扰用户的问题"),
-            motivationScore: z
-              .number()
-              .min(1)
-              .max(10)
-              .describe("当前动机强度 1-10"),
-          }),
-          ability: z.object({
-            currentLevel: z.string().describe("当前水平：用户现在的状态"),
-            targetLevel: z.string().describe("目标水平：用户想达到的状态"),
-            microHabit: z
-              .string()
-              .describe("微习惯定义：2分钟内可完成的最小行动"),
-            difficultyScore: z
-              .number()
-              .min(1)
-              .max(10)
-              .describe("预估难度 1-10"),
-            barriers: z
-              .array(z.string())
-              .optional()
-              .describe("障碍：可能阻碍完成的因素"),
-            simplificationTips: z
-              .array(z.string())
-              .optional()
-              .describe("简化建议：如何让习惯更容易执行"),
-          }),
-          prompt: z.object({
-            anchorHabit: z.string().describe("锚定习惯：新习惯附着的已有习惯"),
-            triggerType: z
-              .enum(["SIGNAL", "FACILITATOR", "SPARK"])
-              .describe(
-                "触发类型：信号型(SIGNAL)、便利型(FACILITATOR)、火花型(SPARK)",
-              ),
-            preferredTime: z.string().describe("偏好时间：最佳执行时间"),
-            contextCues: z
-              .array(z.string())
-              .optional()
-              .describe("情境线索：触发习惯的环境因素"),
-            reminderStyle: z
-              .enum(["GENTLE", "FIRM", "PLAYFUL"])
-              .optional()
-              .describe("提醒风格：温和(GENTLE)、坚定(FIRM)、有趣(PLAYFUL)"),
-          }),
+          anchor: z
+            .string()
+            .describe("锚点习惯：新习惯附着的已有习惯，如「刷完牙后」"),
+          behavior: z
+            .string()
+            .describe("微行为：2分钟内可完成的最小行动，如「做2个俯卧撑」"),
+          celebration: z
+            .string()
+            .optional()
+            .describe("庆祝方式：完成后的即时庆祝，如「对自己说太棒了」"),
+          aspirationId: z.string().optional().describe("关联的愿望ID"),
         }),
         execute: async (habitConfig) => {
           try {
@@ -136,10 +91,12 @@ export async function POST(req: Request) {
                 userId: userId,
                 name: habitConfig.name,
                 type: habitConfig.type,
+                description: habitConfig.description,
                 category: habitConfig.category,
-                motivation: habitConfig.motivation,
-                ability: habitConfig.ability,
-                prompt: habitConfig.prompt,
+                anchor: habitConfig.anchor,
+                behavior: habitConfig.behavior,
+                celebration: habitConfig.celebration,
+                aspirationId: habitConfig.aspirationId ?? aspirationId,
               },
             });
 
@@ -167,7 +124,7 @@ export async function POST(req: Request) {
         description: "获取用户当前的习惯列表，了解用户已有的习惯情况",
         inputSchema: z.object({
           status: z
-            .enum(["ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"])
+            .enum(["ACTIVE", "PAUSED", "GRADUATED", "ARCHIVED"])
             .optional()
             .describe("按状态筛选习惯"),
         }),
@@ -185,6 +142,9 @@ export async function POST(req: Request) {
                 category: true,
                 status: true,
                 currentPhase: true,
+                anchor: true,
+                behavior: true,
+                celebration: true,
                 createdAt: true,
               },
               orderBy: { createdAt: "desc" },
@@ -214,12 +174,13 @@ export async function POST(req: Request) {
         inputSchema: z.object({
           habitId: z.string().describe("习惯ID"),
           completed: z.boolean().describe("是否完成"),
-          difficultyRating: z
-            .number()
-            .min(1)
-            .max(5)
+          completionLevel: z
+            .enum(["MINIMUM", "STANDARD", "EXCEEDED"])
             .optional()
-            .describe("难度评分 1-5"),
+            .describe("完成程度：最小(MINIMUM)、标准(STANDARD)、超额(EXCEEDED)"),
+          actualBehavior: z.string().optional().describe("实际执行的行为"),
+          wantedMore: z.boolean().optional().describe("是否想做更多"),
+          feltEasy: z.boolean().optional().describe("是否感觉轻松"),
           moodBefore: z
             .number()
             .min(1)
@@ -232,15 +193,18 @@ export async function POST(req: Request) {
             .max(5)
             .optional()
             .describe("执行后情绪 1-5"),
-          notes: z.string().optional().describe("备注"),
+          note: z.string().optional().describe("备注"),
         }),
         execute: async ({
           habitId,
           completed,
-          difficultyRating,
+          completionLevel,
+          actualBehavior,
+          wantedMore,
+          feltEasy,
           moodBefore,
           moodAfter,
-          notes,
+          note,
         }) => {
           try {
             // 验证习惯属于当前用户
@@ -271,22 +235,26 @@ export async function POST(req: Request) {
               },
               update: {
                 completed,
-                completionTime: completed ? new Date() : null,
-                difficultyRating,
+                completionLevel: completionLevel ?? "STANDARD",
+                actualBehavior,
+                wantedMore,
+                feltEasy,
                 moodBefore,
                 moodAfter,
-                notes,
+                note,
               },
               create: {
                 habitId: habitId,
                 userId: userId,
                 loggedAt: today,
                 completed,
-                completionTime: completed ? new Date() : null,
-                difficultyRating,
+                completionLevel: completionLevel ?? "STANDARD",
+                actualBehavior,
+                wantedMore,
+                feltEasy,
                 moodBefore,
                 moodAfter,
-                notes,
+                note,
               },
             });
 

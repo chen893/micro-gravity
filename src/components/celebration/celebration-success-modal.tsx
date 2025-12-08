@@ -41,9 +41,9 @@ interface CelebrationSuccessModalProps {
    */
   isMilestone?: boolean;
   /**
-   * 里程碑类型
+   * 里程碑天数
    */
-  milestoneType?: "DAY_7" | "DAY_21" | "DAY_66" | "DAY_100";
+  milestoneDay?: number;
   /**
    * 打卡记录ID（用于记录庆祝）
    */
@@ -96,7 +96,7 @@ export function CelebrationSuccessModal({
   habitName,
   streakDays,
   isMilestone = false,
-  milestoneType,
+  milestoneDay,
   _logId,
   onSubmit,
   onSkip,
@@ -156,8 +156,8 @@ export function CelebrationSuccessModal({
     onClose();
   };
 
-  const milestoneConfig = milestoneType
-    ? MILESTONE_CONFIG[milestoneType]
+  const milestoneConfig = milestoneDay
+    ? MILESTONE_CONFIG[`DAY_${milestoneDay}` as keyof typeof MILESTONE_CONFIG]
     : null;
 
   return (

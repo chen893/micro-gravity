@@ -39,7 +39,7 @@ interface HabitHeaderProps {
     id: string;
     name: string;
     type: "BUILD" | "BREAK";
-    status: "ACTIVE" | "PAUSED" | "COMPLETED" | "ARCHIVED";
+    status: "ACTIVE" | "PAUSED" | "GRADUATED" | "ARCHIVED";
     description: string | null;
     category: string | null;
   };
@@ -82,7 +82,7 @@ export function HabitHeader({ habit }: HabitHeaderProps) {
   const statusConfig = {
     ACTIVE: { label: "进行中", variant: "default" as const },
     PAUSED: { label: "已暂停", variant: "secondary" as const },
-    COMPLETED: { label: "已完成", variant: "outline" as const },
+    GRADUATED: { label: "已毕业", variant: "outline" as const },
     ARCHIVED: { label: "已归档", variant: "outline" as const },
   };
 

@@ -1,10 +1,11 @@
 /**
  * 愿望管理 tRPC 路由
- * 处理愿望创建、行为集群生成、焦点地图等 Phase 2 功能
+ * 处理愿望创建、行为探索、焦点地图等功能
  */
 
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { type Prisma } from "generated/prisma";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import {
   generateBehaviorCluster,
@@ -13,19 +14,28 @@ import {
   generateScaledBehavior,
   generateHabitRecipe,
 } from "@/lib/ai/focus-map";
-import { analyzeDemotivators } from "@/lib/ai/demotivator-analysis";
 
-// 行为评估 schema (保留用于未来验证)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _behaviorAssessmentSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  impactScore: z.number().min(1).max(10),
-  feasibilityScore: z.number().min(1).max(10),
-  quadrant: z.enum(["GOLDEN", "HIGH_IMPACT", "EASY_WIN", "AVOID"]),
-  recommendation: z.string(),
-  isSelected: z.boolean().optional(),
-});
+// 探索数据类型定义
+interface ExplorationData {
+  behaviors: Array<{
+    name: string;
+    description: string;
+  }>;
+  focusMap?: Array<{
+    name: string;
+    description: string;
+    impactScore: number;
+    feasibilityScore: number;
+    quadrant: "GOLDEN" | "HIGH_IMPACT" | "EASY_WIN" | "AVOID";
+    recommendation: string;
+  }>;
+  goldenBehavior?: {
+    name: string;
+    microVersion: string;
+    reason: string;
+  };
+  summary?: string;
+}
 
 export const aspirationRouter = createTRPCRouter({
   /**
@@ -44,6 +54,7 @@ export const aspirationRouter = createTRPCRouter({
           userId: ctx.session.user.id,
           description: input.description,
           category: input.category,
+          status: "EXPLORING",
         },
       });
 
@@ -62,7 +73,6 @@ export const aspirationRouter = createTRPCRouter({
         _count: {
           select: {
             habits: true,
-            behaviorClusters: true,
           },
         },
       },
@@ -84,10 +94,6 @@ export const aspirationRouter = createTRPCRouter({
           userId: ctx.session.user.id,
         },
         include: {
-          behaviorClusters: {
-            orderBy: { createdAt: "desc" },
-            take: 1,
-          },
           habits: {
             where: { status: "ACTIVE" },
           },
@@ -141,58 +147,53 @@ export const aspirationRouter = createTRPCRouter({
   generateBehaviors: protectedProcedure
     .input(z.object({ aspirationId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-
       try {
-
-
-      const aspiration = await ctx.db.aspiration.findFirst({
-        where: {
-          id: input.aspirationId,
-          userId: ctx.session.user.id,
-        },
-      });
-
-      if (!aspiration) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "愿望不存在",
+        const aspiration = await ctx.db.aspiration.findFirst({
+          where: {
+            id: input.aspirationId,
+            userId: ctx.session.user.id,
+          },
         });
-      }
 
-      // 调用 AI 生成行为列表
-      const behaviors = await generateBehaviorCluster(
-        aspiration.description,
-        aspiration.clarified ?? undefined,
-      );
+        if (!aspiration) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "愿望不存在",
+          });
+        }
 
-      // 创建行为集群记录
-      const cluster = await ctx.db.behaviorCluster.create({
-        data: {
-          aspirationId: aspiration.id,
+        // 调用 AI 生成行为列表
+        const behaviors = await generateBehaviorCluster(
+          aspiration.description,
+          aspiration.clarified ?? undefined,
+        );
+
+        // 存储到 explorationData
+        const explorationData: ExplorationData = {
           behaviors: behaviors.map((name) => ({
             name,
             description: "",
-            impactScore: 0,
-            feasibilityScore: 0,
-            quadrant: "AVOID" as const,
-            isSelected: false,
           })),
-        },
-      });
+        };
 
+        await ctx.db.aspiration.update({
+          where: { id: aspiration.id },
+          data: {
+            explorationData: explorationData as unknown as Prisma.InputJsonValue,
+          },
+        });
 
-      return {
-        clusterId: cluster.id,
-        behaviors,
-      };
-            }
-            catch(error) {
-              console.log('err', error)
-              throw new TRPCError({
-                code: "INTERNAL_SERVER_ERROR",
-                message: "生成行为集群失败",
-              });
-            }
+        return {
+          aspirationId: aspiration.id,
+          behaviors,
+        };
+      } catch (error) {
+        console.log("err", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "生成行为集群失败",
+        });
+      }
     }),
 
   /**
@@ -202,7 +203,6 @@ export const aspirationRouter = createTRPCRouter({
     .input(
       z.object({
         aspirationId: z.string(),
-        clusterId: z.string(),
         userContext: z
           .object({
             currentAbility: z.string().optional(),
@@ -227,23 +227,16 @@ export const aspirationRouter = createTRPCRouter({
         });
       }
 
-      const cluster = await ctx.db.behaviorCluster.findFirst({
-        where: {
-          id: input.clusterId,
-          aspirationId: input.aspirationId,
-        },
-      });
-
-      if (!cluster) {
+      const currentData = aspiration.explorationData as ExplorationData | null;
+      if (!currentData?.behaviors?.length) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "行为集群不存在",
+          code: "BAD_REQUEST",
+          message: "请先生成行为集群",
         });
       }
 
-      // 从集群中提取行为名称
-      const behaviorsData = cluster.behaviors as Array<{ name: string }>;
-      const behaviorNames = behaviorsData.map((b) => b.name);
+      // 从已有数据中提取行为名称
+      const behaviorNames = currentData.behaviors.map((b) => b.name);
 
       // 调用 AI 生成焦点地图
       const focusMapResult = await generateFocusMap(
@@ -252,71 +245,22 @@ export const aspirationRouter = createTRPCRouter({
         input.userContext,
       );
 
-      // 更新行为集群数据
-      await ctx.db.behaviorCluster.update({
-        where: { id: input.clusterId },
+      // 更新 explorationData
+      const updatedData: ExplorationData = {
+        ...currentData,
+        focusMap: focusMapResult.behaviors,
+        goldenBehavior: focusMapResult.goldenBehavior,
+        summary: focusMapResult.summary,
+      };
+
+      await ctx.db.aspiration.update({
+        where: { id: input.aspirationId },
         data: {
-          behaviors: focusMapResult.behaviors.map((b) => ({
-            ...b,
-            isSelected: false,
-          })),
-          focusMapData: {
-            goldenBehavior: focusMapResult.goldenBehavior,
-            summary: focusMapResult.summary,
-          },
-          aiSuggestions: focusMapResult.summary,
+          explorationData: updatedData as unknown as Prisma.InputJsonValue,
         },
       });
 
       return focusMapResult;
-    }),
-
-  /**
-   * 选择黄金行为
-   */
-  selectBehavior: protectedProcedure
-    .input(
-      z.object({
-        clusterId: z.string(),
-        behaviorName: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const cluster = await ctx.db.behaviorCluster.findFirst({
-        where: {
-          id: input.clusterId,
-          aspiration: {
-            userId: ctx.session.user.id,
-          },
-        },
-        include: {
-          aspiration: true,
-        },
-      });
-
-      if (!cluster) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "行为集群不存在",
-        });
-      }
-
-      // 更新选中状态
-      const behaviorsData = cluster.behaviors as Array<{
-        name: string;
-        isSelected?: boolean;
-      }>;
-      const updatedBehaviors = behaviorsData.map((b) => ({
-        ...b,
-        isSelected: b.name === input.behaviorName,
-      }));
-
-      await ctx.db.behaviorCluster.update({
-        where: { id: input.clusterId },
-        data: { behaviors: updatedBehaviors },
-      });
-
-      return { success: true, selectedBehavior: input.behaviorName };
     }),
 
   /**
@@ -373,40 +317,18 @@ export const aspirationRouter = createTRPCRouter({
     }),
 
   /**
-   * 分析去激励因素
-   */
-  analyzeDemotivators: protectedProcedure
-    .input(
-      z.object({
-        habitName: z.string(),
-        userConcerns: z.string(),
-        pastAttempts: z.string().optional(),
-      }),
-    )
-    .mutation(async ({ input }) => {
-      const result = await analyzeDemotivators({
-        habitName: input.habitName,
-        userConcerns: input.userConcerns,
-        pastAttempts: input.pastAttempts,
-      });
-      return result;
-    }),
-
-  /**
    * 从愿望创建习惯（完整流程）
    */
   createHabitFromAspiration: protectedProcedure
     .input(
       z.object({
         aspirationId: z.string(),
-        behaviorName: z.string(),
-        behaviorDescription: z.string().optional(),
-        easyStrategy: z.enum(["STARTER_STEP", "SCALE_DOWN"]),
-        starterStep: z.string().optional(),
-        scaledBehavior: z.string().optional(),
-        recipeAnchor: z.string(),
-        recipeBehavior: z.string(),
-        recipeCelebration: z.string(),
+        name: z.string(),
+        description: z.string().optional(),
+        anchor: z.string(),
+        behavior: z.string(),
+        celebration: z.string().optional(),
+        category: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -430,63 +352,89 @@ export const aspirationRouter = createTRPCRouter({
           userId: ctx.session.user.id,
           aspirationId: input.aspirationId,
           type: "BUILD",
-          name: input.behaviorName,
-          description: input.behaviorDescription,
-          easyStrategy: input.easyStrategy,
-          starterStep: input.starterStep,
-          scaledBehavior: input.scaledBehavior,
-          recipeAnchor: input.recipeAnchor,
-          recipeBehavior: input.recipeBehavior,
-          recipeCelebration: input.recipeCelebration,
-          // 默认 MAP 数据
-          motivation: {
-            primaryType: "INTRINSIC",
-            deepReason: aspiration.clarified ?? aspiration.description,
-            visionStatement: `实现「${aspiration.description}」的愿望`,
-            motivationScore: 7,
-          },
-          ability: {
-            currentLevel: 3,
-            targetLevel: 8,
-            microHabit: input.scaledBehavior ?? input.recipeBehavior,
-            difficultyScore: 3,
-          },
-          prompt: {
-            anchorHabit: input.recipeAnchor,
-            triggerType: "EXISTING_HABIT",
-            preferredTime: "ANY",
-          },
+          name: input.name,
+          description: input.description,
+          category: input.category ?? aspiration.category,
+          anchor: input.anchor,
+          behavior: input.behavior,
+          celebration: input.celebration,
         },
+      });
+
+      // 更新愿望状态为进行中
+      await ctx.db.aspiration.update({
+        where: { id: input.aspirationId },
+        data: { status: "ACTIVE" },
       });
 
       return habit;
     }),
 
   /**
-   * 记录配方演练
+   * 更新愿望状态
    */
-  recordRehearsal: protectedProcedure
-    .input(z.object({ habitId: z.string() }))
+  updateStatus: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        status: z.enum(["EXPLORING", "ACTIVE", "ACHIEVED", "ABANDONED"]),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
-      const habit = await ctx.db.habit.findFirst({
+      const aspiration = await ctx.db.aspiration.findFirst({
         where: {
-          id: input.habitId,
+          id: input.id,
           userId: ctx.session.user.id,
         },
       });
 
-      if (!habit) {
+      if (!aspiration) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "习惯不存在",
+          message: "愿望不存在",
         });
       }
 
-      return ctx.db.habit.update({
-        where: { id: input.habitId },
+      return ctx.db.aspiration.update({
+        where: { id: input.id },
         data: {
-          rehearsalCount: { increment: 1 },
-          rehearsedAt: new Date(),
+          status: input.status,
+          achievedAt: input.status === "ACHIEVED" ? new Date() : null,
+        },
+      });
+    }),
+
+  /**
+   * 更新愿望进度
+   */
+  updateProgress: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        progress: z.number().min(0).max(100),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const aspiration = await ctx.db.aspiration.findFirst({
+        where: {
+          id: input.id,
+          userId: ctx.session.user.id,
+        },
+      });
+
+      if (!aspiration) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "愿望不存在",
+        });
+      }
+
+      return ctx.db.aspiration.update({
+        where: { id: input.id },
+        data: {
+          progress: input.progress,
+          status: input.progress >= 100 ? "ACHIEVED" : aspiration.status,
+          achievedAt: input.progress >= 100 ? new Date() : null,
         },
       });
     }),

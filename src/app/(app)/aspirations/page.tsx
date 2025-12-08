@@ -47,7 +47,6 @@ import {
   Trash2,
   Wand2,
   Target,
-  CheckCircle,
   Loader2,
   Sparkles,
   ChevronRight,
@@ -57,6 +56,32 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import Link from "next/link";
+
+// 探索数据类型
+interface BaseBehavior {
+  name: string;
+  description: string;
+}
+
+interface FocusMapBehavior extends BaseBehavior {
+  impactScore: number;
+  feasibilityScore: number;
+  quadrant: "GOLDEN" | "HIGH_IMPACT" | "EASY_WIN" | "AVOID";
+  recommendation: string;
+}
+
+type BehaviorItem = BaseBehavior | FocusMapBehavior;
+
+interface ExplorationData {
+  behaviors: BaseBehavior[];
+  focusMap?: FocusMapBehavior[];
+  goldenBehavior?: {
+    name: string;
+    microVersion: string;
+    reason: string;
+  };
+  summary?: string;
+}
 
 const QUADRANT_CONFIG: Record<
   string,
@@ -83,6 +108,13 @@ const QUADRANT_CONFIG: Record<
     description: "需要进一步分析",
   },
 };
+
+// 类型守卫函数
+function isFocusMapBehavior(
+  behavior: BehaviorItem,
+): behavior is FocusMapBehavior {
+  return "quadrant" in behavior;
+}
 
 export default function AspirationsPage() {
   const utils = api.useUtils();
@@ -230,20 +262,102 @@ export default function AspirationsPage() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {aspirations.map((aspiration) => (
-            <AspirationCard
-              key={aspiration.id}
-              aspiration={aspiration}
-              isSelected={selectedAspiration === aspiration.id}
-              onSelect={() =>
-                setSelectedAspiration(
-                  selectedAspiration === aspiration.id ? null : aspiration.id,
-                )
-              }
-              onDelete={() => deleteMutation.mutate({ id: aspiration.id })}
-              isDeleting={deleteMutation.isPending}
-            />
-          ))}
+          {aspirations.map((aspiration) => {
+            const explorationData =
+              aspiration.explorationData as ExplorationData | null;
+            const hasExploration = !!explorationData?.behaviors?.length;
+            return (
+              <Card
+                key={aspiration.id}
+                className={`cursor-pointer transition-all ${
+                  selectedAspiration === aspiration.id
+                    ? "ring-primary ring-2"
+                    : "hover:shadow-md"
+                }`}
+                onClick={() =>
+                  setSelectedAspiration(
+                    selectedAspiration === aspiration.id ? null : aspiration.id,
+                  )
+                }
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="line-clamp-2 text-base">
+                        {aspiration.description}
+                      </CardTitle>
+                      {aspiration.category && (
+                        <Badge variant="outline" className="mt-1">
+                          {aspiration.category}
+                        </Badge>
+                      )}
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive h-8 w-8"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>确认删除</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            删除后无法恢复，相关的行为探索数据也将被删除。
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>取消</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteMutation.mutate({ id: aspiration.id });
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            {deleteMutation.isPending && (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
+                            删除
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {aspiration.clarified && (
+                    <p className="text-muted-foreground mb-2 line-clamp-2 text-sm">
+                      {aspiration.clarified}
+                    </p>
+                  )}
+                  <div className="text-muted-foreground flex items-center gap-4 text-xs">
+                    <span>
+                      {format(new Date(aspiration.createdAt), "M月d日", {
+                        locale: zhCN,
+                      })}
+                    </span>
+                    {aspiration._count.habits > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Target className="h-3 w-3" />
+                        {aspiration._count.habits} 个习惯
+                      </span>
+                    )}
+                    {hasExploration && (
+                      <span className="flex items-center gap-1">
+                        <Map className="h-3 w-3" />
+                        已探索
+                      </span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -252,113 +366,6 @@ export default function AspirationsPage() {
         <AspirationDetail aspirationId={selectedAspiration} />
       )}
     </div>
-  );
-}
-
-function AspirationCard({
-  aspiration,
-  isSelected,
-  onSelect,
-  onDelete,
-  isDeleting,
-}: {
-  aspiration: {
-    id: string;
-    description: string;
-    clarified: string | null;
-    category: string | null;
-    createdAt: Date;
-    _count: {
-      habits: number;
-      behaviorClusters: number;
-    };
-  };
-  isSelected: boolean;
-  onSelect: () => void;
-  onDelete: () => void;
-  isDeleting: boolean;
-}) {
-  return (
-    <Card
-      className={`cursor-pointer transition-all ${
-        isSelected ? "ring-primary ring-2" : "hover:shadow-md"
-      }`}
-      onClick={onSelect}
-    >
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="line-clamp-2 text-base">
-              {aspiration.description}
-            </CardTitle>
-            {aspiration.category && (
-              <Badge variant="outline" className="mt-1">
-                {aspiration.category}
-              </Badge>
-            )}
-          </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-destructive h-8 w-8"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>确认删除</AlertDialogTitle>
-                <AlertDialogDescription>
-                  删除后无法恢复，相关的行为探索数据也将被删除。
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>取消</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete();
-                  }}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  {isDeleting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  删除
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {aspiration.clarified && (
-          <p className="text-muted-foreground mb-2 line-clamp-2 text-sm">
-            {aspiration.clarified}
-          </p>
-        )}
-        <div className="text-muted-foreground flex items-center gap-4 text-xs">
-          <span>
-            {format(new Date(aspiration.createdAt), "M月d日", { locale: zhCN })}
-          </span>
-          {aspiration._count.habits > 0 && (
-            <span className="flex items-center gap-1">
-              <Target className="h-3 w-3" />
-              {aspiration._count.habits} 个习惯
-            </span>
-          )}
-          {aspiration._count.behaviorClusters > 0 && (
-            <span className="flex items-center gap-1">
-              <Map className="h-3 w-3" />
-              已探索
-            </span>
-          )}
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 
@@ -389,15 +396,6 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
     onError: () => toast.error("生成失败"),
   });
 
-  // 选择行为
-  const selectBehaviorMutation = api.aspiration.selectBehavior.useMutation({
-    onSuccess: () => {
-      toast.success("已选择行为");
-      void utils.aspiration.getById.invalidate({ id: aspirationId });
-    },
-    onError: () => toast.error("选择失败"),
-  });
-
   if (isLoading) {
     return <Skeleton className="h-64" />;
   }
@@ -406,34 +404,10 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
     return null;
   }
 
-  const latestCluster = aspiration.behaviorClusters[0];
-  const behaviors = latestCluster?.behaviors as
-    | Array<{
-        name: string;
-        description?: string;
-        impactScore?: number;
-        feasibilityScore?: number;
-        quadrant?: string;
-        recommendation?: string;
-        isSelected?: boolean;
-      }>
-    | undefined;
-
-  const focusMapData = latestCluster?.focusMapData as {
-    goldenBehavior?:
-      | {
-          name: string;
-          reason?: string;
-          microVersion?: string;
-        }
-      | string;
-    summary?: string;
-  } | null;
-
-  const goldenBehavior =
-    typeof focusMapData?.goldenBehavior === "string"
-      ? { name: focusMapData.goldenBehavior }
-      : focusMapData?.goldenBehavior;
+  const explorationData = aspiration.explorationData as ExplorationData | null;
+  const behaviors = explorationData?.behaviors ?? [];
+  const focusMap = explorationData?.focusMap;
+  const goldenBehavior = explorationData?.goldenBehavior;
 
   return (
     <Card>
@@ -446,7 +420,7 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* 步骤 1: 生成行为集群 */}
-        {!latestCluster && (
+        {behaviors.length === 0 && (
           <div className="rounded-lg border border-dashed p-6 text-center">
             <Wand2 className="text-muted-foreground mx-auto h-8 w-8" />
             <p className="mt-2 font-medium">魔法棒探索</p>
@@ -472,17 +446,16 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
         )}
 
         {/* 步骤 2: 行为列表和焦点地图 */}
-        {latestCluster && behaviors && (
+        {behaviors.length > 0 && (
           <div className="space-y-4">
             {/* 焦点地图按钮 */}
-            {!focusMapData && (
+            {!focusMap && (
               <Button
                 variant="outline"
                 className="w-full"
                 onClick={() =>
                   generateFocusMapMutation.mutate({
                     aspirationId: aspiration.id,
-                    clusterId: latestCluster.id,
                   })
                 }
                 disabled={generateFocusMapMutation.isPending}
@@ -507,7 +480,7 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
                 <p className="text-sm font-medium">{goldenBehavior.name}</p>
                 {goldenBehavior.microVersion && (
                   <p className="text-muted-foreground mt-1 text-xs">
-                    {goldenBehavior.microVersion}
+                    微习惯版本：{goldenBehavior.microVersion}
                   </p>
                 )}
                 {goldenBehavior.reason && (
@@ -515,11 +488,19 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
                     {goldenBehavior.reason}
                   </p>
                 )}
-                {focusMapData?.summary && (
+                {explorationData?.summary && (
                   <p className="text-muted-foreground mt-2 text-xs">
-                    {focusMapData?.summary}
+                    {explorationData.summary}
                   </p>
                 )}
+                <Button asChild size="sm" className="mt-3">
+                  <Link
+                    href={`/habits/new?aspirationId=${aspiration.id}&behavior=${encodeURIComponent(goldenBehavior.name)}`}
+                  >
+                    <ChevronRight className="mr-1 h-4 w-4" />
+                    基于此创建习惯
+                  </Link>
+                </Button>
               </div>
             )}
 
@@ -527,97 +508,69 @@ function AspirationDetail({ aspirationId }: { aspirationId: string }) {
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="behaviors">
                 <AccordionTrigger>
-                  查看所有行为（{behaviors.length}个）
+                  查看所有行为（{focusMap?.length ?? behaviors.length}个）
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-2">
-                    {behaviors.map((behavior, index) => {
-                      const quadrantConfig =
-                        QUADRANT_CONFIG[behavior.quadrant ?? "AVOID"];
-                      return (
-                        <div
-                          key={index}
-                          className={`flex items-center justify-between rounded-lg border p-3 ${
-                            behavior.isSelected ? "ring-primary ring-2" : ""
-                          }`}
-                        >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">
-                                {behavior.name}
-                              </span>
-                              {behavior.quadrant && (
-                                <Badge
-                                  variant="outline"
-                                  className={quadrantConfig?.color}
-                                >
-                                  {quadrantConfig?.label}
-                                </Badge>
-                              )}
-                              {behavior.isSelected && (
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                              )}
-                            </div>
-                            {behavior.recommendation && (
-                              <p className="text-muted-foreground mt-1 text-xs">
-                                {behavior.recommendation}
-                              </p>
-                            )}
-                            {behavior.impactScore !== undefined && (
-                              <div className="text-muted-foreground mt-2 flex gap-4 text-xs">
-                                <span>影响力: {behavior.impactScore}/10</span>
-                                <span>
-                                  可行性: {behavior.feasibilityScore}/10
+                    {(focusMap ?? behaviors).map(
+                      (behavior: BehaviorItem, index: number) => {
+                        const isFocusMap = isFocusMapBehavior(behavior);
+                        const quadrant = isFocusMap
+                          ? behavior.quadrant
+                          : undefined;
+                        const quadrantConfig =
+                          QUADRANT_CONFIG[quadrant ?? "AVOID"];
+                        return (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between rounded-lg border p-3"
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">
+                                  {behavior.name}
                                 </span>
+                                {quadrant && (
+                                  <Badge
+                                    variant="outline"
+                                    className={quadrantConfig?.color}
+                                  >
+                                    {quadrantConfig?.label}
+                                  </Badge>
+                                )}
                               </div>
-                            )}
-                          </div>
-                          {!behavior.isSelected && latestCluster && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                selectBehaviorMutation.mutate({
-                                  clusterId: latestCluster.id,
-                                  behaviorName: behavior.name,
-                                })
-                              }
-                              disabled={selectBehaviorMutation.isPending}
-                            >
-                              选择
+                              {isFocusMap && behavior.recommendation && (
+                                <p className="text-muted-foreground mt-1 text-xs">
+                                  {behavior.recommendation}
+                                </p>
+                              )}
+                              {isFocusMap &&
+                                behavior.impactScore !== undefined && (
+                                  <div className="text-muted-foreground mt-2 flex gap-4 text-xs">
+                                    <span>
+                                      影响力: {behavior.impactScore}/10
+                                    </span>
+                                    <span>
+                                      可行性: {behavior.feasibilityScore}/10
+                                    </span>
+                                  </div>
+                                )}
+                            </div>
+                            <Button size="sm" variant="outline" asChild>
+                              <Link
+                                href={`/habits/new?aspirationId=${aspiration.id}&behavior=${encodeURIComponent(behavior.name)}`}
+                              >
+                                选择
+                              </Link>
                             </Button>
-                          )}
-                        </div>
-                      );
-                    })}
+                          </div>
+                        );
+                      },
+                    )}
                   </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-
-            {/* 已选择行为 - 创建习惯入口 */}
-            {behaviors.some((b) => b.isSelected) && (
-              <div className="rounded-lg bg-green-50 p-4 dark:bg-green-950/20">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    <span className="font-medium">
-                      已选择：{behaviors.find((b) => b.isSelected)?.name}
-                    </span>
-                  </div>
-                  <Button asChild size="sm">
-                    <Link
-                      href={`/habits/new?aspirationId=${aspiration.id}&behavior=${encodeURIComponent(
-                        behaviors.find((b) => b.isSelected)?.name ?? "",
-                      )}`}
-                    >
-                      <ChevronRight className="mr-1 h-4 w-4" />
-                      创建习惯
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         )}
 

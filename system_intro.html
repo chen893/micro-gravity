@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Micro-Gravity | 智能习惯养成系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .hero-bg {
+            background: radial-gradient(circle at top right, #e0e7ff, #f3e8ff, #fff);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #4f46e5, #9333ea, #db2777);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .feature-icon {
+            background: linear-gradient(135deg, #e0e7ff, #f3e8ff);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">M</div>
+                    <span class="font-bold text-xl tracking-tight">Micro-Gravity</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-600">
+                    <a href="#philosophy" class="hover:text-indigo-600 transition-colors">福格模型</a>
+                    <a href="#features" class="hover:text-indigo-600 transition-colors">核心特性</a>
+                    <a href="#tech" class="hover:text-indigo-600 transition-colors">技术栈</a>
+                    <a href="#roadmap" class="hover:text-indigo-600 transition-colors">路线图</a>
+                </div>
+                <div>
+                    <a href="https://github.com/your-org/micro-gravity" target="_blank" class="bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-slate-800 transition-colors flex items-center gap-2">
+                        <i class="fab fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-bg pt-32 pb-24 lg:pt-48 lg:pb-32 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-indigo-100 text-indigo-700 text-xs font-semibold mb-8 shadow-sm">
+                <span class="flex h-2 w-2 rounded-full bg-indigo-500"></span>
+                v2.0 开发进行中
+            </div>
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
+                <span class="gradient-text">Micro-Gravity</span>
+            </h1>
+            <p class="text-2xl md:text-3xl font-bold text-slate-700 mb-6 max-w-3xl mx-auto">
+                基于福格行为模型的智能习惯养成系统
+            </p>
+            <p class="text-lg text-slate-500 mb-10 max-w-2xl mx-auto leading-relaxed">
+                "情绪创造习惯，庆祝是习惯养成的肥料" <br>
+                融合 AI 技术与行为科学，从微小的行为开始，设计你的理想生活。
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#features" class="px-8 py-3.5 rounded-full bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all transform hover:-translate-y-1">
+                    探索特性
+                </a>
+                <a href="#philosophy" class="px-8 py-3.5 rounded-full bg-white text-slate-700 font-semibold border border-slate-200 shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all">
+                    了解原理
+                </a>
+            </div>
+        </div>
+        
+        <!-- Decorative elements -->
+        <div class="absolute top-1/2 left-0 w-64 h-64 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div class="absolute top-1/2 right-0 w-64 h-64 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+    </header>
+
+    <!-- Philosophy Section (MAP) -->
+    <section id="philosophy" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">核心理念：福格行为模型 (B=MAP)</h2>
+                <p class="text-slate-500 max-w-2xl mx-auto">
+                    习惯养成不是靠意志力，而是靠设计。Micro-Gravity 将斯坦福大学 BJ Fogg 教授的行为模型融入系统的每一个细节。
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Motivation -->
+                <div class="bg-slate-50 rounded-2xl p-8 border border-slate-100 card-hover">
+                    <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl font-bold mb-6">M</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Motivation (动机)</h3>
+                    <p class="text-slate-500 mb-4 text-sm leading-relaxed">
+                        动机是波动的，我们不能仅仅依赖它。系统通过 AI 诊断动机状态，提供个性化激励，并追踪情绪变化。
+                    </p>
+                    <ul class="space-y-2">
+                        <li class="flex items-center text-sm text-slate-600">
+                            <i class="fas fa-check text-rose-500 mr-2"></i> AI 动机诊断
+                        </li>
+                        <li class="flex items-center text-sm text-slate-600">
+                            <i class="fas fa-check text-rose-500 mr-2"></i> 个性化激励
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Ability -->
+                <div class="bg-slate-50 rounded-2xl p-8 border border-slate-100 card-hover">
+                    <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold mb-6">A</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Ability (能力)</h3>
+                    <p class="text-slate-500 mb-4 text-sm leading-relaxed">
+                        让行为变得极易执行。我们专注于微习惯设计，动态调整难度，让开始不再困难。
+                    </p>
+                    <ul class="space-y-2">
+                        <li class="flex items-center text-sm text-slate-600">
+                            <i class="fas fa-check text-blue-500 mr-2"></i> 微习惯设计
+                        </li>
+                        <li class="flex items-center text-sm text-slate-600">
+                            <i class="fas fa-check text-blue-500 mr-2"></i> 难度动态调整
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Prompt -->
+                <div class="bg-slate-50 rounded-2xl p-8 border border-slate-100 card-hover">
+                    <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl font-bold mb-6">P</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Prompt (提示)</h3>
+                    <p class="text-slate-500 mb-4 text-sm leading-relaxed">
+                        没有提示，行为就不会发生。系统利用锚点习惯和情境触发，设计有效的智能提醒。
+                    </p>
+                    <ul class="space-y-2">
+                        <li class="flex items-center text-sm text-slate-600">
+                            <i class="fas fa-check text-amber-500 mr-2"></i> 锚点习惯绑定
+                        </li>
+                        <li class="flex items-center text-sm text-slate-600">
+                            <i class="fas fa-check text-amber-500 mr-2"></i> 智能情境提醒
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-24 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">全方位的功能特性</h2>
+                <p class="text-slate-500">不仅仅是打卡工具，而是你的个人行为设计系统</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Feature 1 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover group">
+                    <div class="w-12 h-12 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                        <i class="fas fa-robot text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">AI 赋能</h3>
+                    <p class="text-slate-500 text-sm">
+                        智能习惯医生自动诊断停滞原因，生成结构化处方。愿望拆解系统将大目标转化为高杠杆行为。
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover group">
+                    <div class="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                        <i class="fas fa-leaf text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">习惯管理</h3>
+                    <p class="text-slate-500 text-sm">
+                        支持好习惯养成与坏习惯戒除。渐进式挑战系统，让难度随能力提升而增加。
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover group">
+                    <div class="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i class="fas fa-chart-pie text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">数据分析</h3>
+                    <p class="text-slate-500 text-sm">
+                        多维度可视化热力图与情绪趋势。自动生成包含庆祝与迷你胜利的周报、月报。
+                    </p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover group">
+                    <div class="w-12 h-12 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center mb-4 group-hover:bg-pink-600 group-hover:text-white transition-colors">
+                        <i class="fas fa-party-horn text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">庆祝系统</h3>
+                    <p class="text-slate-500 text-sm">
+                        即时庆祝动画、音效反馈与成就徽章。AI 生成个性化庆祝文案，放大积极情绪。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section id="tech" class="py-20 bg-white border-t border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-2xl font-bold text-slate-900 mb-12">现代化的技术栈</h2>
+            <div class="flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+                <div class="flex flex-col items-center gap-2">
+                    <i class="fab fa-react text-4xl text-[#61dafb]"></i>
+                    <span class="text-xs font-semibold">Next.js 15</span>
+                </div>
+                <div class="flex flex-col items-center gap-2">
+                    <i class="fas fa-code text-4xl text-[#3178c6]"></i>
+                    <span class="text-xs font-semibold">TypeScript</span>
+                </div>
+                <div class="flex flex-col items-center gap-2">
+                    <i class="fas fa-wind text-4xl text-[#06b6d4]"></i>
+                    <span class="text-xs font-semibold">Tailwind CSS</span>
+                </div>
+                <div class="flex flex-col items-center gap-2">
+                    <i class="fas fa-robot text-4xl text-slate-800"></i>
+                    <span class="text-xs font-semibold">Vercel AI SDK</span>
+                </div>
+                <div class="flex flex-col items-center gap-2">
+                    <i class="fas fa-database text-4xl text-[#336791]"></i>
+                    <span class="text-xs font-semibold">Prisma & PG</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-300 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center gap-2 mb-4 text-white">
+                        <div class="w-6 h-6 rounded bg-indigo-500 flex items-center justify-center font-bold text-xs">M</div>
+                        <span class="font-bold text-lg">Micro-Gravity</span>
+                    </div>
+                    <p class="text-slate-400 text-sm max-w-sm">
+                        一个融合 AI 技术与行为科学的现代化习惯管理系统。让成功成为必然。
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">文档</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition-colors">开发者指南</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">产品需求文档 (PRD)</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">API 参考</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">链接</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition-colors">GitHub</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Issues</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Discussions</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-xs text-slate-500">© 2025 Micro-Gravity Team. All rights reserved.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="text-slate-500 hover:text-white transition-colors"><i class="fab fa-github"></i></a>
+                    <a href="#" class="text-slate-500 hover:text-white transition-colors"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

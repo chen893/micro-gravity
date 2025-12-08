@@ -349,10 +349,8 @@ export const celebrationRouter = createTRPCRouter({
       const updatedLog = await ctx.db.habitLog.update({
         where: { id: input.logId },
         data: {
-          celebratedAt: new Date(),
-          celebrationMethodId: input.methodId,
           shineScore: input.shineScore,
-          celebrationNote: input.note,
+          note: input.note,
         },
       });
 
@@ -395,68 +393,14 @@ export const celebrationRouter = createTRPCRouter({
         });
       }
 
-      // 仅设置 celebratedAt 为 null，表示跳过
+      // 仅清空庆祝相关字段，表示跳过
       return ctx.db.habitLog.update({
         where: { id: input.logId },
         data: {
-          celebratedAt: null,
-          celebrationMethodId: null,
           shineScore: null,
-          celebrationNote: null,
+          note: null,
         },
       });
-    }),
-
-  // ============ 闪电庆祝（P2功能） ============
-
-  /**
-   * 创建闪电庆祝
-   * 随时为任何良好行为庆祝，不需要关联习惯
-   */
-  createFlashCelebration: protectedProcedure
-    .input(
-      z.object({
-        content: z.string().min(1).max(200),
-        methodId: z.string().optional(),
-        shineScore: z.number().min(1).max(5).optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      return ctx.db.flashCelebration.create({
-        data: {
-          userId: ctx.session.user.id,
-          content: input.content,
-          celebrationMethodId: input.methodId,
-          shineScore: input.shineScore,
-        },
-      });
-    }),
-
-  /**
-   * 获取闪电庆祝历史
-   */
-  getFlashCelebrations: protectedProcedure
-    .input(
-      z.object({
-        limit: z.number().min(1).max(100).default(20),
-        cursor: z.string().optional(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const items = await ctx.db.flashCelebration.findMany({
-        where: { userId: ctx.session.user.id },
-        take: input.limit + 1,
-        cursor: input.cursor ? { id: input.cursor } : undefined,
-        orderBy: { createdAt: "desc" },
-      });
-
-      let nextCursor: string | undefined;
-      if (items.length > input.limit) {
-        const nextItem = items.pop();
-        nextCursor = nextItem!.id;
-      }
-
-      return { items, nextCursor };
     }),
 
   // ============ 个性化推荐 ============
@@ -573,11 +517,6 @@ export const celebrationRouter = createTRPCRouter({
     const celebrationRate =
       totalLogs > 0 ? (totalCelebrations / totalLogs) * 100 : 0;
 
-    // 闪电庆祝次数
-    const flashCount = await ctx.db.flashCelebration.count({
-      where: { userId },
-    });
-
     return {
       totalCelebrations,
       avgShineScore: avgShineResult._avg.shineScore ?? 0,
@@ -586,7 +525,6 @@ export const celebrationRouter = createTRPCRouter({
         method: m.celebrationMethod,
         useCount: m.useCount,
       })),
-      flashCount,
     };
   }),
 

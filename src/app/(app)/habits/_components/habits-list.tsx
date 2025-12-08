@@ -48,7 +48,7 @@ export function HabitsList() {
   const activeHabits = habits.filter((h) => h.status === "ACTIVE");
   const pausedHabits = habits.filter((h) => h.status === "PAUSED");
   const archivedHabits = habits.filter(
-    (h) => h.status === "ARCHIVED" || h.status === "COMPLETED",
+    (h) => h.status === "ARCHIVED" || h.status === "GRADUATED",
   );
 
   return (
@@ -114,7 +114,7 @@ interface HabitCardProps {
     description: string | null;
     category: string | null;
     currentPhase: number;
-    status: "ACTIVE" | "PAUSED" | "COMPLETED" | "ARCHIVED";
+    status: "ACTIVE" | "PAUSED" | "GRADUATED" | "ARCHIVED";
     _count: {
       logs: number;
     };
@@ -128,7 +128,7 @@ interface CelebrationState {
   habitName: string;
   streakDays: number;
   isMilestone: boolean;
-  milestoneType?: "DAY_7" | "DAY_21" | "DAY_66" | "DAY_100";
+  milestoneDay?: number;
 }
 
 function HabitCard({ habit }: HabitCardProps) {
@@ -170,7 +170,7 @@ function HabitCard({ habit }: HabitCardProps) {
         habitName: data.habitName,
         streakDays: data.streakDays,
         isMilestone: data.isMilestone,
-        milestoneType: data.milestoneType,
+        milestoneDay: data.milestoneDay,
       });
     },
   });
@@ -323,7 +323,7 @@ function HabitCard({ habit }: HabitCardProps) {
         habitName={celebration.habitName}
         streakDays={celebration.streakDays}
         isMilestone={celebration.isMilestone}
-        milestoneType={celebration.milestoneType}
+        milestoneDay={celebration.milestoneDay}
         _logId={celebration.logId}
         onSubmit={handleCelebrationSubmit}
         onSkip={handleCelebrationSkip}

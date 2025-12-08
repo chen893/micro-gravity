@@ -6,12 +6,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import {
-  motivationSchema,
-  abilitySchema,
-  promptSchema,
-  phaseConfigSchema,
-} from "@/lib/types";
 
 // 习惯创建输入 schema
 const createHabitInput = z.object({
@@ -19,10 +13,10 @@ const createHabitInput = z.object({
   type: z.enum(["BUILD", "BREAK"]),
   description: z.string().optional(),
   category: z.string().max(50).optional(),
-  motivation: motivationSchema,
-  ability: abilitySchema,
-  prompt: promptSchema,
-  phases: z.array(phaseConfigSchema).optional(),
+  anchor: z.string().optional(),
+  behavior: z.string().optional(),
+  celebration: z.string().optional(),
+  aspirationId: z.string().optional(),
 });
 
 // 习惯更新输入 schema
@@ -31,12 +25,11 @@ const updateHabitInput = z.object({
   name: z.string().min(1).max(100).optional(),
   description: z.string().optional(),
   category: z.string().max(50).optional(),
-  motivation: motivationSchema.partial().optional(),
-  ability: abilitySchema.partial().optional(),
-  prompt: promptSchema.partial().optional(),
-  status: z.enum(["ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"]).optional(),
+  anchor: z.string().optional(),
+  behavior: z.string().optional(),
+  celebration: z.string().optional(),
+  status: z.enum(["ACTIVE", "PAUSED", "GRADUATED", "ARCHIVED"]).optional(),
   currentPhase: z.number().min(1).optional(),
-  phases: z.array(phaseConfigSchema).optional(),
 });
 
 export const habitRouter = createTRPCRouter({
@@ -53,10 +46,10 @@ export const habitRouter = createTRPCRouter({
           type: input.type,
           description: input.description,
           category: input.category,
-          motivation: input.motivation,
-          ability: input.ability,
-          prompt: input.prompt,
-          phases: input.phases ?? undefined,
+          anchor: input.anchor,
+          behavior: input.behavior,
+          celebration: input.celebration,
+          aspirationId: input.aspirationId,
         },
       });
 
@@ -78,7 +71,6 @@ export const habitRouter = createTRPCRouter({
           _count: {
             select: {
               logs: true,
-              milestones: true,
             },
           },
         },
@@ -102,7 +94,7 @@ export const habitRouter = createTRPCRouter({
       z
         .object({
           status: z
-            .enum(["ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"])
+            .enum(["ACTIVE", "PAUSED", "GRADUATED", "ARCHIVED"])
             .optional(),
           type: z.enum(["BUILD", "BREAK"]).optional(),
           category: z.string().optional(),
@@ -172,7 +164,6 @@ export const habitRouter = createTRPCRouter({
   update: protectedProcedure
     .input(updateHabitInput)
     .mutation(async ({ ctx, input }) => {
-      // 验证习惯属于当前用户
       const existingHabit = await ctx.db.habit.findFirst({
         where: {
           id: input.id,
@@ -187,37 +178,19 @@ export const habitRouter = createTRPCRouter({
         });
       }
 
-      // 构建更新数据
       const updateData: Record<string, unknown> = {};
 
       if (input.name !== undefined) updateData.name = input.name;
       if (input.description !== undefined)
         updateData.description = input.description;
       if (input.category !== undefined) updateData.category = input.category;
+      if (input.anchor !== undefined) updateData.anchor = input.anchor;
+      if (input.behavior !== undefined) updateData.behavior = input.behavior;
+      if (input.celebration !== undefined)
+        updateData.celebration = input.celebration;
       if (input.status !== undefined) updateData.status = input.status;
       if (input.currentPhase !== undefined)
         updateData.currentPhase = input.currentPhase;
-      if (input.phases !== undefined) updateData.phases = input.phases;
-
-      // 合并嵌套对象
-      if (input.motivation !== undefined) {
-        updateData.motivation = {
-          ...(existingHabit.motivation as object),
-          ...input.motivation,
-        };
-      }
-      if (input.ability !== undefined) {
-        updateData.ability = {
-          ...(existingHabit.ability as object),
-          ...input.ability,
-        };
-      }
-      if (input.prompt !== undefined) {
-        updateData.prompt = {
-          ...(existingHabit.prompt as object),
-          ...input.prompt,
-        };
-      }
 
       const habit = await ctx.db.habit.update({
         where: { id: input.id },
@@ -311,6 +284,32 @@ export const habitRouter = createTRPCRouter({
     }),
 
   /**
+   * 标记习惯毕业
+   */
+  graduate: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const habit = await ctx.db.habit.findFirst({
+        where: {
+          id: input.id,
+          userId: ctx.session.user.id,
+        },
+      });
+
+      if (!habit) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "习惯不存在",
+        });
+      }
+
+      return ctx.db.habit.update({
+        where: { id: input.id },
+        data: { status: "GRADUATED" },
+      });
+    }),
+
+  /**
    * 归档习惯
    */
   archive: protectedProcedure
@@ -356,7 +355,6 @@ export const habitRouter = createTRPCRouter({
         });
       }
 
-      // 删除习惯会级联删除相关的 logs, conversations, milestones
       await ctx.db.habit.delete({
         where: { id: input.id },
       });
@@ -384,7 +382,6 @@ export const habitRouter = createTRPCRouter({
         });
       }
 
-      // 获取所有打卡记录
       const logs = await ctx.db.habitLog.findMany({
         where: { habitId: input.id },
         orderBy: { loggedAt: "desc" },
@@ -454,25 +451,64 @@ export const habitRouter = createTRPCRouter({
           ? Math.round((recentCompleted / recentLogs.length) * 100)
           : 0;
 
-      // 计算平均难度
-      const difficultyRatings = completedLogs
-        .map((log) => log.difficultyRating)
-        .filter((r): r is number => r !== null);
-      const averageDifficulty =
-        difficultyRatings.length > 0
-          ? difficultyRatings.reduce((a, b) => a + b, 0) /
-            difficultyRatings.length
-          : null;
-
       return {
         totalDays,
         completedDays,
         currentStreak,
         longestStreak,
         recentRate,
-        averageDifficulty,
         completionRate:
           totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0,
+      };
+    }),
+
+  /**
+   * 检查是否可以进阶
+   */
+  checkAdvance: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const habit = await ctx.db.habit.findFirst({
+        where: {
+          id: input.id,
+          userId: ctx.session.user.id,
+        },
+      });
+
+      if (!habit) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "习惯不存在",
+        });
+      }
+
+      // 获取最近的打卡记录
+      const recentLogs = await ctx.db.habitLog.findMany({
+        where: {
+          habitId: input.id,
+          completed: true,
+        },
+        orderBy: { loggedAt: "desc" },
+        take: 14,
+      });
+
+      // 进阶条件：连续7天 + 多次超额完成 + 多次觉得轻松
+      const exceededCount = recentLogs.filter(
+        (log) => log.completionLevel === "EXCEEDED",
+      ).length;
+      const feltEasyCount = recentLogs.filter((log) => log.feltEasy).length;
+      const wantedMoreCount = recentLogs.filter((log) => log.wantedMore).length;
+
+      const canAdvance =
+        recentLogs.length >= 7 &&
+        (exceededCount >= 3 || (feltEasyCount >= 5 && wantedMoreCount >= 3));
+
+      return {
+        canAdvance,
+        exceededCount,
+        feltEasyCount,
+        wantedMoreCount,
+        currentPhase: habit.currentPhase,
       };
     }),
 });

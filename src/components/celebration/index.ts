@@ -26,7 +26,3 @@ export {
   CelebrationTimingTip,
   getTimingConfig,
 } from "./celebration-timing-guide";
-export {
-  FlashCelebration,
-  FloatingFlashCelebration,
-} from "./flash-celebration";

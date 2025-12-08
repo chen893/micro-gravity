@@ -3,7 +3,7 @@
  */
 
 import { generateText, zodSchema } from "ai";
-import { z } from "zod";
+import { type z } from "zod";
 import { model } from "@/lib/ai/model";
 
 /**

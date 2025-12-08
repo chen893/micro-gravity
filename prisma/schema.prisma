@@ -21,45 +21,11 @@ enum HabitType {
 
 // 习惯状态
 enum HabitStatus {
-    ACTIVE    // 活跃中
-    PAUSED    // 暂停
-    COMPLETED // 已完成
-    ARCHIVED  // 已归档
+    ACTIVE   // 活跃中
+    PAUSED   // 暂停
+    GRADUATED // 已毕业（习惯已养成）
+    ARCHIVED // 已归档
 }
-
-// 对话类型
-enum ConversationType {
-    SETUP   // 习惯设定
-    CHECKIN // 日常签到
-    HELP    // 困难求助
-    REVIEW  // 复盘分析
-}
-
-// 报告类型
-enum ReportType {
-    WEEKLY    // 周报
-    MONTHLY   // 月报
-    MILESTONE // 里程碑报告
-}
-
-// 里程碑类型
-enum MilestoneType {
-    DAY_7   // 7天成就
-    DAY_21  // 21天习惯初步形成
-    DAY_66  // 66天习惯巩固
-    DAY_100 // 100天里程碑
-    CUSTOM  // 自定义里程碑
-}
-
-// 分析类型
-enum AnalysisType {
-    TIME_HEATMAP // 时间热力图
-    MOOD         // 情绪分析
-    CORRELATION  // 习惯关联
-    RISK         // 中断风险
-}
-
-// ============ v2.0 Phase 7: 弹性打卡枚举 ============
 
 // 完成级别枚举（弹性打卡）
 enum CompletionLevel {
@@ -67,37 +33,6 @@ enum CompletionLevel {
     STANDARD // 完成当前阶段标准
     EXCEEDED // 超额完成
 }
-
-// 情感标志枚举（福格原理）
-enum EmotionalMarker {
-    BOREDOM     // 厌倦 → 可能需要提升难度
-    FRUSTRATION // 沮丧 → 难度过高
-    AVOIDANCE   // 逃避 → 行为设计问题
-    PAIN        // 痛苦 → 立即退阶
-    JOY         // 愉悦 → 继续保持
-    PRIDE       // 自豪 → 可以挑战更多
-}
-
-// 阶段变更类型
-enum PhaseChangeType {
-    ADVANCE // 进阶
-    RETREAT // 退阶
-}
-
-// 繁殖提示响应类型
-enum ProliferationResponse {
-    ACCEPTED  // 接受
-    DISMISSED // 拒绝
-    POSTPONED // 推迟
-}
-
-// 繁殖建议类型
-enum ProliferationType {
-    GROWTH // 生长类：在原习惯基础上扩展
-    SPAWN  // 繁殖类：衍生出相关新习惯
-}
-
-// ============ v2.0 庆祝系统枚举 ============
 
 // 庆祝方式分类
 enum CelebrationCategory {
@@ -107,38 +42,12 @@ enum CelebrationCategory {
     SENSORY  // 感官类：深呼吸、闭眼感受
 }
 
-// ============ v2.0 Phase 2 枚举 ============
-
-// 容易做策略
-enum EasyStrategy {
-    STARTER_STEP // 入门步骤：关注启动行为的第一步
-    SCALE_DOWN   // 缩小规模：缩小行为本身的规模
-}
-
-// 焦点地图象限
-enum FocusQuadrant {
-    GOLDEN      // 黄金行为：高影响力 + 容易做
-    HIGH_IMPACT // 高影响但难：需要拆解
-    EASY_WIN    // 简单小胜：容易但影响一般
-    AVOID       // 避免区：难做且影响小
-}
-
-// ============ v2.0 Phase 3 枚举 ============
-
-// 时段枚举（用于日程清单）
-enum TimeSlot {
-    MORNING // 早晨（起床-出门）
-    WORK    // 工作时段
-    EVENING // 傍晚（下班-晚餐）
-    NIGHT   // 夜间（晚餐后-睡前）
-}
-
-// 活动频率
-enum ActivityFrequency {
-    DAILY      // 每天
-    WEEKDAYS   // 工作日
-    WEEKENDS   // 周末
-    OCCASIONAL // 偶尔
+// 愿望状态
+enum AspirationStatus {
+    EXPLORING // 探索中
+    ACTIVE    // 进行中
+    ACHIEVED  // 已达成
+    ABANDONED // 已放弃
 }
 
 // ============ NextAuth.js 模型 ============
@@ -181,37 +90,29 @@ model VerificationToken {
 // ============ 核心业务模型 ============
 
 model User {
-    id                 String              @id @default(cuid())
-    name               String?
-    email              String?             @unique
-    emailVerified      DateTime?
-    image              String?
-    motivationProfile  Json?               // 动机画像
-    preferences        Json?               // 用户偏好设置
-    accounts           Account[]
-    sessions           Session[]
-    habits             Habit[]
-    habitLogs          HabitLog[]
-    conversations      Conversation[]
-    reports            Report[]
-    milestones         Milestone[]
-    analyticsSnapshots AnalyticsSnapshot[]
-    // v2.0 庆祝系统
-    userCelebrations   UserCelebration[]
-    flashCelebrations  FlashCelebration[]
-    // v2.0 Phase 2: 愿望系统
-    aspirations        Aspiration[]
-    // v2.0 Phase 3: 日程清单
-    dailyRoutines      DailyRoutine[]
-    // v2.0 Phase 8: 成就徽章
-    userBadges         UserBadge[]
-    // 繁殖提示响应
-    proliferationResponses ProliferationPromptResponse[]
-    createdAt          DateTime            @default(now())
-    updatedAt          DateTime            @updatedAt
+    id            String    @id @default(cuid())
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+
+    // 偏好设置
+    preferences Json? // { soundEnabled, theme, ... }
+
+    // 关联
+    accounts     Account[]
+    sessions     Session[]
+    aspirations  Aspiration[]
+    habits       Habit[]
+    habitLogs    HabitLog[]
+    routine      DailyRoutine?
+    celebrations UserCelebration[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
-// 习惯模型
+// 习惯模型 - 简化版 ABC 配方
 model Habit {
     id          String      @id @default(cuid())
     userId      String
@@ -221,269 +122,94 @@ model Habit {
     description String?
     category    String?     @db.VarChar(50)
 
-    // MAP模型数据 (福格行为模型)
-    // motivation: { primaryType, deepReason, visionStatement, painPoints?, motivationScore }
-    motivation Json
-    // ability: { currentLevel, targetLevel, microHabit, difficultyScore, barriers?, simplificationTips? }
-    ability    Json
-    // prompt: { anchorHabit, triggerType, preferredTime, contextCues?, reminderStyle? }
-    prompt     Json
-
-    // 进度追踪
-    currentPhase Int         @default(1)
-    phases       Json?       // PhaseConfig[]: 渐进式阶段配置
-
-    // ============ v2.0 Phase 2: 习惯创建流程重构 ============
+    // ABC 配方（福格习惯配方）
+    anchor      String?     // 锚点行为："在我【锚点】之后"
+    behavior    String?     // 微行为："我会【行为】"
+    celebration String?     // 庆祝方式："为了让大脑记住，我要【庆祝】"
 
     // 关联愿望
-    aspirationId    String?
-    aspiration      Aspiration? @relation(fields: [aspirationId], references: [id], onDelete: SetNull)
+    aspirationId String?
+    aspiration   Aspiration? @relation(fields: [aspirationId], references: [id], onDelete: SetNull)
 
-    // 容易做策略
-    easyStrategy    EasyStrategy  @default(SCALE_DOWN)
-    starterStep     String?       // 入门步骤描述（若选择入门步骤策略）
-    scaledBehavior  String?       // 缩小后的行为描述（若选择缩小规模策略）
+    // 进度追踪
+    currentPhase Int @default(1)
 
-    // 微习惯配方
-    recipeAnchor      String?     // 锚点行为："在我【锚点】之后"
-    recipeBehavior    String?     // 微行为："我会【行为】"
-    recipeCelebration String?     // 庆祝方式："为了让大脑记住，我要【庆祝】"
+    status    HabitStatus @default(ACTIVE)
+    logs      HabitLog[]
 
-    // 配方演练记录
-    rehearsalCount    Int         @default(0)    // 演练次数（建议7-10次）
-    rehearsedAt       DateTime?   // 最后演练时间
-
-    status        HabitStatus   @default(ACTIVE)
-    logs          HabitLog[]
-    conversations Conversation[]
-    milestones    Milestone[]
-    phaseHistory  PhaseHistory[] // v2.0 Phase 7: 阶段变更历史
-    analyticsSnapshots    AnalyticsSnapshot[] // 分析快照
-    proliferationResponses ProliferationPromptResponse[] // 繁殖提示响应
-    createdAt     DateTime      @default(now())
-    updatedAt     DateTime      @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     @@index([userId])
     @@index([status])
     @@index([aspirationId])
 }
 
-// 打卡记录模型
+// 打卡记录模型 - 简化版
 model HabitLog {
-    id              String   @id @default(cuid())
-    habitId         String
-    habit           Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
-    userId          String
-    user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    loggedAt        DateTime @db.Date
-    completed       Boolean
+    id       String   @id @default(cuid())
+    habitId  String
+    habit    Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+    userId   String
+    user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    loggedAt DateTime @db.Date
+    completed Boolean
 
-    // 可选元数据
-    completionTime   DateTime? // 实际完成时间
-    durationMinutes  Int?      // 持续时长（分钟）
-    difficultyRating Int?      // 难度评分 1-5
-    moodBefore       Int?      // 执行前情绪 1-5
-    moodAfter        Int?      // 执行后情绪 1-5
-    notes            String?   // 备注
-    triggerContext   Json?     // 触发记录（仅 BREAK 类型）
+    // 弹性打卡
+    completionLevel CompletionLevel @default(MINIMUM)
+    actualBehavior  String?         // 实际做了什么
 
-    // v2.0 庆祝相关字段
-    celebratedAt        DateTime? // 庆祝时间
-    celebrationMethodId String?   // 使用的庆祝方式ID
-    celebrationMethod   CelebrationMethod? @relation(fields: [celebrationMethodId], references: [id], onDelete: SetNull)
-    shineScore          Int?      // 发光感评分 1-5
-    celebrationNote     String?   @db.VarChar(500) // 庆祝感想（可选，限制长度）
+    // 福格反馈信号
+    wantedMore Boolean? // 想做更多？（进阶信号）
+    feltEasy   Boolean? // 觉得轻松？（进阶信号）
 
-    // v2.0 Phase 7: 弹性打卡字段
-    completionLevel   CompletionLevel  @default(MINIMUM) // 完成级别
-    actualBehavior    String?                            // 用户实际做了什么
-    wantedToDoMore    Boolean          @default(false)   // 用户是否想做更多（进阶信号）
-    feltEasy          Boolean          @default(false)   // 用户是否觉得很轻松（进阶信号）
-    emotionalMarker   EmotionalMarker?                   // 情感标志
+    // 庆祝相关
+    shineScore Int?    // 发光感评分 1-5
+    moodBefore Int?    // 执行前情绪 1-5
+    moodAfter  Int?    // 执行后情绪 1-5
+    note       String? // 备注
 
     createdAt DateTime @default(now())
 
-    @@unique([habitId, loggedAt]) // 防止同一天重复打卡
+    @@unique([habitId, loggedAt])
     @@index([habitId])
     @@index([userId])
     @@index([loggedAt])
-    @@index([createdAt])
-    @@index([celebrationMethodId])
-    @@index([userId, celebratedAt])
-    @@index([emotionalMarker])
 }
 
-// 对话模型
-model Conversation {
-    id               String            @id @default(cuid())
-    userId           String
-    user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-    habitId          String?
-    habit            Habit?            @relation(fields: [habitId], references: [id], onDelete: SetNull)
-    conversationType ConversationType?
-    messages         Json              // AI对话历史 UIMessage[]
-    createdAt        DateTime          @default(now())
-    updatedAt        DateTime          @updatedAt
-
-    @@index([userId])
-    @@index([habitId])
-}
-
-// ============ v1.5 增强模型 ============
-
-// 周期报告模型
-model Report {
-    id          String     @id @default(cuid())
+// 愿望模型
+model Aspiration {
+    id          String           @id @default(cuid())
     userId      String
-    user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-    type        ReportType
+    user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+    description String           // 愿望描述
+    clarified   String?          // 明确后的愿望
+    category    String?          // 分类
+    status      AspirationStatus @default(EXPLORING)
+    progress    Int              @default(0) // 进度百分比
 
-    // 报告周期
-    periodStart DateTime
-    periodEnd   DateTime
+    // AI 探索数据 { behaviors, focusMap, goldenBehavior, summary }
+    explorationData Json?
 
-    // AI 生成的报告内容
-    summary     Json // { completionRate, rateChange, activeHabits, longestStreak, totalCheckins, perfectDays }
-    highlights  Json // ReportHighlight[]
-    patterns    Json // PatternFinding[]
-    suggestions Json // 建议数组
-    goals       Json? // 下期目标
-
-    // 元数据
-    generatedAt DateTime @default(now())
-    isRead      Boolean  @default(false)
-
-    @@unique([userId, type, periodStart]) // 防止同周期重复生成
-    @@index([userId])
-    @@index([type])
-    @@index([periodStart])
-}
-
-// 里程碑模型
-model Milestone {
-    id      String        @id @default(cuid())
-    habitId String
-    habit   Habit         @relation(fields: [habitId], references: [id], onDelete: Cascade)
-    userId  String
-    user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-    type    MilestoneType
-
-    // 达成信息
-    achievedAt DateTime
-    streakDays Int      // 达成时的连续天数
-
-    // AI 生成的里程碑报告
-    celebration String // 庆祝文案
-    reflection  Json   // MilestoneReflection: 回顾分析
-    nextPhase   Json?  // 下阶段建议
-
-    // 分享相关
-    isShared   Boolean @default(false)
-    shareToken String? @unique
+    habits    Habit[]
+    achievedAt DateTime?
 
     createdAt DateTime @default(now())
-
-    @@unique([habitId, type]) // 同一习惯同一里程碑类型只能达成一次
-    @@index([habitId])
-    @@index([userId])
-    @@index([type])
-}
-
-// 分析快照模型 - 缓存 AI 分析结果
-model AnalyticsSnapshot {
-    id      String       @id @default(cuid())
-    userId  String
-    user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-    habitId String?      // 可选，null 表示全局分析
-    habit   Habit?       @relation(fields: [habitId], references: [id], onDelete: Cascade)
-
-    // 分析类型
-    analysisType AnalysisType
-
-    // 缓存的分析结果
-    data Json
-
-    // 有效期
-    generatedAt DateTime @default(now())
-    expiresAt   DateTime
-
-    @@unique([userId, habitId, analysisType])
-    @@index([userId])
-    @@index([habitId])
-    @@index([analysisType])
-}
-
-// ============ v2.0 Phase 7: 阶段变更历史模型 ============
-
-// 阶段变更历史（记录进阶/退阶）
-model PhaseHistory {
-    id         String          @id @default(cuid())
-    habitId    String
-    habit      Habit           @relation(fields: [habitId], references: [id], onDelete: Cascade)
-    fromPhase  Int             // 原阶段
-    toPhase    Int             // 新阶段
-    changeType PhaseChangeType // 变更类型（进阶/退阶）
-    reason     String?         // 变更原因
-    signals    Json?           // 触发信号（用于分析）
-    changedAt  DateTime        @default(now())
-
-    @@index([habitId])
-}
-
-// ============ v2.0 Phase 2: 愿望与行为集群模型 ============
-
-// 愿望（用户的顶层目标）
-model Aspiration {
-    id          String   @id @default(cuid())
-    userId      String
-    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    description String   // 愿望描述，如"变得更健康"
-    clarified   String?  // 明确后的愿望，如"精力充沛"
-    category    String?  // 愿望分类
-
-    behaviorClusters BehaviorCluster[]
-    habits           Habit[]
-
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
+    updatedAt DateTime @updatedAt
 
     @@index([userId])
+    @@index([status])
 }
 
-// 行为集群（探索阶段产生的行为选项）
-model BehaviorCluster {
-    id            String     @id @default(cuid())
-    aspirationId  String
-    aspiration    Aspiration @relation(fields: [aspirationId], references: [id], onDelete: Cascade)
-
-    // 行为列表
-    // behaviors: [{ name, description, impactScore, feasibilityScore, quadrant, isSelected }]
-    behaviors     Json
-
-    // 焦点地图数据
-    // focusMap: { goldenBehavior, recommendation, summary }
-    focusMapData  Json?
-
-    // AI 生成的建议
-    aiSuggestions String?
-
-    createdAt     DateTime   @default(now())
-
-    @@index([aspirationId])
-}
-
-// ============ v2.0 庆祝系统模型 ============
-
-// 庆祝方式库（预置数据）
+// 庆祝方式库
 model CelebrationMethod {
     id        String              @id @default(cuid())
     category  CelebrationCategory
     content   String              // 庆祝方式描述
     emoji     String?             // 表情符号
-    isBuiltIn Boolean             @default(true) // 是否为内置方式
+    isBuiltIn Boolean             @default(true)
 
     userFavorites UserCelebration[]
-    habitLogs     HabitLog[]        // 使用此庆祝方式的打卡记录
 
     @@index([category])
 }
@@ -495,110 +221,22 @@ model UserCelebration {
     user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
     celebrationMethodId String
     celebrationMethod   CelebrationMethod @relation(fields: [celebrationMethodId], references: [id], onDelete: Cascade)
-    isDefault           Boolean           @default(false) // 是否为默认庆祝方式
-    useCount            Int               @default(0) // 使用次数（用于个性化推荐）
-
-    createdAt DateTime @default(now())
+    isDefault           Boolean           @default(false)
+    useCount            Int               @default(0)
 
     @@unique([userId, celebrationMethodId])
     @@index([userId])
 }
 
-// 闪电庆祝（P2功能：随时为任何良好行为庆祝）
-model FlashCelebration {
-    id                  String   @id @default(cuid())
-    userId              String
-    user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    content             String   // 庆祝的行为描述
-    celebrationMethodId String?  // 使用的庆祝方式
-    shineScore          Int?     // 发光感评分 1-5
-
-    createdAt DateTime @default(now())
-
-    @@index([userId])
-    @@index([createdAt])
-}
-
-// ============ v2.0 Phase 8: 成就徽章系统枚举 ============
-
-// 徽章稀有度
-enum BadgeRarity {
-    COMMON    // 普通
-    RARE      // 稀有
-    EPIC      // 史诗
-    LEGENDARY // 传说
-}
-
-// ============ v2.0 Phase 3: 提示系统升级模型 ============
-
-// 日程清单（用户的日常既有习惯/活动）
+// 日程清单（锚点来源）
 model DailyRoutine {
-    id         String   @id @default(cuid())
-    userId     String
-    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    timeSlot   TimeSlot // 时段
-    activities Json     // 活动列表 [{ name, time, frequency, location }]
+    id     String @id @default(cuid())
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    // 活动列表 [{ name, time, frequency, location, timeSlot }]
+    activities Json
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-
-    @@unique([userId, timeSlot]) // 每个用户每个时段只有一条记录
-    @@index([userId])
-}
-
-// ============ v2.0 Phase 8: 成就徽章系统模型 ============
-
-// 徽章定义（系统内置）
-model Badge {
-    id              String      @id @default(cuid())
-    code            String      @unique // 唯一标识码，如 "FIRST_HABIT"
-    name            String      // 徽章名称
-    description     String      // 徽章描述
-    icon            String      // 图标/emoji
-    rarity          BadgeRarity
-    category        String      // 类别：起步/连续/庆祝/全勤/特殊
-
-    // 解锁条件（JSON 结构）
-    // { type: "STREAK", days: 7 } 或 { type: "TOTAL_CHECKINS", count: 10 }
-    unlockCondition Json
-
-    userBadges UserBadge[]
-
-    createdAt DateTime @default(now())
-
-    @@index([category])
-    @@index([rarity])
-}
-
-// 用户获得的徽章
-model UserBadge {
-    id         String   @id @default(cuid())
-    userId     String
-    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    badgeId    String
-    badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
-    unlockedAt DateTime @default(now()) // 解锁时间
-    habitId    String?  // 关联的习惯（如果是习惯相关徽章）
-
-    @@unique([userId, badgeId]) // 同一用户同一徽章只能获得一次
-    @@index([userId])
-    @@index([badgeId])
-}
-
-// ============ 习惯繁殖系统模型 ============
-
-// 繁殖提示响应记录
-model ProliferationPromptResponse {
-    id                     String                @id @default(cuid())
-    userId                 String
-    user                   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-    habitId                String
-    habit                  Habit                 @relation(fields: [habitId], references: [id], onDelete: Cascade)
-    response               ProliferationResponse // 响应类型
-    selectedSuggestionType ProliferationType?    // 选择的建议类型
-    respondedAt            DateTime              @default(now())
-
-    @@index([userId])
-    @@index([habitId])
-    @@index([habitId, respondedAt])
 }
