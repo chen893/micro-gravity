@@ -27,9 +27,7 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const getWelcomeMessage = (
-  goldenBehavior?: string | null,
-): UIMessage => {
+const getWelcomeMessage = (goldenBehavior?: string | null): UIMessage => {
   if (goldenBehavior) {
     return {
       id: "welcome",
@@ -129,7 +127,10 @@ export default function NewHabitPage() {
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold tracking-tight">创建新习惯</h2>
             {goldenBehavior && (
-              <Badge variant="outline" className="bg-amber-100 text-amber-700 dark:bg-amber-900/30">
+              <Badge
+                variant="outline"
+                className="bg-amber-100 text-amber-700 dark:bg-amber-900/30"
+              >
                 <Star className="mr-1 h-3 w-3" />
                 黄金行为
               </Badge>

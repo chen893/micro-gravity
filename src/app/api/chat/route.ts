@@ -177,7 +177,9 @@ export async function POST(req: Request) {
           completionLevel: z
             .enum(["MINIMUM", "STANDARD", "EXCEEDED"])
             .optional()
-            .describe("完成程度：最小(MINIMUM)、标准(STANDARD)、超额(EXCEEDED)"),
+            .describe(
+              "完成程度：最小(MINIMUM)、标准(STANDARD)、超额(EXCEEDED)",
+            ),
           actualBehavior: z.string().optional().describe("实际执行的行为"),
           wantedMore: z.boolean().optional().describe("是否想做更多"),
           feltEasy: z.boolean().optional().describe("是否感觉轻松"),

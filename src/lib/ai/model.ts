@@ -3,8 +3,8 @@
  * 所有模型调用都从这里导入
  */
 
-import { ChatDeepSeek } from '@langchain/deepseek'
-import {  createDeepSeek } from '@ai-sdk/deepseek'
+import { ChatDeepSeek } from "@langchain/deepseek";
+import { createDeepSeek } from "@ai-sdk/deepseek";
 
 import { env } from "@/env";
 import * as z from "zod";
@@ -18,13 +18,11 @@ const deepSeekProvider = createDeepSeek({
   baseURL: env.AI_MODEL_BASE_URL,
 });
 
-
 const llmWithCustomURL = new ChatDeepSeek({
   model: "deepseek-chat",
   apiKey: "sk-39789d9ca2254a9d894d20dc787d7086",
   temperature: 0,
 });
-
 
 /**
  * 主模型 - 用于复杂对话和工具调用
@@ -46,6 +44,3 @@ export const modelMini = deepSeekProvider(env.AI_MODEL_MINI_NAME);
 export function getModel(useMini = false) {
   return useMini ? modelMini : model;
 }
-
-
-

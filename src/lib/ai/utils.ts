@@ -35,8 +35,10 @@ export async function runStructuredTool<SCHEMA extends z.ZodType>({
       [toolName]: {
         description,
         inputSchema: zodSchema(schema),
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        execute: async (input: unknown) => schema.parse(input) as z.output<SCHEMA>,
+         
+        execute: async (input: unknown): Promise<z.output<SCHEMA>> =>
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+          schema.parse(input),
       },
     },
     toolChoice: { type: "tool", toolName },

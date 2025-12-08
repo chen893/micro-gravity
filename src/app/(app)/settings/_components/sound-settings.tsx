@@ -44,7 +44,7 @@ export function SoundSettings() {
           {config.enabled ? (
             <Volume2 className="h-5 w-5" />
           ) : (
-            <VolumeX className="h-5 w-5 text-muted-foreground" />
+            <VolumeX className="text-muted-foreground h-5 w-5" />
           )}
           <CardTitle className="text-base">音效设置</CardTitle>
         </div>
@@ -98,9 +98,7 @@ export function SoundSettings() {
               </Button>
             ))}
           </div>
-          <p className="text-muted-foreground text-xs">
-            点击按钮试听各类音效
-          </p>
+          <p className="text-muted-foreground text-xs">点击按钮试听各类音效</p>
         </div>
       </CardContent>
     </Card>

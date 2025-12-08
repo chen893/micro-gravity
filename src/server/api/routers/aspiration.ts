@@ -179,7 +179,8 @@ export const aspirationRouter = createTRPCRouter({
         await ctx.db.aspiration.update({
           where: { id: aspiration.id },
           data: {
-            explorationData: explorationData as unknown as Prisma.InputJsonValue,
+            explorationData:
+              explorationData as unknown as Prisma.InputJsonValue,
           },
         });
 

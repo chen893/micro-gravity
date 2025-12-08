@@ -68,7 +68,6 @@ export async function generateBehaviorCluster(
   aspiration: string,
   clarifiedAspiration?: string,
 ): Promise<string[]> {
-
   const { behaviors } = await runStructuredTool({
     toolName: "generate_behavior_cluster",
     description: "根据用户愿望列出多样化候选行为。",
@@ -114,7 +113,7 @@ export async function generateFocusMap(
 - 环境条件：${userContext.environment ?? "未知"}`
     : "";
 
-  return  runStructuredTool({
+  return runStructuredTool({
     toolName: "generate_focus_map",
     description: "根据影响力与可行性生成焦点地图。",
     schema: focusMapResultSchema,

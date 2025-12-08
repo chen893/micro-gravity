@@ -105,7 +105,6 @@ export function DashboardContent() {
           </div>
         </CardContent>
       </Card>
-
     </div>
   );
 }
