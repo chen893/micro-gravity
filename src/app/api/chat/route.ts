@@ -28,8 +28,8 @@ export async function POST(req: Request) {
   // 解析请求体
   const requestSchema = z.object({
     messages: z.array(z.custom<UIMessage>()),
-    aspirationId: z.string().optional(),
-    goldenBehavior: z.string().optional(),
+    aspirationId: z.string().nullable().optional(),
+    goldenBehavior: z.string().nullable().optional(),
   });
   const { messages, aspirationId, goldenBehavior } = requestSchema.parse(
     await req.json(),
